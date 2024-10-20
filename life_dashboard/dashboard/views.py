@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from .models import Stats
+from .forms import StatsForm
+
 
 # Create your views here.
 from django.shortcuts import render
@@ -14,7 +16,17 @@ def dashboard(request):
     # Fetch the stats for the logged-in user, or create default stats if none exist
     stats, created = Stats.objects.get_or_create(user=request.user)
     
-    return render(request, 'dashboard/dashboard.html', {'stats': stats})
+    if request.method == 'POST':
+        form = StatsForm(request.POST, instance=stats)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard')
+    else:
+        form = StatsForm(instance=stats)
+    
+    return render(request,
+                  'dashboard/dashboard.html',
+                  {'stats': stats, 'form': form})
 
 
 def register(request):
