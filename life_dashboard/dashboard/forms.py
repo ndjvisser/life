@@ -5,4 +5,11 @@ from .models import Stats
 class StatsForm(forms.ModelForm):
     class Meta:
         model = Stats
-        fields = ['strength', 'agility', 'endurance']
+        fields = [
+            'strength',
+            'agility',
+            'endurance',
+            'intelligence',
+            'charisma',
+            'wisdom'
+            ]

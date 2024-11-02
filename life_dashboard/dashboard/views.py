@@ -16,6 +16,15 @@ def dashboard(request):
     # Fetch the stats for the logged-in user, or create default stats if none exist
     stats, created = Stats.objects.get_or_create(user=request.user)
     
+    stat_list = [
+        {"name": "Strength", "value": stats.strength, "icon": "fitness_center"},
+        {"name": "Agility", "value": stats.agility, "icon": "directions_run"},
+        {"name": "Endurance", "value": stats.endurance, "icon": "favorite"},
+        {"name": "Intelligence", "value": stats.intelligence, "icon": "school"},
+        {"name": "Charisma", "value": stats.charisma, "icon": "record_voice_over"},
+        {"name": "Wisdom", "value": stats.wisdom, "icon": "lightbulb"},
+        ]
+    
     if request.method == 'POST':
         form = StatsForm(request.POST, instance=stats)
         if form.is_valid():
@@ -26,7 +35,11 @@ def dashboard(request):
     
     return render(request,
                   'dashboard/dashboard.html',
-                  {'stats': stats, 'form': form})
+                  {
+                      'stats': stats,
+                      'stat_list': stat_list,
+                      'form': form}
+                  )
 
 
 def register(request):

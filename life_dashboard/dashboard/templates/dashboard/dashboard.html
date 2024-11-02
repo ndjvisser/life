@@ -4,49 +4,46 @@
 <div class="container">
     <h1 class="center-align">Your Life Dashboard</h1>
 
-    <!-- Display stats and progress bars -->
+    <!-- Display stats with progress bars -->
     <div class="row">
+        {% for stat in stat_list %}
         <div class="col s12 m4">
             <div class="card blue-grey darken-1">
                 <div class="card-content white-text">
-                    <span class="card-title">Strength</span>
-                    <p>{{ stats.strength }}</p>
+                    <span class="card-title">{{ stat.name }} <i class="material-icons right">{{ stat.icon }}</i></span>
+                    <p>{{ stat.value }}</p>
                     <div class="progress">
-                        <div class="determinate" style="width: {{ stats.strength }}%;"></div>
+                        <div class="determinate"
+                             style="width: {{ stat.value }}%;
+                                    background-color:
+                                    {% if stat.value < 31 %} red
+                                    {% elif stat.value < 71 %} yellow
+                                    {% else %} green {% endif %};">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col s12 m4">
-            <div class="card blue-grey darken-1">
-                <div class="card-content white-text">
-                    <span class="card-title">Agility</span>
-                    <p>{{ stats.agility }}</p>
-                    <div class="progress">
-                        <div class="determinate" style="width: {{ stats.agility }}%;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col s12 m4">
-            <div class="card blue-grey darken-1">
-                <div class="card-content white-text">
-                    <span class="card-title">Endurance</span>
-                    <p>{{ stats.endurance }}</p>
-                    <div class="progress">
-                        <div class="determinate" style="width: {{ stats.endurance }}%;"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
 
-    <!-- Form to update stats -->
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn waves-effect waves-light">Update Stats</button>
-    </form>
+    <!-- Button to edit stats via modal -->
+    <button data-target="editStatsModal" class="btn modal-trigger waves-effect waves-light">Edit Stats</button>
+
+    <!-- Modal Structure for editing stats -->
+    <div id="editStatsModal" class="modal">
+        <div class="modal-content">
+            <h4>Edit Stats</h4>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn waves-effect waves-light">Save Changes</button>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-green btn-flat">Cancel</a>
+        </div>
+    </div>
 
 </div>
 {% endblock %}
