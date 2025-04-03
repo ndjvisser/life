@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LIFE Dashboard{% endblock %}</title>
+    
+    <!-- Materialize CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        .nav-wrapper {
+            background-color: #2c3e50;
+        }
+        .sidenav {
+            background-color: #34495e;
+        }
+        .sidenav li > a {
+            color: white;
+        }
+        .sidenav li > a:hover {
+            background-color: #2c3e50;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .progress {
+            margin: 1rem 0;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .achievement-icon {
+            width: 48px;
+            height: 48px;
+            margin-right: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-extended">
+        <div class="nav-wrapper">
+            <a href="{% url 'dashboard' %}" class="brand-logo">LIFE</a>
+            <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+            <ul class="right hide-on-med-and-down">
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'quests' %}">Quests</a></li>
+                <li><a href="{% url 'skills' %}">Skills</a></li>
+                <li><a href="{% url 'achievements' %}">Achievements</a></li>
+                <li><a href="{% url 'journal' %}">Journal</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation -->
+    <ul class="sidenav" id="mobile-nav">
+        <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        <li><a href="{% url 'quests' %}">Quests</a></li>
+        <li><a href="{% url 'skills' %}">Skills</a></li>
+        <li><a href="{% url 'achievements' %}">Achievements</a></li>
+        <li><a href="{% url 'journal' %}">Journal</a></li>
+    </ul>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col l6 s12">
+                    <h5 class="white-text">LIFE Dashboard</h5>
+                    <p class="grey-text text-lighten-4">Track your life's journey with RPG mechanics.</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-copyright">
+            <div class="container">
+                © 2024 LIFE Dashboard
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Materialize components
+            var sidenavElems = document.querySelectorAll('.sidenav');
+            var sidenavInstances = M.Sidenav.init(sidenavElems);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

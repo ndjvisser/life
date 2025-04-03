@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - LIFE{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Core Stats Card -->
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Core Stats</span>
+                <div class="row">
+                    <div class="col s6">
+                        <p>Level: <span class="stat-value">{{ core_stats.level }}</span></p>
+                        <p>XP: {{ core_stats.experience_points }}/1000</p>
+                    </div>
+                    <div class="col s6">
+                        <p>Strength: {{ core_stats.strength }}</p>
+                        <p>Endurance: {{ core_stats.endurance }}</p>
+                        <p>Agility: {{ core_stats.agility }}</p>
+                        <p>Intelligence: {{ core_stats.intelligence }}</p>
+                        <p>Wisdom: {{ core_stats.wisdom }}</p>
+                        <p>Charisma: {{ core_stats.charisma }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Quests Card -->
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Active Quests</span>
+                {% for quest in active_quests %}
+                <div class="quest-item">
+                    <h6>{{ quest.title }}</h6>
+                    <p class="grey-text">{{ quest.get_quest_type_display }}</p>
+                    <div class="progress">
+                        <div class="determinate" style="width: {% if quest.status == 'IN_PROGRESS' %}50%{% else %}0%{% endif %}"></div>
+                    </div>
+                    <p>Status: {{ quest.get_status_display }}</p>
+                    {% if quest.due_date %}
+                    <p>Due: {{ quest.due_date }}</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p>No active quests</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Habits Card -->
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Daily Habits</span>
+                {% for habit in daily_habits %}
+                <div class="habit-item">
+                    <h6>{{ habit.name }}</h6>
+                    <p>Streak: {{ habit.current_streak }} days</p>
+                    <div class="progress">
+                        <div class="determinate" style="width: {{ habit.current_streak }}%"></div>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No daily habits</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Life Stats Cards -->
+    {% for category, stats in life_stats.items %}
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">{{ category.name }}</span>
+                {% for stat in stats %}
+                <div class="stat-item">
+                    <h6>{{ stat.name }}</h6>
+                    <p>{{ stat.value }}{% if stat.unit %} {{ stat.unit }}{% endif %}</p>
+                    {% if stat.target %}
+                    <div class="progress">
+                        <div class="determinate" style="width: {{ stat.progress_percentage }}%"></div>
+                    </div>
+                    <p>Target: {{ stat.target }}{% if stat.unit %} {{ stat.unit }}{% endif %}</p>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p>No stats in this category</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row">
+    <!-- Skills Cards -->
+    {% for category, skills in skills.items %}
+    <div class="col s12 m6 l4">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">{{ category.name }}</span>
+                {% for skill in skills %}
+                <div class="skill-item">
+                    <h6>{{ skill.name }}</h6>
+                    <p>Level: {{ skill.level }}</p>
+                    <div class="progress">
+                        <div class="determinate" style="width: {{ skill.experience_points|div:skill.experience_to_next_level|mul:100 }}%"></div>
+                    </div>
+                    <p>XP: {{ skill.experience_points }}/{{ skill.experience_to_next_level }}</p>
+                </div>
+                {% empty %}
+                <p>No skills in this category</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row">
+    <!-- Recent Achievements Card -->
+    <div class="col s12 m6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Recent Achievements</span>
+                {% for achievement in recent_achievements %}
+                <div class="achievement-item">
+                    <div class="row">
+                        <div class="col s2">
+                            <i class="material-icons achievement-icon">{{ achievement.achievement.icon }}</i>
+                        </div>
+                        <div class="col s10">
+                            <h6>{{ achievement.achievement.name }}</h6>
+                            <p class="grey-text">{{ achievement.achievement.get_tier_display }}</p>
+                            <p>Unlocked: {{ achievement.unlocked_at|date }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No achievements yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Journal Entries Card -->
+    <div class="col s12 m6">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Recent Journal Entries</span>
+                {% for entry in recent_entries %}
+                <div class="journal-item">
+                    <h6>{{ entry.title }}</h6>
+                    <p class="grey-text">{{ entry.get_entry_type_display }}</p>
+                    <p>{{ entry.content|truncatewords:30 }}</p>
+                    <p>Mood: {{ entry.mood }}/10</p>
+                    <p>Date: {{ entry.created_at|date }}</p>
+                </div>
+                {% empty %}
+                <p>No journal entries yet</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
