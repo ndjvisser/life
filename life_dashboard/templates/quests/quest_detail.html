@@ -16,7 +16,13 @@
                 </div>
                 <div class="card-body">
                     <p class="card-text"><strong>Description:</strong> {{ quest.description }}</p>
-                    <p class="card-text"><strong>Due Date:</strong> {{ quest.due_date|date:"F j, Y" }} ({{ quest.due_date|timeuntil }} left)</p>
+                    <p class="card-text"><strong>Due Date:</strong> {{ quest.due_date|date:"F j, Y" }}
+                        {% if quest.due_date %}
+                            ({{ quest.due_date|timeuntil }} left)
+                        {% else %}
+                            (No due date)
+                        {% endif %}
+                    </p>
                     <p class="card-text"><strong>Experience Reward:</strong> {{ quest.experience_reward }} XP</p>
 
                     {% if quest.status == 'C' %}

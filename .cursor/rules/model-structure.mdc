@@ -5,9 +5,7 @@ alwaysApply: true
 ---
 ---
 description: Enforce structured inheritance for dashboard models
-globs:
-  - "life_dashboard/models/**/*.py"
-alwaysApply: false
+alwaysApply: true
 ---
 
 - All stat models must inherit from one of the following base classes:
