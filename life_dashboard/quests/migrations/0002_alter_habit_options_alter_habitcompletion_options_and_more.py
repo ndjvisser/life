@@ -6,71 +6,100 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('quests', '0001_initial'),
+        ("quests", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='habit',
+            name="habit",
             options={},
         ),
         migrations.AlterModelOptions(
-            name='habitcompletion',
+            name="habitcompletion",
             options={},
         ),
         migrations.AlterModelOptions(
-            name='quest',
+            name="quest",
             options={},
         ),
         migrations.RemoveField(
-            model_name='habit',
-            name='last_completed',
+            model_name="habit",
+            name="last_completed",
         ),
         migrations.RemoveField(
-            model_name='quest',
-            name='completed_date',
+            model_name="quest",
+            name="completed_date",
         ),
         migrations.AddField(
-            model_name='habit',
-            name='updated_at',
+            model_name="habit",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='habit',
-            name='description',
+            model_name="habit",
+            name="description",
             field=models.TextField(),
         ),
         migrations.AlterField(
-            model_name='habit',
-            name='frequency',
-            field=models.CharField(choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly')], max_length=20),
+            model_name="habit",
+            name="frequency",
+            field=models.CharField(
+                choices=[
+                    ("daily", "Daily"),
+                    ("weekly", "Weekly"),
+                    ("monthly", "Monthly"),
+                ],
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='habit',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="habit",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
         migrations.AlterField(
-            model_name='habitcompletion',
-            name='habit',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='quests.habit'),
+            model_name="habitcompletion",
+            name="habit",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="quests.habit"
+            ),
         ),
         migrations.AlterField(
-            model_name='quest',
-            name='quest_type',
-            field=models.CharField(choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly'), ('one_time', 'One Time')], max_length=20),
+            model_name="quest",
+            name="quest_type",
+            field=models.CharField(
+                choices=[
+                    ("daily", "Daily"),
+                    ("weekly", "Weekly"),
+                    ("monthly", "Monthly"),
+                    ("one_time", "One Time"),
+                ],
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='quest',
-            name='status',
-            field=models.CharField(choices=[('not_started', 'Not Started'), ('in_progress', 'In Progress'), ('completed', 'Completed'), ('failed', 'Failed')], default='not_started', max_length=20),
+            model_name="quest",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("not_started", "Not Started"),
+                    ("in_progress", "In Progress"),
+                    ("completed", "Completed"),
+                    ("failed", "Failed"),
+                ],
+                default="not_started",
+                max_length=20,
+            ),
         ),
         migrations.AlterField(
-            model_name='quest',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+            model_name="quest",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+            ),
         ),
     ]

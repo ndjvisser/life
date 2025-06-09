@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,36 +14,65 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='LifeStatCategory',
+            name="LifeStatCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('description', models.TextField(blank=True)),
-                ('icon', models.CharField(blank=True, max_length=50)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                ("description", models.TextField(blank=True)),
+                ("icon", models.CharField(blank=True, max_length=50)),
             ],
             options={
-                'verbose_name': 'Life Stat Category',
-                'verbose_name_plural': 'Life Stat Categories',
+                "verbose_name": "Life Stat Category",
+                "verbose_name_plural": "Life Stat Categories",
             },
         ),
         migrations.CreateModel(
-            name='LifeStat',
+            name="LifeStat",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('value', models.FloatField(default=0)),
-                ('target', models.FloatField(blank=True, null=True)),
-                ('unit', models.CharField(blank=True, max_length=20)),
-                ('notes', models.TextField(blank=True)),
-                ('last_updated', models.DateTimeField(auto_now=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='life_stats', to=settings.AUTH_USER_MODEL)),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='life_stats.lifestatcategory')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("value", models.FloatField(default=0)),
+                ("target", models.FloatField(blank=True, null=True)),
+                ("unit", models.CharField(blank=True, max_length=20)),
+                ("notes", models.TextField(blank=True)),
+                ("last_updated", models.DateTimeField(auto_now=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="life_stats",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="life_stats.lifestatcategory",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Life Stat',
-                'verbose_name_plural': 'Life Stats',
-                'unique_together': {('user', 'category', 'name')},
+                "verbose_name": "Life Stat",
+                "verbose_name_plural": "Life Stats",
+                "unique_together": {("user", "category", "name")},
             },
         ),
     ]

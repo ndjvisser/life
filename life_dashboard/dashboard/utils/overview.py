@@ -30,4 +30,3 @@ class RelationshipsOverview:
     def calculate_trends(self):
         # Implement logic to analyze relationship trends
         pass
-

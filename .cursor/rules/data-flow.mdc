@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 ---
@@ -15,5 +15,3 @@ alwaysApply: false
 - Never manipulate stats directly in views or templates.
 - Use the `StatValue`, `EventLog`, or `HabitLog` model for time-series tracking.
 - Avoid circular dependencies between models (especially stats <-> skills <-> quests).
-
-

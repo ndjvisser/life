@@ -10,7 +10,7 @@
                 <h2 class="card-title text-center mb-4">Register</h2>
                 <form method="post">
                     {% csrf_token %}
-                    
+
                     <div class="mb-3">
                         <label for="id_username" class="form-label">Username:</label>
                         <input type="text" name="username" class="form-control {% if form.username.errors %}is-invalid{% endif %}" id="id_username" value="{{ form.username.value|default_if_none:'' }}" required>
@@ -23,7 +23,7 @@
                             <div class="form-text">{{ form.username.help_text }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="id_email" class="form-label">Email:</label>
                         <input type="email" name="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" id="id_email" value="{{ form.email.value|default_if_none:'' }}" required>
@@ -33,7 +33,7 @@
                             {% endfor %}
                         {% endif %}
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="id_password1" class="form-label">Password:</label>
                         <input type="password" name="password" class="form-control {% if form.password.errors %}is-invalid{% endif %}" id="id_password1" required>
@@ -46,7 +46,7 @@
                             <div class="form-text">{{ form.password.help_text }}</div>
                         {% endif %}
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="id_password2" class="form-label">Password confirmation:</label>
                         <input type="password" name="password2" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" id="id_password2" required>
@@ -73,4 +73,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

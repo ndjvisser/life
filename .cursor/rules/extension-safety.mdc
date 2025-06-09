@@ -1,6 +1,6 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
 ---
@@ -21,4 +21,3 @@ alwaysApply: false
   - Basic test coverage for model + serializer.
 
 @quest_registry.py
-

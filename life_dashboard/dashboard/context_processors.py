@@ -1,14 +1,15 @@
-from life_dashboard.quests.models import Quest, Habit
+from life_dashboard.quests.models import Habit, Quest
+
 
 def user_quests_and_habits(request):
     if request.user.is_authenticated:
-        quests = Quest.objects.filter(user=request.user).order_by('-created_at')[:5]
-        habits = Habit.objects.filter(user=request.user).order_by('-created_at')[:5]
+        quests = Quest.objects.filter(user=request.user).order_by("-created_at")[:5]
+        habits = Habit.objects.filter(user=request.user).order_by("-created_at")[:5]
         return {
-            'user_quests': quests,
-            'user_habits': habits,
+            "user_quests": quests,
+            "user_habits": habits,
         }
     return {
-        'user_quests': [],
-        'user_habits': [],
-    } 
+        "user_quests": [],
+        "user_habits": [],
+    }

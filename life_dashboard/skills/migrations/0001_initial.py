@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,37 +14,66 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='SkillCategory',
+            name="SkillCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField(blank=True)),
-                ('icon', models.CharField(blank=True, max_length=50)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True)),
+                ("icon", models.CharField(blank=True, max_length=50)),
             ],
             options={
-                'verbose_name': 'Skill Category',
-                'verbose_name_plural': 'Skill Categories',
+                "verbose_name": "Skill Category",
+                "verbose_name_plural": "Skill Categories",
             },
         ),
         migrations.CreateModel(
-            name='Skill',
+            name="Skill",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField(blank=True)),
-                ('level', models.IntegerField(default=1)),
-                ('experience_points', models.IntegerField(default=0)),
-                ('experience_to_next_level', models.IntegerField(default=1000)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('last_practiced', models.DateTimeField(blank=True, null=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='skills', to=settings.AUTH_USER_MODEL)),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='skills.skillcategory')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True)),
+                ("level", models.IntegerField(default=1)),
+                ("experience_points", models.IntegerField(default=0)),
+                ("experience_to_next_level", models.IntegerField(default=1000)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("last_practiced", models.DateTimeField(blank=True, null=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="skills",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="skills.skillcategory",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Skill',
-                'verbose_name_plural': 'Skills',
-                'ordering': ['-level', '-experience_points'],
-                'unique_together': {('user', 'category', 'name')},
+                "verbose_name": "Skill",
+                "verbose_name_plural": "Skills",
+                "ordering": ["-level", "-experience_points"],
+                "unique_together": {("user", "category", "name")},
             },
         ),
     ]

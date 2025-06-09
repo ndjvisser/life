@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -15,24 +14,39 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='CoreStat',
+            name="CoreStat",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('strength', models.IntegerField(default=10)),
-                ('endurance', models.IntegerField(default=10)),
-                ('agility', models.IntegerField(default=10)),
-                ('intelligence', models.IntegerField(default=10)),
-                ('wisdom', models.IntegerField(default=10)),
-                ('charisma', models.IntegerField(default=10)),
-                ('experience_points', models.IntegerField(default=0)),
-                ('level', models.IntegerField(default=1)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='core_stats', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("strength", models.IntegerField(default=10)),
+                ("endurance", models.IntegerField(default=10)),
+                ("agility", models.IntegerField(default=10)),
+                ("intelligence", models.IntegerField(default=10)),
+                ("wisdom", models.IntegerField(default=10)),
+                ("charisma", models.IntegerField(default=10)),
+                ("experience_points", models.IntegerField(default=0)),
+                ("level", models.IntegerField(default=1)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="core_stats",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Core Stat',
-                'verbose_name_plural': 'Core Stats',
+                "verbose_name": "Core Stat",
+                "verbose_name_plural": "Core Stats",
             },
         ),
     ]

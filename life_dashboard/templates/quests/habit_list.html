@@ -21,7 +21,7 @@
                     <h5 class="card-title">{{ habit.name }}</h5>
                     <h6 class="card-subtitle mb-2 text-muted">{{ habit.get_frequency_display }}</h6>
                     <p class="card-text">{{ habit.description|truncatewords:30 }}</p>
-                    
+
                     <div class="mt-auto">
                         <p class="mb-1">Current Streak: <span class="fw-bold text-success">{{ habit.current_streak }} days</span></p>
                         <p class="mb-1">Longest Streak: <span class="fw-bold text-primary">{{ habit.longest_streak }} days</span></p>
@@ -52,4 +52,4 @@
         {% endfor %}
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

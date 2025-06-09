@@ -1,27 +1,29 @@
-from django.db import models
 from django.contrib.auth.models import User
-from django.utils import timezone
+from django.db import models
+
 
 class Quest(models.Model):
     QUEST_TYPES = (
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
-        ('one_time', 'One Time'),
+        ("daily", "Daily"),
+        ("weekly", "Weekly"),
+        ("monthly", "Monthly"),
+        ("one_time", "One Time"),
     )
 
     STATUS_CHOICES = (
-        ('not_started', 'Not Started'),
-        ('in_progress', 'In Progress'),
-        ('completed', 'Completed'),
-        ('failed', 'Failed'),
+        ("not_started", "Not Started"),
+        ("in_progress", "In Progress"),
+        ("completed", "Completed"),
+        ("failed", "Failed"),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
     quest_type = models.CharField(max_length=20, choices=QUEST_TYPES)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="not_started"
+    )
     experience_reward = models.IntegerField(default=0)
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
@@ -31,11 +33,12 @@ class Quest(models.Model):
     def __str__(self):
         return self.title
 
+
 class Habit(models.Model):
     FREQUENCY_CHOICES = (
-        ('daily', 'Daily'),
-        ('weekly', 'Weekly'),
-        ('monthly', 'Monthly'),
+        ("daily", "Daily"),
+        ("weekly", "Weekly"),
+        ("monthly", "Monthly"),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -50,6 +53,7 @@ class Habit(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class HabitCompletion(models.Model):
     habit = models.ForeignKey(Habit, on_delete=models.CASCADE)
