@@ -1,10 +1,14 @@
+import pytest
+from django.contrib.auth import get_user_model
 from django.urls import reverse
-from quests.models import Habit
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from .conftest import SeleniumTestCase
+from life_dashboard.conftest import SeleniumTestCase
+from life_dashboard.quests.models import Habit
+
+User = get_user_model()
 
 
 class TestHabits:
@@ -57,7 +61,8 @@ class TestHabits:
         assert test_habit.current_streak == 1
 
 
-class TestHabitsSelenium(SeleniumTestCase):
+@pytest.mark.django_db
+class HabitTests(SeleniumTestCase):
     def test_habit_creation_flow(self):
         self.selenium.get(f'{self.live_server_url}{reverse("habit_create")}')
 

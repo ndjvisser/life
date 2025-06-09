@@ -1,11 +1,11 @@
+import pytest
 from django.urls import reverse
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
+from life_dashboard.conftest import SeleniumTestCase
 from life_dashboard.quests.models import Quest
-
-from .conftest import SeleniumTestCase
 
 
 class TestDashboard:
@@ -47,8 +47,9 @@ class TestDashboard:
         )
 
 
-class TestDashboardSelenium(SeleniumTestCase):
-    def test_dashboard_flow(self):
+@pytest.mark.django_db
+class DashboardTests(SeleniumTestCase):
+    def test_dashboard_page(self):
         self.selenium.get(f'{self.live_server_url}{reverse("dashboard")}')
 
         # Verify dashboard elements

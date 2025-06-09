@@ -41,6 +41,7 @@ jobs:
         run: pytest
         env:
           DJANGO_SETTINGS_MODULE: life_dashboard.life_dashboard.test_settings
+          PYTHONPATH: life_dashboard
 
       - name: Run Ruff (Linting and Formatting)
         run: |

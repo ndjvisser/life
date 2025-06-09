@@ -1,16 +1,18 @@
+import pytest
 from django.urls import reverse
-from quests.models import Quest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from .conftest import SeleniumTestCase
+from life_dashboard.conftest import SeleniumTestCase
+from life_dashboard.quests.models import Quest
 
 
-class TestQuests:
-    def test_quest_list_view(self, authenticated_client):
+@pytest.mark.django_db
+class QuestTests(SeleniumTestCase):
+    def test_quest_list_page(self):
         url = reverse("quest_list")
-        response = authenticated_client.get(url)
+        response = self.client.get(url)
         assert response.status_code == 200
         assert "Quests" in response.content.decode()
 
@@ -48,8 +50,6 @@ class TestQuests:
         assert response.status_code == 302
         assert not Quest.objects.filter(pk=test_quest.pk).exists()
 
-
-class TestQuestsSelenium(SeleniumTestCase):
     def test_quest_creation_flow(self):
         self.selenium.get(f'{self.live_server_url}{reverse("quest_create")}')
 

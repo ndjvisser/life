@@ -2,11 +2,11 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.test import Client
-from quests.models import Habit, Quest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 from life_dashboard.dashboard.models import UserProfile
+from life_dashboard.quests.models import Habit, Quest
 
 User = get_user_model()
 
