@@ -1,11 +1,10 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.shortcuts import render, redirect
 from .models import Stats
-from .forms import StatsForm
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from .forms import StatsForm, UserRegistrationForm
+from django.contrib import messages
 from django.db.models import Count
 from core_stats.models import CoreStat
 from life_stats.models import LifeStat, LifeStatCategory
@@ -72,15 +71,45 @@ def dashboard(request):
 
 def register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=password)
             login(request, user)
-            return redirect('dashboard')
+            messages.success(request, 'Registration successful!')
+            return redirect('dashboard:index')
     else:
-        form = UserCreationForm()
-    return render(request, 'registration/register.html', {'form': form})
+        form = UserRegistrationForm()
+    return render(request, 'dashboard/register.html', {'form': form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, 'Login successful!')
+                return redirect('dashboard:index')
+            else:
+                messages.error(request, 'Invalid username or password.')
+        else:
+            messages.error(request, 'Invalid username or password.')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'dashboard/login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'Logout successful!')
+    return redirect('dashboard:login')
+
+@login_required
+def index(request):
+    quests = Quest.objects.filter(user=request.user).order_by('-created_at')[:5]
+    habits = Habit.objects.filter(user=request.user).order_by('-created_at')[:5]
+    return render(request, 'dashboard/dashboard.html', {
+        'quests': quests,
+        'habits': habits
+    })

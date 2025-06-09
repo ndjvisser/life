@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - LIFE{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col s12 m6 offset-m3">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Register</span>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="input-field">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="red-text">
+                            {% for error in field.errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if field.help_text %}
+                        <span class="helper-text">{{ field.help_text }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn waves-effect waves-light">
+                        <i class="material-icons left">person_add</i>Register
+                    </button>
+                </form>
+            </div>
+            <div class="card-action">
+                <p>Already have an account? <a href="{% url 'dashboard:login' %}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,195 +1,93 @@
-# life
+# LIFE - Level Up Your Life
 
+LIFE is a web application that helps you level up your life by tracking quests and habits. It uses RPG mechanics to make personal development more engaging and fun.
 
-Product Requirements Document (PRD)
+## Features
 
-Project Title: LIFE: Life Improvement Framework Engine,
-A personal life status screen to monitor progress towards key life goals
+- **Quests**: Create and track one-time and recurring quests
+- **Habits**: Build and maintain daily, weekly, or monthly habits
+- **Experience Points**: Earn XP by completing quests and maintaining habits
+- **Streaks**: Track your progress with habit streaks
+- **User Authentication**: Secure login and registration system
 
-Owner: Nigel
+## Installation
 
-Date: April 1, 2025
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/life.git
+cd life
+```
 
-1. Purpose
+2. Create a virtual environment and activate it:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
 
-To develop a modular, RPG-inspired personal life dashboard web application that tracks a user's core and life stats, quests, skills, achievements, and journals, offering a unified overview of progress across health, wealth, and relationships. The dashboard should be intuitive, visually appealing, and extensible.
+3. Install the dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-2. Goals and Objectives
+4. Create a .env file in the project root with the following content:
+```bash
+DEBUG=True
+SECRET_KEY=your-secret-key-here
+ALLOWED_HOSTS=localhost,127.0.0.1
+```
 
-Provide a holistic overview of personal development inspired by RPG mechanics.
+5. Set up the database:
+```bash
+python manage.py setup
+```
 
-Track classical RPG stats and life stats (health, wealth, relationships).
+6. Run the development server:
+```bash
+python manage.py runserver
+```
 
-Maintain a log of quests and habits aligned with short- and long-term goals.
+7. Visit http://localhost:8000 in your browser.
 
-Track skills development and achievements.
+## Usage
 
-Present high-level trend overviews (e.g., health, wealth).
+### Admin Access
 
-Enable journaling for reflection and insights.
+- URL: http://localhost:8000/admin
+- Username: admin
+- Password: admin
 
-Design for modularity, extensibility, and future integration.
+### Test User
 
-3. User Stories
+- Username: test
+- Password: test
 
-As a user, I want to see an overview of my stats so I can reflect on personal growth.
+## Development
 
-As a user, I want to update and track my health, wealth, and relationship metrics.
+### Available Management Commands
 
-As a user, I want to define and track my goals as quests.
+- `python manage.py setup`: Sets up the project by running all necessary commands
+- `python manage.py resetdb`: Resets the database by dropping all tables and recreating them
+- `python manage.py createsuperuser`: Creates a superuser
+- `python manage.py createsampledata`: Creates sample data for testing
 
-As a user, I want to track recurring behaviours as habits.
+### Project Structure
 
-As a user, I want to gain achievements and titles based on my progress.
+```
+life_dashboard/
+├── dashboard/          # Main dashboard app
+├── quests/            # Quests and habits app
+├── templates/         # Project-wide templates
+├── static/           # Project-wide static files
+└── life_dashboard/   # Project settings
+```
 
-As a user, I want to view skills I'm developing and how they progress.
+## Contributing
 
-As a user, I want to journal and reflect on my progress and insights.
+1. Fork the repository
+2. Create a new branch
+3. Make your changes
+4. Submit a pull request
 
-4. Features
+## License
 
-A. Core Stats (RPG-style)
-
-Strength, Endurance, Agility, Intelligence, Wisdom, Charisma
-
-B. Life Stats
-
-Health
-
-Physical
-
-Mental & Emotional
-
-Food & Nutrients
-
-Other
-
-Wealth
-
-Work & Company
-
-Finance / Savings & Investments
-
-Personal Growth & Reading
-
-Relationships
-
-Family
-
-Friendships
-
-Romance
-
-Social Skills
-
-Adventure & Exploration
-
-C. Quest Log
-
-Life Goals
-
-Annual Goals
-
-Main Quests
-
-Side Quests
-
-Weekly Quests
-
-Daily Quests
-
-Habits
-
-D. Journal
-
-Daily reflections
-
-Weekly or milestone-based entries
-
-E. Milestone Tracker
-
-Visual tracker of key personal events and accomplishments
-
-F. Skills
-
-Skills categorized by Health, Wealth, and Social areas
-
-Level tracking
-
-G. Achievements & Titles
-
-Badges: Bronze, Silver, Gold
-
-Custom Titles
-
-Levels per category
-
-H. Overview Pages
-
-Health Overview: Metrics, Attributes, Trends
-
-Wealth Overview: Metrics, Attributes, Trends, Financial Dashboard
-
-Relationships Overview: Metrics, Attributes, Trends
-
-I. Home/Base Page
-
-Central hub for user stats, quests, and quick actions
-
-5. Technical Requirements
-
-Framework: Django (Python)
-
-Frontend Styling: Materialize CSS
-
-Database: SQLite (dev), PostgreSQL (prod)
-
-Architecture:
-
-Modular Django apps: core_stats, life_stats, quests, skills, achievements, journals, dashboard
-
-Composition-based object model for extensibility
-
-Data Model:
-
-Class inheritance scheme using BaseStat, LifeStatCategory, Quest, Habit, Skill, Achievement, Overview
-
-Authentication:
-
-User registration and login
-
-6. Non-Functional Requirements
-
-Modular and extensible codebase
-
-Intuitive and attractive UI/UX
-
-Maintainable and testable class structure
-
-Responsive design for desktop and mobile
-
-7. Success Criteria
-
-Users can register, log in, and access their dashboard.
-
-Users can view, update, and track their core stats and life stats.
-
-Quests, habits, and journals are stored and rendered properly.
-
-Health, wealth, and relationship overviews show metrics and trends.
-
-The system supports adding skills and achievements.
-
-The architecture allows for easy expansion of modules or features.
-
-8. Future Considerations
-
-Integration with health apps (e.g., Apple Health, Google Fit)
-
-Financial data import (e.g., bank API, CSVs)
-
-Gamification mechanics: XP, unlockables
-
-Dark mode and custom themes
-
-API for external use
+This project is licensed under the MIT License - see the LICENSE file for details.

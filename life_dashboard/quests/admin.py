@@ -3,21 +3,21 @@ from .models import Quest, Habit, HabitCompletion
 
 @admin.register(Quest)
 class QuestAdmin(admin.ModelAdmin):
-    list_display = ('user', 'title', 'quest_type', 'status', 'experience_reward', 'due_date')
-    list_filter = ('quest_type', 'status')
-    search_fields = ('user__username', 'title', 'description')
-    readonly_fields = ('created_at', 'updated_at')
+    list_display = ('title', 'user', 'quest_type', 'status', 'experience_reward', 'start_date', 'due_date')
+    list_filter = ('quest_type', 'status', 'user')
+    search_fields = ('title', 'description')
+    date_hierarchy = 'created_at'
 
 @admin.register(Habit)
 class HabitAdmin(admin.ModelAdmin):
-    list_display = ('user', 'name', 'frequency', 'target_count', 'current_streak', 'longest_streak')
-    list_filter = ('frequency',)
-    search_fields = ('user__username', 'name', 'description')
-    readonly_fields = ('created_at', 'last_completed')
+    list_display = ('name', 'user', 'frequency', 'target_count', 'current_streak', 'longest_streak')
+    list_filter = ('frequency', 'user')
+    search_fields = ('name', 'description')
+    date_hierarchy = 'created_at'
 
 @admin.register(HabitCompletion)
 class HabitCompletionAdmin(admin.ModelAdmin):
-    list_display = ('habit', 'completed_at')
-    list_filter = ('completed_at',)
+    list_display = ('habit', 'completed_at', 'notes')
+    list_filter = ('habit', 'completed_at')
     search_fields = ('habit__name', 'notes')
-    readonly_fields = ('completed_at',)
+    date_hierarchy = 'completed_at'

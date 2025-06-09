@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}Quests - LIFE{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Quests</h1>
+    <a href="{% url 'quest_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> New Quest
+    </a>
+</div>
+
+<div class="row">
+    <!-- Active Quests -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Active Quests</h5>
+                {% if active_quests %}
+                <div class="list-group list-group-flush">
+                    {% for quest in active_quests %}
+                    <a href="{% url 'quest_detail' quest.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ quest.title }}</h6>
+                            <small class="text-muted">{{ quest.due_date|timeuntil }} left</small>
+                        </div>
+                        <p class="mb-1">{{ quest.description|truncatechars:100 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-primary">{{ quest.experience_reward }} XP</small>
+                            <span class="badge bg-{{ quest.status|lower }}">{{ quest.get_status_display }}</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No active quests</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Quests -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Completed Quests</h5>
+                {% if completed_quests %}
+                <div class="list-group list-group-flush">
+                    {% for quest in completed_quests %}
+                    <a href="{% url 'quest_detail' quest.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ quest.title }}</h6>
+                            <small class="text-muted">Completed {{ quest.completion_date|timesince }} ago</small>
+                        </div>
+                        <p class="mb-1">{{ quest.description|truncatechars:100 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-success">+{{ quest.experience_reward }} XP</small>
+                            <span class="badge bg-success">Completed</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No completed quests</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- All Quests -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">All Quests</h5>
+                {% if quests %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                                <th>Experience</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quest in quests %}
+                            <tr>
+                                <td>{{ quest.title }}</td>
+                                <td>{{ quest.get_quest_type_display }}</td>
+                                <td>
+                                    <span class="badge bg-{{ quest.status|lower }}">
+                                        {{ quest.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if quest.due_date %}
+                                    {{ quest.due_date|date }}
+                                    {% else %}
+                                    -
+                                    {% endif %}
+                                </td>
+                                <td>{{ quest.experience_reward }} XP</td>
+                                <td>
+                                    <a href="{% url 'quest_detail' quest.pk %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'quest_update' quest.pk %}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No quests available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
