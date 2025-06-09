@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 from quests.models import Habit, Quest
 
 
@@ -22,8 +23,8 @@ class Command(BaseCommand):
                 "quest_type": "one_time",
                 "status": "in_progress",
                 "experience_reward": 1000,
-                "start_date": datetime.now(),
-                "due_date": datetime.now() + timedelta(days=30),
+                "start_date": timezone.now(),
+                "due_date": timezone.now() + timedelta(days=30),
             },
             {
                 "title": "Read Books",
@@ -31,7 +32,7 @@ class Command(BaseCommand):
                 "quest_type": "recurring",
                 "status": "active",
                 "experience_reward": 500,
-                "start_date": datetime.now(),
+                "start_date": timezone.now(),
                 "due_date": None,
             },
         ]
