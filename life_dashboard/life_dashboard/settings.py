@@ -210,3 +210,11 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": timedelta(days=1),
     },
 }
+
+MESSAGE_TAGS = {
+    "debug": "secondary",
+    "info": "info",
+    "success": "success",
+    "warning": "warning",
+    "error": "danger",
+}
