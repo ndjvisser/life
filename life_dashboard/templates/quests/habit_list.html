@@ -3,55 +3,53 @@
 {% block title %}Habits - LIFE{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col s12">
-        <div class="card">
-            <div class="card-content">
-                <span class="card-title">Habits</span>
-                <a href="{% url 'quests:habit_create' %}" class="btn waves-effect waves-light">
-                    <i class="material-icons left">add</i>New Habit
-                </a>
-            </div>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Habits</h1>
+            <a href="{% url 'quests:habit_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add New Habit
+            </a>
         </div>
     </div>
-</div>
 
-<div class="row">
-    {% for habit in habits %}
-    <div class="col s12 m6 l4">
-        <div class="card">
-            <div class="card-content">
-                <span class="card-title">{{ habit.name }}</span>
-                <p class="grey-text">{{ habit.get_frequency_display }}</p>
-                <p>{{ habit.description|truncatewords:30 }}</p>
-                <div class="progress">
-                    <div class="determinate" style="width: {{ habit.current_streak }}%"></div>
+    <div class="row">
+        {% for habit in habits %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ habit.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ habit.get_frequency_display }}</h6>
+                    <p class="card-text">{{ habit.description|truncatewords:30 }}</p>
+                    
+                    <div class="mt-auto">
+                        <p class="mb-1">Current Streak: <span class="fw-bold text-success">{{ habit.current_streak }} days</span></p>
+                        <p class="mb-1">Longest Streak: <span class="fw-bold text-primary">{{ habit.longest_streak }} days</span></p>
+                        <p>Target: <span class="fw-bold">{{ habit.target_count }} times per {{ habit.get_frequency_display|lower }}</span></p>
+                    </div>
                 </div>
-                <p>Current Streak: {{ habit.current_streak }} days</p>
-                <p>Longest Streak: {{ habit.longest_streak }} days</p>
-                <p>Target: {{ habit.target_count }} times per {{ habit.get_frequency_display|lower }}</p>
-            </div>
-            <div class="card-action">
-                <a href="{% url 'quests:habit_detail' habit.id %}" class="btn waves-effect waves-light">
-                    <i class="material-icons left">visibility</i>View
-                </a>
-                <a href="{% url 'quests:habit_update' habit.id %}" class="btn waves-effect waves-light">
-                    <i class="material-icons left">edit</i>Edit
-                </a>
-                <a href="{% url 'quests:complete_habit' habit.id %}" class="btn waves-effect waves-light">
-                    <i class="material-icons left">check</i>Complete
-                </a>
+                <div class="card-footer d-flex justify-content-around">
+                    <a href="{% url 'quests:habit_detail' habit.pk %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-eye me-1"></i>View
+                    </a>
+                    <a href="{% url 'quests:habit_update' habit.pk %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                    <a href="{% url 'quests:complete_habit' habit.pk %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-check me-1"></i>Complete
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-    {% empty %}
-    <div class="col s12">
-        <div class="card">
-            <div class="card-content">
-                <p>No habits yet. Create your first habit!</p>
+        {% empty %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <p class="card-text">No habits yet. Create your first habit!</p>
+                </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
 {% endblock %} 

@@ -1,127 +1,69 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
+{% load static %}
 
-{% block title %}Profile - LIFE{% endblock %}
+{% block title %}Profile - {{ user.username }}{% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- Profile Information -->
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Profile Information</h5>
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Update Profile</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stats Overview -->
-    <div class="col-md-8 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Stats Overview</h5>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="list-group list-group-flush">
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Level</span>
-                                <span class="badge bg-primary rounded-pill">{{ user.profile.level }}</span>
-                            </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Experience</span>
-                                <span class="badge bg-success rounded-pill">{{ user.profile.experience }}</span>
-                            </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Total Quests</span>
-                                <span class="badge bg-info rounded-pill">{{ total_quests_count }}</span>
-                            </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Total Habits</span>
-                                <span class="badge bg-warning rounded-pill">{{ total_habits_count }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="list-group list-group-flush">
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Completed Quests</span>
-                                <span class="badge bg-success rounded-pill">{{ completed_quests_count }}</span>
-                            </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Active Quests</span>
-                                <span class="badge bg-info rounded-pill">{{ active_quests_count }}</span>
-                            </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Active Habits</span>
-                                <span class="badge bg-warning rounded-pill">{{ active_habits_count }}</span>
-                            </div>
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>Total XP Earned</span>
-                                <span class="badge bg-primary rounded-pill">{{ total_xp_earned }}</span>
-                            </div>
-                        </div>
-                    </div>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">{{ user.username }}</h3>
+                    <p class="card-text">Member since: {{ user.date_joined|date:"F j, Y" }}</p>
+                    <h4>Core Stats</h4>
+                    <ul class="list-unstyled">
+                        <li>Level: {{ core_stats.level }}</li>
+                        <li>Experience: {{ core_stats.experience }}</li>
+                        <li>Health: {{ core_stats.health }}</li>
+                        <li>Energy: {{ core_stats.energy }}</li>
+                    </ul>
                 </div>
             </div>
         </div>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Recent Achievements -->
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Recent Achievements</h5>
-                {% if recent_achievements %}
-                <div class="list-group list-group-flush">
-                    {% for achievement in recent_achievements %}
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ achievement.name }}</h6>
-                            <small class="text-muted">{{ achievement.unlocked_at|timesince }} ago</small>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4>Achievements</h4>
+                    {% if achievements %}
+                        <div class="row">
+                            {% for achievement in achievements %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ achievement.achievement.name }}</h5>
+                                            <p class="card-text">{{ achievement.achievement.description }}</p>
+                                            <small class="text-muted">Unlocked: {{ achievement.unlocked_at|date:"F j, Y" }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
-                        <p class="mb-1">{{ achievement.description }}</p>
-                        <small class="text-success">+{{ achievement.experience_reward }} XP</small>
-                    </div>
-                    {% endfor %}
+                    {% else %}
+                        <p>No achievements unlocked yet.</p>
+                    {% endif %}
                 </div>
-                {% else %}
-                <p class="text-muted">No achievements yet</p>
-                {% endif %}
             </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Recent Activity</h5>
-                {% if recent_activity %}
-                <div class="list-group list-group-flush">
-                    {% for activity in recent_activity %}
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ activity.title }}</h6>
-                            <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
-                        </div>
-                        <p class="mb-1">{{ activity.description }}</p>
-                        {% if activity.experience_gained %}
-                        <small class="text-success">+{{ activity.experience_gained }} XP</small>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+            
+            <div class="card">
+                <div class="card-body">
+                    <h4>Recent Journal Entries</h4>
+                    {% if recent_entries %}
+                        {% for entry in recent_entries %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ entry.title }}</h5>
+                                    <p class="card-text">{{ entry.content|truncatewords:50 }}</p>
+                                    <small class="text-muted">Posted: {{ entry.created_at|date:"F j, Y" }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No journal entries yet.</p>
+                    {% endif %}
                 </div>
-                {% else %}
-                <p class="text-muted">No recent activity</p>
-                {% endif %}
             </div>
         </div>
     </div>

@@ -67,8 +67,8 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="card-title mb-0">Active Quests</h5>
-                    <a href="{% url 'quest_create' %}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> New Quest
+                    <a href="{% url 'quests:quest_create' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i> New Quest
                     </a>
                 </div>
                 {% if active_quests %}
@@ -97,8 +97,8 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="card-title mb-0">Active Habits</h5>
-                    <a href="{% url 'habit_create' %}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus"></i> New Habit
+                    <a href="{% url 'quests:habit_create' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i> New Habit
                     </a>
                 </div>
                 {% if active_habits %}

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import sys
 
 # Load environment variables from .env file
 load_dotenv()
@@ -36,21 +37,21 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 # Application definition
 
 INSTALLED_APPS = [
+    'django.contrib.contenttypes',
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
     'crispy_bootstrap5',
-    'dashboard',
-    'core_stats',
-    'life_stats',
-    'quests',
-    'skills',
-    'achievements',
-    'journals',
+    'life_dashboard.dashboard',
+    'life_dashboard.core_stats',
+    'life_dashboard.life_stats',
+    'life_dashboard.quests',
+    'life_dashboard.skills',
+    'life_dashboard.achievements',
+    'life_dashboard.journals',
 ]
 
 MIDDLEWARE = [
@@ -61,10 +62,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'dashboard.middleware.LoginRequiredMiddleware',
+    'life_dashboard.dashboard.middleware.LoginRequiredMiddleware',
 ]
 
-ROOT_URLCONF = 'life_dashboard.urls'
+ROOT_URLCONF = 'life_dashboard.life_dashboard.urls'
 
 TEMPLATES = [
     {
@@ -77,13 +78,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'dashboard.context_processors.user_quests_and_habits',
+                'life_dashboard.dashboard.context_processors.user_quests_and_habits',
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'life_dashboard.wsgi.application'
+WSGI_APPLICATION = 'life_dashboard.life_dashboard.wsgi.application'
+ASGI_APPLICATION = 'life_dashboard.life_dashboard.asgi.application'
 
 
 # Database
@@ -95,6 +97,45 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Test settings
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',
+        }
+    }
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    ]
+    AUTH_PASSWORD_VALIDATORS = []
+    INSTALLED_APPS = [
+        'django.contrib.contenttypes',
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+        'crispy_forms',
+        'crispy_bootstrap5',
+        'life_dashboard.dashboard',
+        'life_dashboard.core_stats',
+        'life_dashboard.life_stats',
+        'life_dashboard.quests',
+        'life_dashboard.skills',
+        'life_dashboard.achievements',
+        'life_dashboard.journals',
+    ]
+    MIDDLEWARE = [
+        'django.middleware.security.SecurityMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    ]
 
 
 # Password validation
@@ -148,3 +189,5 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+TEST_RUNNER = 'life_dashboard.life_dashboard.test_runner.PytestTestRunner'

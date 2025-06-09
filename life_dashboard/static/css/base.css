@@ -6,6 +6,12 @@ body {
     background-color: #f8f9fa;
 }
 
+/* Ensure Font Awesome icons render correctly */
+i[class*="fa-"], i[class*="fa "] {
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important; /* For solid icons, use 900; for regular, use 400 */
+}
+
 /* Navigation */
 .navbar {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

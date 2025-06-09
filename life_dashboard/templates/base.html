@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,7 +17,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">LIFE</a>
+            <a class="navbar-brand" href="{% url 'dashboard:dashboard' %}">LIFE</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -24,13 +25,13 @@
                 <ul class="navbar-nav me-auto">
                     {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
+                        <a class="nav-link" href="{% url 'dashboard:dashboard' %}">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'quest_list' %}">Quests</a>
+                        <a class="nav-link" href="{% url 'quests:quest_list' %}">Quests</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'habit_list' %}">Habits</a>
+                        <a class="nav-link" href="{% url 'quests:habit_list' %}">Habits</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -41,17 +42,17 @@
                             {{ user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'dashboard:profile' %}">Profile</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            <li><a class="dropdown-item" href="{% url 'dashboard:logout' %}">Logout</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        <a class="nav-link" href="{% url 'dashboard:login' %}">Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        <a class="nav-link" href="{% url 'dashboard:register' %}">Register</a>
                     </li>
                     {% endif %}
                 </ul>

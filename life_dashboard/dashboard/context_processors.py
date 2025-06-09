@@ -1,4 +1,4 @@
-from quests.models import Quest, Habit
+from life_dashboard.quests.models import Quest, Habit
 
 def user_quests_and_habits(request):
     if request.user.is_authenticated:

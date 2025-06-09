@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from .models import Quest, Habit, HabitCompletion
-from .forms import QuestForm, HabitForm, HabitCompletionForm
+from life_dashboard.quests.models import Quest, Habit, HabitCompletion
+from life_dashboard.quests.forms import QuestForm, HabitForm, HabitCompletionForm
 
 @login_required
 def quest_list(request):

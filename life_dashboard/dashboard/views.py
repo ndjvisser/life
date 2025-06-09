@@ -2,16 +2,16 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.shortcuts import render, redirect
-from .models import Stats
-from .forms import StatsForm, UserRegistrationForm
+from life_dashboard.dashboard.models import Stats
+from life_dashboard.dashboard.forms import StatsForm, UserRegistrationForm
 from django.contrib import messages
 from django.db.models import Count
-from core_stats.models import CoreStat
-from life_stats.models import LifeStat, LifeStatCategory
-from quests.models import Quest, Habit
-from skills.models import Skill, SkillCategory
-from achievements.models import UserAchievement
-from journals.models import JournalEntry
+from life_dashboard.core_stats.models import CoreStat
+from life_dashboard.life_stats.models import LifeStat, LifeStatCategory
+from life_dashboard.quests.models import Quest, Habit
+from life_dashboard.skills.models import Skill, SkillCategory
+from life_dashboard.achievements.models import UserAchievement
+from life_dashboard.journals.models import JournalEntry
 
 
 # Create your views here.
@@ -76,7 +76,7 @@ def register(request):
             user = form.save()
             login(request, user)
             messages.success(request, 'Registration successful!')
-            return redirect('dashboard:index')
+            return redirect('dashboard:dashboard')
     else:
         form = UserRegistrationForm()
     return render(request, 'dashboard/register.html', {'form': form})
@@ -91,7 +91,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, 'Login successful!')
-                return redirect('dashboard:index')
+                return redirect('dashboard:dashboard')
             else:
                 messages.error(request, 'Invalid username or password.')
         else:
@@ -113,3 +113,18 @@ def index(request):
         'quests': quests,
         'habits': habits
     })
+
+@login_required
+def profile(request):
+    user = request.user
+    core_stats, created = CoreStat.objects.get_or_create(user=user)
+    achievements = UserAchievement.objects.filter(user=user).order_by('-unlocked_at')
+    recent_entries = JournalEntry.objects.filter(user=user).order_by('-created_at')[:5]
+    
+    context = {
+        'user': user,
+        'core_stats': core_stats,
+        'achievements': achievements,
+        'recent_entries': recent_entries,
+    }
+    return render(request, 'dashboard/profile.html', context)

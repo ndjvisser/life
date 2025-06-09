@@ -24,12 +24,14 @@
                         <span class="helper-text">{{ form.notes.help_text }}</span>
                         {% endif %}
                     </div>
-                    <button type="submit" class="btn waves-effect waves-light">
-                        <i class="material-icons left">check</i>Complete
-                    </button>
-                    <a href="{% url 'quests:habit_detail' habit.id %}" class="btn waves-effect waves-light">
-                        <i class="material-icons left">arrow_back</i>Cancel
-                    </a>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i>Complete
+                        </button>
+                        <a href="{% url 'quests:habit_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                    </div>
                 </form>
             </div>
         </div>

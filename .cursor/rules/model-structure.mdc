@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Enforce structured inheritance for dashboard models
+globs:
+  - "life_dashboard/models/**/*.py"
+alwaysApply: false
+---
+
+- All stat models must inherit from one of the following base classes:
+  - `BaseStat`
+  - `CoreStat` → for RPG stats (STR, INT, etc.)
+  - `LifeStatCategory` → for grouped stats (Health, Wealth, Relationships)
+- Use abstract base models for reusable logic (e.g., timestamping, calculated fields).
+- Keep model logic pure — avoid direct state mutation or business logic in models.
+- Stats with dynamic values must expose `calculate_value()` methods.
+
+Examples:
+```python
+class Strength(CoreStat): ...
+class PhysicalHealth(LifeStat): ...
+
+```
