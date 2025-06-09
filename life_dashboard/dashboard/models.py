@@ -1,7 +1,11 @@
+import logging
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+logger = logging.getLogger(__name__)
 
 
 class UserProfile(models.Model):
@@ -18,12 +22,23 @@ class UserProfile(models.Model):
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        UserProfile.objects.create(user=instance)
+        try:
+            UserProfile.objects.create(user=instance)
+        except Exception as e:
+            logger.error(
+                f"Error creating profile for user {instance.username}: {str(e)}"
+            )
 
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    instance.profile.save()
+    try:
+        instance.profile.save()
+    except UserProfile.DoesNotExist:
+        logger.warning(f"Profile not found for user {instance.username}, creating one")
+        UserProfile.objects.create(user=instance)
+    except Exception as e:
+        logger.error(f"Error saving profile for user {instance.username}: {str(e)}")
 
 
 class Stats(models.Model):

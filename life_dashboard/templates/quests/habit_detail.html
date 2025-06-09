@@ -66,7 +66,7 @@
                 <h5 class="card-title">Progress</h5>
                 <div class="progress mb-3">
                     <div class="progress-bar bg-success" role="progressbar"
-                         style="width: {{ habit.current_streak|div:habit.target_count|mul:100 }}%"
+                         style="width: {% if habit.target_count > 0 %}{% widthratio habit.current_streak habit.target_count 100 %}{% else %}0{% endif %}%"
                          aria-valuenow="{{ habit.current_streak }}"
                          aria-valuemin="0" aria-valuemax="{{ habit.target_count }}">
                     </div>

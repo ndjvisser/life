@@ -33,6 +33,18 @@ class Quest(models.Model):
     def __str__(self):
         return self.title
 
+    def get_status_color(self):
+        """Return the appropriate Bootstrap color class for the quest status"""
+        status_colors = {
+            "not_started": "secondary",
+            "in_progress": "primary",
+            "completed": "success",
+            "failed": "danger",
+        }
+        return status_colors.get(
+            self.status, "secondary"
+        )  # Default to secondary if status not found
+
 
 class Habit(models.Model):
     FREQUENCY_CHOICES = (

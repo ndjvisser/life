@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
@@ -29,7 +30,12 @@ class JournalEntry(models.Model):
     )
 
     # Mood and tags
-    mood = models.IntegerField(null=True, blank=True)  # 1-10 scale
+    mood = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        help_text="Mood rating from 1 to 10",
+    )
     tags = models.CharField(max_length=200, blank=True)  # Comma-separated tags
 
     # Metadata

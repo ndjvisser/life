@@ -26,7 +26,7 @@
                         <p class="mb-1">{{ quest.description|truncatechars:70 }}</p>
                         <small class="text-success">{{ quest.experience_reward }} XP</small>
                     </div>
-                    <span class="badge bg-{{ quest.status|lower }} text-capitalize">{{ quest.get_status_display }}</span>
+                    <span class="badge bg-{{ quest.get_status_color }} text-capitalize">{{ quest.get_status_display }}</span>
                 </a>
                 {% endfor %}
             </div>
@@ -57,7 +57,7 @@
                         <tr>
                             <td>{{ quest.title }}</td>
                             <td><span class="badge bg-info">{{ quest.get_quest_type_display }}</span></td>
-                            <td><span class="badge bg-{{ quest.status|lower }} text-capitalize">{{ quest.get_status_display }}</span></td>
+                            <td><span class="badge bg-{{ quest.get_status_color }} text-capitalize">{{ quest.get_status_display }}</span></td>
                             <td>{{ quest.due_date|date:"M d, Y" }}</td>
                             <td>{{ quest.experience_reward }}</td>
                             <td>
