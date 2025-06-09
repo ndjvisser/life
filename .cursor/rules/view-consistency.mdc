@@ -14,6 +14,6 @@ alwaysApply: false
 - All views should follow the MVC pattern strictly.
 - Use `@login_required` or permission decorators where relevant.
 - Render views using shared components: cards, tiles, or status bars via `base_dashboard.html`.
-- Use Materialize CSS classes for layout (`container`, `row`, `col s12`, etc.) unless intentionally diverging.
+Use Bootstrap CSS classes for layout (`container`, `row`, `col-*`, etc.) unless intentionally diverging.
 
 - Each dashboard module must be testable and reloadable independently (e.g. via HTMX or JS modules).
