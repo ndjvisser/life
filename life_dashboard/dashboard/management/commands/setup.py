@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
@@ -34,15 +33,6 @@ class Command(BaseCommand):
             self.stderr.write(
                 self.style.ERROR(f"Error creating default admin user: {e}")
             )
-            return
-
-        # Create test user
-        self.stdout.write("Creating test user...")
-        try:
-            if not User.objects.filter(username="test").exists():
-                User.objects.create_user("test", "test@example.com", "test")
-        except Exception as e:
-            self.stderr.write(self.style.ERROR(f"Error creating test user: {e}"))
             return
 
         # Create sample data

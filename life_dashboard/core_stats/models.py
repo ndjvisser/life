@@ -30,8 +30,12 @@ class CoreStat(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Core Stats"
 
+    def save(self, *args, **kwargs):
+        """Override save to ensure level is calculated before saving"""
+        self.calculate_level()
+        super().save(*args, **kwargs)
+
     def calculate_level(self):
-        """Calculate level based on experience points"""
+        """Calculate level based on experience points without saving"""
         # Simple level calculation: every 1000 XP = 1 level
         self.level = (self.experience_points // 1000) + 1
-        self.save()

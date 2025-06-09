@@ -1,5 +1,12 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.db import models
+
+User = get_user_model()
+
+# Constants for experience limits
+MAX_EXPERIENCE = 2**31 - 1  # Maximum 32-bit integer
+MAX_LEVEL = 100  # Reasonable maximum level
 
 
 class SkillCategory(models.Model):
@@ -41,17 +48,30 @@ class Skill(models.Model):
 
     def add_experience(self, amount):
         """Add experience points and handle leveling up"""
-        self.experience_points += amount
+        if amount < 0:
+            raise ValidationError("Experience amount cannot be negative")
 
-        # Level up if enough experience
-        while self.experience_points >= self.experience_to_next_level:
+        # Cap experience points to prevent overflow
+        new_experience = min(self.experience_points + amount, MAX_EXPERIENCE)
+        self.experience_points = new_experience
+
+        # Level up if enough experience and not at max level
+        while (
+            self.experience_points >= self.experience_to_next_level
+            and self.level < MAX_LEVEL
+        ):
             self.level_up()
 
         self.save()
 
     def level_up(self):
         """Handle leveling up logic"""
+        if self.level >= MAX_LEVEL:
+            return
+
         self.level += 1
         self.experience_points -= self.experience_to_next_level
         # Increase experience needed for next level (10% more)
-        self.experience_to_next_level = int(self.experience_to_next_level * 1.1)
+        self.experience_to_next_level = min(
+            int(self.experience_to_next_level * 1.1), MAX_EXPERIENCE
+        )

@@ -44,7 +44,18 @@ function showAlert(message, type = 'success') {
         ${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     `;
-    document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+
+    // Try to find a container element
+    const container = document.querySelector('.container');
+    if (container) {
+        container.insertBefore(alertDiv, container.firstChild);
+    } else {
+        // Fallback: append to body if no container found
+        console.warn('No .container element found, appending alert to body');
+        document.body.insertBefore(alertDiv, document.body.firstChild);
+    }
+
+    // Auto-remove after 5 seconds
     setTimeout(() => {
         alertDiv.remove();
     }, 5000);

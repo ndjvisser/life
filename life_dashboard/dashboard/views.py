@@ -53,6 +53,10 @@ def dashboard(request):
         "-created_at"
     )[:5]
 
+    # Get recent quests and habits (from index view)
+    recent_quests = Quest.objects.filter(user=request.user).order_by("-created_at")[:5]
+    recent_habits = Habit.objects.filter(user=request.user).order_by("-created_at")[:5]
+
     context = {
         "core_stats": core_stats,
         "life_stat_categories": life_stat_categories,
@@ -63,6 +67,8 @@ def dashboard(request):
         "skills": skills,
         "recent_achievements": recent_achievements,
         "recent_entries": recent_entries,
+        "recent_quests": recent_quests,
+        "recent_habits": recent_habits,
     }
 
     return render(request, "dashboard/dashboard.html", context)
@@ -105,15 +111,6 @@ def logout_view(request):
     logout(request)
     messages.success(request, "Logout successful!")
     return redirect("dashboard:login")
-
-
-@login_required
-def index(request):
-    quests = Quest.objects.filter(user=request.user).order_by("-created_at")[:5]
-    habits = Habit.objects.filter(user=request.user).order_by("-created_at")[:5]
-    return render(
-        request, "dashboard/dashboard.html", {"quests": quests, "habits": habits}
-    )
 
 
 @login_required
