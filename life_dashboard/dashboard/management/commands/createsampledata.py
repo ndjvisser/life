@@ -12,8 +12,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Creating sample data...")
 
-        # Get the test user
-        user = User.objects.get(username="test")
+        # Get or create the test user
+        try:
+            user = User.objects.get(username="test")
+        except User.DoesNotExist:
+            self.stdout.write("Test user 'test' not found, creating it...")
+            user = User.objects.create_user("test", "test@example.com", "test")
 
         # Create sample quests
         quests = [
