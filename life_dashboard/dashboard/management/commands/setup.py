@@ -22,8 +22,8 @@ class Command(BaseCommand):
 
         # Create superuser
         self.stdout.write("Creating superuser...")
-        if not User.objects.filter(username="admin").exists():
-            User.objects.create_superuser("admin", "admin@example.com", "admin")
+        # Use createdefaultuser command to ensure the admin user is created
+        call_command("createdefaultuser")
 
         # Create test user
         self.stdout.write("Creating test user...")
