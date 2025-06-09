@@ -15,6 +15,8 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 
+import redis
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -112,32 +114,9 @@ if "test" in sys.argv:
         "django.contrib.auth.hashers.MD5PasswordHasher",
     ]
     AUTH_PASSWORD_VALIDATORS = []
-    INSTALLED_APPS = [
-        "django.contrib.contenttypes",
-        "django.contrib.admin",
-        "django.contrib.auth",
-        "django.contrib.sessions",
-        "django.contrib.messages",
-        "django.contrib.staticfiles",
-        "crispy_forms",
-        "crispy_bootstrap5",
-        "life_dashboard.dashboard",
-        "life_dashboard.core_stats",
-        "life_dashboard.life_stats",
-        "life_dashboard.quests",
-        "life_dashboard.skills",
-        "life_dashboard.achievements",
-        "life_dashboard.journals",
-    ]
-    MIDDLEWARE = [
-        "django.middleware.security.SecurityMiddleware",
-        "django.contrib.sessions.middleware.SessionMiddleware",
-        "django.middleware.common.CommonMiddleware",
-        "django.middleware.csrf.CsrfViewMiddleware",
-        "django.contrib.auth.middleware.AuthenticationMiddleware",
-        "django.contrib.messages.middleware.MessageMiddleware",
-        "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    ]
+    # Use base INSTALLED_APPS and MIDDLEWARE, only override if needed
+    INSTALLED_APPS = INSTALLED_APPS.copy()
+    MIDDLEWARE = MIDDLEWARE.copy()  # Keep LoginRequiredMiddleware for auth testing
 
 
 # Password validation
@@ -195,6 +174,20 @@ LOGOUT_REDIRECT_URL = "login"
 
 TEST_RUNNER = "life_dashboard.life_dashboard.test_runner.PytestTestRunner"
 
+
+# Redis Connection Validation
+def validate_redis_connection():
+    try:
+        redis_client = redis.from_url(CELERY_BROKER_URL)
+        redis_client.ping()
+    except redis.ConnectionError as e:
+        if DEBUG:
+            print(f"Warning: Redis connection failed: {e}")
+            print("Running without Redis. Some features may be limited.")
+        else:
+            raise ImproperlyConfigured(f"Redis connection failed: {e}") from e
+
+
 # Celery Configuration
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
@@ -202,6 +195,9 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
+
+# Validate Redis connection
+validate_redis_connection()
 
 # Celery Beat Schedule
 CELERY_BEAT_SCHEDULE = {
