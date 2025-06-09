@@ -109,8 +109,8 @@
                         <tbody>
                             {% for completion in completion_history %}
                             <tr>
-                                <td>{{ completion.completion_date|date }}</td>
-                                <td class="text-success">+{{ completion.experience_gained }} XP</td>
+                                <td>{{ completion.completed_at|date }}</td>
+                                <td class="text-success">+{{ habit.experience_reward }} XP</td>
                             </tr>
                             {% endfor %}
                         </tbody>

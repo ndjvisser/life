@@ -104,7 +104,7 @@
                 {% if active_habits %}
                 <div class="list-group list-group-flush">
                     {% for habit in active_habits %}
-                    <a href="{% url 'habit_detail' habit.pk %}" class="list-group-item list-group-item-action">
+                    <a href="{% url 'quests:habit_detail' habit.pk %}" class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
                             <h6 class="mb-1">{{ habit.name }}</h6>
                             <small class="text-muted">{{ habit.frequency }}</small>
