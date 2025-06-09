@@ -5,10 +5,7 @@ alwaysApply: true
 ---
 ---
 description: Enforce consistent data pipeline for life stats
-globs:
-  - "life_dashboard/lifestats/**/*.py"
-  - "life_dashboard/services/**/*.py"
-alwaysApply: false
+alwaysApply: true
 ---
 
 - All data updates must go through a single service layer (e.g., `update_stat`, `log_event`, `record_quest_progress`).
