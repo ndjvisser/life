@@ -122,20 +122,22 @@ class TestDashboardSelenium(SeleniumTestCase):
 
     def test_quest_creation(self):
         """Test quest creation."""
-        self.driver.get(f"{self.live_server_url}{reverse('quest_create')}")
+        self.selenium.get(f"{self.live_server_url}{reverse('quest_create')}")
 
         # Fill in quest form
         title = "Test Quest"
         description = "Test Description"
 
-        self.driver.find_element(By.NAME, "title").send_keys(title)
-        self.driver.find_element(By.NAME, "description").send_keys(description)
+        self.selenium.find_element(By.NAME, "title").send_keys(title)
+        self.selenium.find_element(By.NAME, "description").send_keys(description)
 
         # Submit form
-        self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+        self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
         # Wait for redirect to dashboard
-        ec.presence_of_element_located((By.CSS_SELECTOR, ".dashboard-container"))
+        WebDriverWait(self.selenium, 10).until(
+            ec.presence_of_element_located((By.CSS_SELECTOR, ".dashboard-container"))
+        )
 
         # Verify quest was created
         quest = Quest.objects.get(title=title)

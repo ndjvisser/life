@@ -88,26 +88,27 @@ class TestAuthenticationSelenium(SeleniumTestCase):
         # Verify we're logged in
         assert "Welcome" in self.selenium.page_source
 
+    def test_register_user(self):
+        """Test user registration."""
+        self.selenium.get(f"{self.live_server_url}{reverse('register')}")
 
-def test_register_user(self):
-    """Test user registration."""
-    self.driver.get(f"{self.live_server_url}{reverse('register')}")
+        # Fill in registration form
+        username = "testuser"
+        email = "test@example.com"
+        password = "testpass123"
 
-    # Fill in registration form
-    username = "testuser"
-    email = "test@example.com"
-    password = "testpass123"
+        self.selenium.find_element(By.NAME, "username").send_keys(username)
+        self.selenium.find_element(By.NAME, "email").send_keys(email)
+        self.selenium.find_element(By.NAME, "password1").send_keys(password)
+        self.selenium.find_element(By.NAME, "password2").send_keys(password)
 
-    self.driver.find_element(By.NAME, "username").send_keys(username)
-    self.driver.find_element(By.NAME, "email").send_keys(email)
-    self.driver.find_element(By.NAME, "password1").send_keys(password)
-    self.driver.find_element(By.NAME, "password2").send_keys(password)
+        # Submit form
+        self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
-    # Submit form
-    self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-
-    # Wait for redirect to dashboard
-    ec.presence_of_element_located((By.CSS_SELECTOR, ".dashboard-container"))
+        # Wait for redirect to dashboard
+        WebDriverWait(self.selenium, 10).until(
+            ec.presence_of_element_located((By.CSS_SELECTOR, ".dashboard-container"))
+        )
 
 
 # if __name__ == "__main__":

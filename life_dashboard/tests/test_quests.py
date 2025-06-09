@@ -20,7 +20,7 @@ class TestQuests:
             "title": "New Quest",
             "description": "Test Description",
             "quest_type": "daily",
-            "status": "active",
+            "status": "in_progress",
             "experience_reward": 100,
         }
         response = authenticated_client.post(url, data)
@@ -33,7 +33,7 @@ class TestQuests:
             "title": "Updated Quest",
             "description": "Updated Description",
             "quest_type": "daily",
-            "status": "active",
+            "status": "in_progress",
             "experience_reward": 150,
         }
         response = authenticated_client.post(url, data)
@@ -80,7 +80,7 @@ class TestQuestsSelenium(SeleniumTestCase):
             title="Test Quest",
             description="Test Description",
             quest_type="daily",
-            status="active",
+            status="in_progress",
             experience_reward=100,
         )
 
