@@ -70,7 +70,7 @@ class AuthTests(SeleniumTestCase):
 
         # Fill username
         username_input = self.wait.until(
-            ec.presence_of_element_located((By.NAME, "username"))
+            ec.presence_of_element_located((By.ID, "id_username"))
         )
         username_input.clear()
         username_input.send_keys(username)
@@ -78,7 +78,7 @@ class AuthTests(SeleniumTestCase):
 
         # Fill email
         email_input = self.wait.until(
-            ec.presence_of_element_located((By.NAME, "email"))
+            ec.presence_of_element_located((By.ID, "id_email"))
         )
         email_input.clear()
         email_input.send_keys(email)
@@ -86,10 +86,10 @@ class AuthTests(SeleniumTestCase):
 
         # Fill passwords
         password1_input = self.wait.until(
-            ec.presence_of_element_located((By.NAME, "password1"))
+            ec.presence_of_element_located((By.ID, "id_password1"))
         )
         password2_input = self.wait.until(
-            ec.presence_of_element_located((By.NAME, "password2"))
+            ec.presence_of_element_located((By.ID, "id_password2"))
         )
 
         password1_input.clear()
