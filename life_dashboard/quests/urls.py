@@ -11,6 +11,7 @@ urlpatterns = [
     path("quests/<int:pk>/", views.quest_detail, name="quest_detail"),
     path("quests/<int:pk>/update/", views.quest_update, name="quest_update"),
     path("quests/<int:pk>/delete/", views.quest_delete, name="quest_delete"),
+    path("quests/<int:pk>/complete/", views.complete_quest, name="complete_quest"),
     # Habit URLs
     path("habits/", views.habit_list, name="habit_list"),
     path("habits/create/", views.habit_create, name="habit_create"),

@@ -10,19 +10,21 @@ logger = logging.getLogger(__name__)
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    level = models.PositiveIntegerField(default=1)
-    experience = models.PositiveIntegerField(default=0)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+    email = models.EmailField(blank=True)
+    experience_points = models.IntegerField(default=0)
+    level = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
 
-    def add_experience(self, amount):
-        """Add experience points and handle leveling up."""
-        self.experience += amount
-        # Simple level calculation: every 1000 XP = 1 level
-        self.level = (self.experience // 1000) + 1
+    def add_experience(self, points):
+        self.experience_points += points
+        # Simple level calculation: 1000 XP per level
+        self.level = (self.experience_points // 1000) + 1
         self.save()
 
 
@@ -46,16 +48,3 @@ def save_user_profile(sender, instance, **kwargs):
         UserProfile.objects.create(user=instance)
     except Exception as e:
         logger.error(f"Error saving profile for user {instance.username}: {str(e)}")
-
-
-class Stats(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    strength = models.IntegerField(default=10)
-    agility = models.IntegerField(default=8)
-    endurance = models.IntegerField(default=7)
-    intelligence = models.IntegerField(default=5)
-    charisma = models.IntegerField(default=5)
-    wisdom = models.IntegerField(default=5)
-
-    def __str__(self):
-        return f"{self.user.username}'s Stats"

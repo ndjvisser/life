@@ -2,86 +2,61 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.db import transaction
 from django.shortcuts import redirect, render
 
 from life_dashboard.achievements.models import UserAchievement
-from life_dashboard.core_stats.models import CoreStat
-from life_dashboard.dashboard.forms import UserProfileForm, UserRegistrationForm
+from life_dashboard.dashboard.forms import (
+    UserRegistrationForm,
+)
+from life_dashboard.dashboard.models import UserProfile
 from life_dashboard.journals.models import JournalEntry
-from life_dashboard.life_stats.models import LifeStat, LifeStatCategory
 from life_dashboard.quests.models import Habit, Quest
-from life_dashboard.skills.models import Skill, SkillCategory
 
 
 # Create your views here.
 @login_required
 def dashboard(request):
-    # Get user's core stats
-    core_stats, created = CoreStat.objects.get_or_create(user=request.user)
-
-    # Get life stats by category
-    life_stat_categories = LifeStatCategory.objects.all()
-    life_stats = {}
-    for category in life_stat_categories:
-        life_stats[category] = LifeStat.objects.filter(
-            user=request.user, category=category
-        )
-
-    # Get active quests
-    active_quests = Quest.objects.filter(
-        user=request.user, status__in=["NOT_STARTED", "IN_PROGRESS"]
-    ).order_by("-quest_type", "due_date")[:5]
-
-    # Get daily habits
-    daily_habits = Habit.objects.filter(user=request.user, frequency="DAILY").order_by(
-        "-current_streak"
-    )
-
-    # Get skills by category
-    skill_categories = SkillCategory.objects.all()
-    skills = {}
-    for category in skill_categories:
-        skills[category] = Skill.objects.filter(user=request.user, category=category)
-
-    # Get recent achievements
-    recent_achievements = UserAchievement.objects.filter(user=request.user).order_by(
-        "-unlocked_at"
-    )[:5]
-
-    # Get recent journal entries
-    recent_entries = JournalEntry.objects.filter(user=request.user).order_by(
-        "-created_at"
-    )[:5]
-
-    # Get recent quests and habits (from index view)
-    recent_quests = Quest.objects.filter(user=request.user).order_by("-created_at")[:5]
-    recent_habits = Habit.objects.filter(user=request.user).order_by("-created_at")[:5]
-
+    user = request.user
+    profile = user.profile
+    quests = Quest.objects.filter(user=user).order_by("-created_at")[:5]
+    habits = Habit.objects.filter(user=user).order_by("-created_at")[:5]
     context = {
-        "core_stats": core_stats,
-        "life_stat_categories": life_stat_categories,
-        "life_stats": life_stats,
-        "active_quests": active_quests,
-        "daily_habits": daily_habits,
-        "skill_categories": skill_categories,
-        "skills": skills,
-        "recent_achievements": recent_achievements,
-        "recent_entries": recent_entries,
-        "recent_quests": recent_quests,
-        "recent_habits": recent_habits,
+        "profile": profile,
+        "quests": quests,
+        "habits": habits,
     }
 
     return render(request, "dashboard/dashboard.html", context)
 
 
+@transaction.atomic
 def register(request):
     if request.method == "POST":
+        print(f"[DEBUG] Registration POST data: {request.POST}")
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, "Registration successful!")
-            return redirect("dashboard:dashboard")
+            print("[DEBUG] Form is valid, creating user")
+            try:
+                user = form.save()
+                print(f"[DEBUG] User created: {user.username}")
+                # Create user profile if it doesn't exist
+                profile, created = UserProfile.objects.get_or_create(user=user)
+                print(f"[DEBUG] Profile {'created' if created else 'already exists'}")
+                # Log the user in
+                login(request, user)
+                print("[DEBUG] User logged in")
+                messages.success(request, "Registration successful!")
+                print("[DEBUG] Redirecting to dashboard")
+                return redirect("dashboard:dashboard")
+            except Exception as e:
+                print(f"[DEBUG] Error during user creation: {str(e)}")
+                messages.error(request, f"Error during registration: {str(e)}")
+        else:
+            print(f"[DEBUG] Form errors: {form.errors}")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
     else:
         form = UserRegistrationForm()
     return render(request, "dashboard/register.html", {"form": form})
@@ -115,12 +90,46 @@ def logout_view(request):
 
 @login_required
 def profile(request):
+    user = request.user
+    user_profile = UserProfile.objects.get_or_create(user=user)[0]
+    core_stats = user.stats
+    achievements = UserAchievement.objects.filter(user=user).select_related(
+        "achievement"
+    )
+    recent_entries = JournalEntry.objects.filter(user=user).order_by("-created_at")[:5]
+
     if request.method == "POST":
-        form = UserProfileForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Profile updated successfully!")
-            return redirect("dashboard:profile")
-    else:
-        form = UserProfileForm(instance=request.user)
-    return render(request, "dashboard/profile.html", {"form": form})
+        print("[DEBUG] Processing profile update POST request")
+        # Update User model fields
+        user.first_name = request.POST.get("first_name", user.first_name)
+        user.last_name = request.POST.get("last_name", user.last_name)
+        user.email = request.POST.get("email", user.email)
+        user.save()
+        print(f"[DEBUG] Updated User model: {user.first_name} {user.last_name}")
+
+        # Update UserProfile model fields
+        user_profile.first_name = user.first_name
+        user_profile.last_name = user.last_name
+        user_profile.email = user.email
+        user_profile.save()
+        print(
+            f"[DEBUG] Updated UserProfile model: {user_profile.first_name} "
+            f"{user_profile.last_name}"
+        )
+
+        messages.success(request, "Profile updated successfully", extra_tags="profile")
+        return redirect("dashboard:profile")
+
+    context = {
+        "user": user,
+        "user_profile": user_profile,
+        "core_stats": core_stats,
+        "achievements": achievements,
+        "recent_entries": recent_entries,
+    }
+    return render(request, "dashboard/profile.html", context)
+
+
+@login_required
+def level_up(request):
+    return render(request, "dashboard/level_up.html")

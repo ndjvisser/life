@@ -11,7 +11,6 @@ class Migration(migrations.Migration):
     dependencies = [
         ("achievements", "0001_initial"),
         ("quests", "0001_initial"),
-        ("skills", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -62,15 +61,6 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         to="quests.quest",
-                    ),
-                ),
-                (
-                    "related_skill",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        to="skills.skill",
                     ),
                 ),
                 (

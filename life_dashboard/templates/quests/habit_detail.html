@@ -5,120 +5,140 @@
 {% block title %}{{ habit.name }} - LIFE{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>{{ habit.name }}</h1>
-    <div>
-        <a href="{% url 'quests:habit_update' habit.pk %}" class="btn btn-warning">
-            <i class="fas fa-edit"></i> Edit
-        </a>
-        <a href="{% url 'quests:habit_list' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
+<div class="container mt-4">
+    {% if messages %}
+    {% for message in messages %}
+    {% if message.tags == 'success' %}
+    <div class="alert alert-success completion-success alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-</div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ habit.name }}</h1>
+        <div>
+            <a href="{% url 'quests:habit_update' habit.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'quests:habit_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
 
-<div class="row">
-    <!-- Habit Details -->
-    <div class="col-md-8 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Habit Details</h5>
-                <div class="list-group list-group-flush">
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>Frequency</strong>
-                            <span>{{ habit.get_frequency_display }}</span>
+    <div class="row">
+        <!-- Habit Details -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Habit Details</h5>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Frequency</strong>
+                                <span>{{ habit.get_frequency_display }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Current Streak</strong>
+                                <span class="text-success">{{ habit.current_streak }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Longest Streak</strong>
+                                <span class="text-primary">{{ habit.longest_streak }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Target Count</strong>
+                                <span>{{ habit.target_count }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Experience Reward</strong>
+                                <span class="text-primary">{{ habit.experience_reward }} XP</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>Current Streak</strong>
-                            <span class="text-success">{{ habit.current_streak }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Progress</h5>
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width: {% if habit.target_count > 0 %}{% widthratio habit.current_streak habit.target_count 100 %}{% else %}0{% endif %}%"
+                             aria-valuenow="{{ habit.current_streak }}"
+                             aria-valuemin="0" aria-valuemax="{{ habit.target_count }}">
                         </div>
                     </div>
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>Longest Streak</strong>
-                            <span class="text-primary">{{ habit.longest_streak }}</span>
-                        </div>
-                    </div>
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>Target Count</strong>
-                            <span>{{ habit.target_count }}</span>
-                        </div>
-                    </div>
-                    <div class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>Experience Reward</strong>
-                            <span class="text-primary">{{ habit.experience_reward }} XP</span>
-                        </div>
+                    <p class="text-center mb-0">
+                        {{ habit.current_streak }} / {{ habit.target_count }} completed
+                    </p>
+                    <div class="d-grid gap-2 mt-3">
+                        <form method="post" action="{% url 'quests:complete_habit' habit.pk %}" class="d-grid">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success complete-habit">
+                                <i class="fas fa-check me-2"></i>Complete Habit
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Progress -->
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Progress</h5>
-                <div class="progress mb-3">
-                    <div class="progress-bar bg-success" role="progressbar"
-                         style="width: {% if habit.target_count > 0 %}{% widthratio habit.current_streak habit.target_count 100 %}{% else %}0{% endif %}%"
-                         aria-valuenow="{{ habit.current_streak }}"
-                         aria-valuemin="0" aria-valuemax="{{ habit.target_count }}">
+    <div class="row">
+        <!-- Description -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Description</h5>
+                    <p class="card-text">{{ habit.description|linebreaks }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Completion History -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Completion History</h5>
+                    {% if completion_history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Completion Date</th>
+                                    <th>Experience Gained</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for completion in completion_history %}
+                                <tr>
+                                    <td>{{ completion.date|date }}</td>
+                                    <td class="text-success">+{{ habit.experience_reward }} XP</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
+                    {% else %}
+                    <p class="text-muted">No completions yet</p>
+                    {% endif %}
                 </div>
-                <p class="text-center mb-0">
-                    {{ habit.current_streak }} / {{ habit.target_count }} completed
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Description -->
-    <div class="col-12 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Description</h5>
-                <p class="card-text">{{ habit.description|linebreaks }}</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Completion History -->
-    <div class="col-12 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Completion History</h5>
-                {% if completion_history %}
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Completion Date</th>
-                                <th>Experience Gained</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for completion in completion_history %}
-                            <tr>
-                                <td>{{ completion.completed_at|date }}</td>
-                                <td class="text-success">+{{ habit.experience_reward }} XP</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-muted">No completion history available</p>
-                {% endif %}
             </div>
         </div>
     </div>

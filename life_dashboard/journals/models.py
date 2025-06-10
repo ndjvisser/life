@@ -22,9 +22,6 @@ class JournalEntry(models.Model):
     related_quest = models.ForeignKey(
         "quests.Quest", on_delete=models.SET_NULL, null=True, blank=True
     )
-    related_skill = models.ForeignKey(
-        "skills.Skill", on_delete=models.SET_NULL, null=True, blank=True
-    )
     related_achievement = models.ForeignKey(
         "achievements.Achievement", on_delete=models.SET_NULL, null=True, blank=True
     )

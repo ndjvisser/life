@@ -25,6 +25,7 @@ class TestHabits:
             "description": "Test Description",
             "frequency": "daily",
             "target_count": 1,
+            "experience_reward": 10,
         }
         response = authenticated_client.post(url, data)
         assert response.status_code == 302
@@ -32,6 +33,7 @@ class TestHabits:
         assert habit.description == "Test Description"
         assert habit.frequency == "daily"
         assert habit.target_count == 1
+        assert habit.experience_reward == 10
 
     def test_habit_update(self, authenticated_client, test_habit):
         url = reverse("quests:habit_update", args=[test_habit.pk])
@@ -40,6 +42,7 @@ class TestHabits:
             "description": "Updated Description",
             "frequency": "weekly",
             "target_count": 2,
+            "experience_reward": 20,
         }
         response = authenticated_client.post(url, data)
         assert response.status_code == 302
@@ -48,6 +51,7 @@ class TestHabits:
         assert test_habit.description == "Updated Description"
         assert test_habit.frequency == "weekly"
         assert test_habit.target_count == 2
+        assert test_habit.experience_reward == 20
 
     def test_habit_delete(self, authenticated_client, test_habit):
         url = reverse("quests:habit_delete", args=[test_habit.pk])
@@ -64,17 +68,19 @@ class TestHabits:
 @pytest.mark.django_db
 class HabitTests(SeleniumTestCase):
     def test_habit_creation_flow(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("quests:habit_create")}')
-        self.selenium.find_element(By.NAME, "name").send_keys("New Habit")
-        self.selenium.find_element(By.NAME, "description").send_keys("Test Description")
-        self.selenium.find_element(By.NAME, "frequency").send_keys("daily")
-        self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+        self.driver.get(f'{self.live_server_url}{reverse("quests:habit_create")}')
+        self.driver.find_element(By.NAME, "name").send_keys("New Habit")
+        self.driver.find_element(By.NAME, "description").send_keys("Test Description")
+        self.driver.find_element(By.NAME, "frequency").send_keys("daily")
+        self.driver.find_element(By.NAME, "experience_reward").send_keys("15")
+        self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
-        WebDriverWait(self.selenium, 10).until(
+        WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((By.CSS_SELECTOR, ".habit-list"))
         )
 
-        assert Habit.objects.filter(name="New Habit").exists()
+        habit = Habit.objects.get(name="New Habit")
+        assert habit.experience_reward == 15
 
     def test_habit_completion_flow(self):
         habit = Habit.objects.create(
@@ -83,11 +89,11 @@ class HabitTests(SeleniumTestCase):
             frequency="daily",
             user=self.user,
         )
-        self.selenium.get(
+        self.driver.get(
             f'{self.live_server_url}{reverse("quests:habit_detail", args=[habit.pk])}'
         )
-        self.selenium.find_element(By.CSS_SELECTOR, "button.complete-habit").click()
+        self.driver.find_element(By.CSS_SELECTOR, "button.complete-habit").click()
 
-        WebDriverWait(self.selenium, 10).until(
+        WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((By.CSS_SELECTOR, ".completion-success"))
         )

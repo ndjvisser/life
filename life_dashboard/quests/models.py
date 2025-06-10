@@ -54,6 +54,7 @@ class Habit(models.Model):
     target_count = models.IntegerField(default=1)
     current_streak = models.IntegerField(default=0)
     longest_streak = models.IntegerField(default=0)
+    experience_reward = models.IntegerField(default=10)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -68,9 +69,7 @@ class Habit(models.Model):
             habit=self, count=count, date=date.today()
         )
         # Award experience based on frequency and count
-        experience = {"daily": 10, "weekly": 50, "monthly": 200}.get(
-            self.frequency, 10
-        ) * count
+        experience = self.experience_reward * count
         self.user.profile.add_experience(experience)
         return completion
 
@@ -82,6 +81,7 @@ class HabitCompletion(models.Model):
     count = models.IntegerField(default=1)
     date = models.DateField(default=timezone.now)
     notes = models.TextField(blank=True)
+    experience_gained = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.habit.name} - {self.date}"

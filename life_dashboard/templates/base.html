@@ -64,7 +64,14 @@
     {% if messages %}
     <div class="container mt-3">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show
+            {% if message.tags == 'success' %}
+                {% if 'profile' in message.extra_tags %}profile-updated
+                {% elif 'quest' in message.extra_tags %}quest-updated
+                {% elif 'habit' in message.extra_tags %}habit-updated
+                {% elif 'level' in message.extra_tags %}level-up-notification
+                {% else %}completion-success{% endif %}
+            {% endif %}">
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

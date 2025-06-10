@@ -48,7 +48,7 @@ class HabitAdmin(admin.ModelAdmin):
 
 @admin.register(HabitCompletion)
 class HabitCompletionAdmin(admin.ModelAdmin):
-    list_display = ("habit", "date", "count", "notes")
+    list_display = ("habit", "date", "count", "experience_gained", "notes")
     list_filter = ("habit", "date")
     search_fields = ("habit__name", "notes")
     date_hierarchy = "date"

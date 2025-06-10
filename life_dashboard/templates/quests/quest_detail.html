@@ -4,6 +4,16 @@
 
 {% block content %}
 <div class="container mt-4">
+    {% if messages %}
+    {% for message in messages %}
+    {% if message.tags == 'success' %}
+    <div class="alert alert-success quest-updated alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>{{ quest.title }}</h1>
         <div>
@@ -93,6 +103,14 @@
                         <a href="{% url 'quests:quest_delete' quest.pk %}" class="btn btn-danger">
                             <i class="fas fa-trash me-2"></i>Delete Quest
                         </a>
+                        {% if quest.status == 'active' %}
+                        <form method="post" action="{% url 'quests:complete_quest' quest.pk %}" class="d-grid">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success complete-quest">
+                                <i class="fas fa-check me-2"></i>Complete Quest
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>

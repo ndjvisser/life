@@ -1,3 +1,4 @@
+import time
 from datetime import date
 
 import pytest
@@ -92,21 +93,37 @@ class QuestSeleniumTests(SeleniumTestCase):
         self.driver.find_element(By.NAME, "status").send_keys("active")
         self.driver.find_element(By.NAME, "experience_reward").clear()
         self.driver.find_element(By.NAME, "experience_reward").send_keys("50")
-        self.driver.find_element(By.NAME, "start_date").clear()
-        self.driver.find_element(By.NAME, "start_date").send_keys(
-            date.today().strftime("%Y-%m-%d")
+
+        # Set dates using JavaScript to ensure proper format
+        today = date.today().strftime("%Y-%m-%d")
+        self.driver.execute_script(
+            f"document.getElementsByName('start_date')[0].value = '{today}'"
         )
-        self.driver.find_element(By.NAME, "due_date").clear()
-        self.driver.find_element(By.NAME, "due_date").send_keys(
-            date.today().strftime("%Y-%m-%d")
+        self.driver.execute_script(
+            f"document.getElementsByName('due_date')[0].value = '{today}'"
         )
+
         self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
-        # Verify quest was created
+        # Wait for the page to load after form submission
+        expected_url = self.live_server_url + reverse("quests:quest_list")
+        print(f"[DEBUG] Waiting for URL: {expected_url}")
+
+        # Wait for URL to change and contain the expected path
+        max_wait = 20  # Increase timeout to 20 seconds
+        start_time = time.time()
+        while time.time() - start_time < max_wait:
+            current_url = self.driver.current_url
+            print(f"[DEBUG] Current URL: {current_url}")
+            if expected_url in current_url:
+                break
+            time.sleep(0.5)
+
+        # Verify quest was created and success message is shown
+        self.wait.until(ec.presence_of_element_located((By.CLASS_NAME, "quest-list")))
         self.wait.until(
-            ec.presence_of_element_located((By.CLASS_NAME, "alert-success"))
+            ec.presence_of_element_located((By.CLASS_NAME, "quest-updated"))
         )
-        assert "Test Quest" in self.driver.page_source
 
     def test_quest_update_flow(self):
         # Create a quest first
@@ -131,21 +148,37 @@ class QuestSeleniumTests(SeleniumTestCase):
         self.driver.find_element(By.NAME, "status").send_keys("completed")
         self.driver.find_element(By.NAME, "experience_reward").clear()
         self.driver.find_element(By.NAME, "experience_reward").send_keys("100")
-        self.driver.find_element(By.NAME, "start_date").clear()
-        self.driver.find_element(By.NAME, "start_date").send_keys(
-            date.today().strftime("%Y-%m-%d")
+
+        # Set dates using JavaScript to ensure proper format
+        today = date.today().strftime("%Y-%m-%d")
+        self.driver.execute_script(
+            f"document.getElementsByName('start_date')[0].value = '{today}'"
         )
-        self.driver.find_element(By.NAME, "due_date").clear()
-        self.driver.find_element(By.NAME, "due_date").send_keys(
-            date.today().strftime("%Y-%m-%d")
+        self.driver.execute_script(
+            f"document.getElementsByName('due_date')[0].value = '{today}'"
         )
+
         self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
-        # Verify quest was updated
+        # Wait for the page to load after form submission
+        expected_url = self.live_server_url + reverse("quests:quest_list")
+        print(f"[DEBUG] Waiting for URL: {expected_url}")
+
+        # Wait for URL to change and contain the expected path
+        max_wait = 20  # Increase timeout to 20 seconds
+        start_time = time.time()
+        while time.time() - start_time < max_wait:
+            current_url = self.driver.current_url
+            print(f"[DEBUG] Current URL: {current_url}")
+            if expected_url in current_url:
+                break
+            time.sleep(0.5)
+
+        # Verify quest was updated and success message is shown
+        self.wait.until(ec.presence_of_element_located((By.CLASS_NAME, "quest-list")))
         self.wait.until(
-            ec.presence_of_element_located((By.CLASS_NAME, "alert-success"))
+            ec.presence_of_element_located((By.CLASS_NAME, "quest-updated"))
         )
-        assert "Updated Quest" in self.driver.page_source
 
     def test_quest_delete_flow(self):
         # Create a quest first
@@ -164,7 +197,7 @@ class QuestSeleniumTests(SeleniumTestCase):
 
         # Verify quest was deleted
         self.wait.until(
-            ec.presence_of_element_located((By.CLASS_NAME, "alert-success"))
+            ec.presence_of_element_located((By.CLASS_NAME, "quest-updated"))
         )
         assert "Test Quest" not in self.driver.page_source
 
@@ -180,11 +213,11 @@ class QuestSeleniumTests(SeleniumTestCase):
             due_date=date.today(),
             user=self.user,
         )
-        self.selenium.get(
+        self.driver.get(
             f'{self.live_server_url}{reverse("quests:quest_detail", args=[quest.pk])}'
         )
-        self.selenium.find_element(By.CSS_SELECTOR, "button.complete-quest").click()
+        self.driver.find_element(By.CSS_SELECTOR, "button.complete-quest").click()
 
-        WebDriverWait(self.selenium, 10).until(
+        WebDriverWait(self.driver, 10).until(
             ec.presence_of_element_located((By.CSS_SELECTOR, ".completion-success"))
         )

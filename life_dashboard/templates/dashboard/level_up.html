@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Level Up! - LIFE{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="alert alert-success level-up-notification alert-dismissible fade show">
+        <h4 class="alert-heading">Level Up!</h4>
+        <p>Congratulations! You've reached level {{ user.profile.level }}!</p>
+        <hr>
+        <p class="mb-0">Keep up the good work and continue your journey to greatness!</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <a href="{% url 'dashboard:dashboard' %}" class="btn btn-primary mt-3">
+        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+    </a>
+</div>
+{% endblock %}

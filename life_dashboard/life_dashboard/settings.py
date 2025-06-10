@@ -41,21 +41,19 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.contenttypes",
     "django.contrib.admin",
     "django.contrib.auth",
+    "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "crispy_forms",
     "crispy_bootstrap5",
     "life_dashboard.dashboard",
-    "life_dashboard.core_stats",
-    "life_dashboard.life_stats",
     "life_dashboard.quests",
-    "life_dashboard.skills",
-    "life_dashboard.achievements",
     "life_dashboard.journals",
+    "life_dashboard.achievements",
+    "life_dashboard.stats",
 ]
 
 MIDDLEWARE = [
