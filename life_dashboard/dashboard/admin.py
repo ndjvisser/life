@@ -7,11 +7,8 @@ from .models import UserProfile
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = (
         "user",
-        "first_name",
-        "last_name",
-        "email",
         "created_at",
         "updated_at",
     )
-    search_fields = ("user__username", "first_name", "last_name", "email")
+    search_fields = ("user__username",)
     readonly_fields = ("created_at", "updated_at")
