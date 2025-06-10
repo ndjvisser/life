@@ -202,7 +202,8 @@ def validate_redis_connection():
 
 
 # Validate Redis connection
-validate_redis_connection()
+if DEBUG:
+    validate_redis_connection()
 
 # Celery Beat Schedule
 CELERY_BEAT_SCHEDULE = {
