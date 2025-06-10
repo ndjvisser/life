@@ -55,9 +55,12 @@ class UserProfileForm(forms.ModelForm):
         if commit:
             # Update User model fields
             user = profile.user
-            user.first_name = self.cleaned_data["first_name"]
-            user.last_name = self.cleaned_data["last_name"]
-            user.email = self.cleaned_data["email"]
+            if self.cleaned_data.get("first_name"):
+                user.first_name = self.cleaned_data["first_name"]
+            if self.cleaned_data.get("last_name"):
+                user.last_name = self.cleaned_data["last_name"]
+            if self.cleaned_data.get("email"):
+                user.email = self.cleaned_data["email"]
             user.save()
             profile.save()
         return profile
@@ -79,9 +82,12 @@ class ProfileUpdateForm(forms.ModelForm):
         profile = super().save(commit=False)
         if commit:
             user = profile.user
-            user.first_name = self.cleaned_data["first_name"]
-            user.last_name = self.cleaned_data["last_name"]
-            user.email = self.cleaned_data["email"]
+            if self.cleaned_data.get("first_name"):
+                user.first_name = self.cleaned_data["first_name"]
+            if self.cleaned_data.get("last_name"):
+                user.last_name = self.cleaned_data["last_name"]
+            if self.cleaned_data.get("email"):
+                user.email = self.cleaned_data["email"]
             user.save()
             profile.save()
         return profile
