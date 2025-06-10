@@ -13,13 +13,13 @@ User = get_user_model()
 @pytest.mark.django_db
 class AuthTests(SeleniumTestCase):
     def test_register_view(self, client):
-        url = reverse("register")
+        url = reverse("dashboard:register")
         response = client.get(url)
         assert response.status_code == 200
         assert "Register" in response.content.decode()
 
     def test_register_user_client(self, client):
-        url = reverse("register")
+        url = reverse("dashboard:register")
         data = {
             "username": "newuser",
             "email": "new@example.com",
@@ -31,32 +31,32 @@ class AuthTests(SeleniumTestCase):
         assert User.objects.filter(username="newuser").exists()
 
     def test_login_view(self, client):
-        url = reverse("login")
+        url = reverse("dashboard:login")
         response = client.get(url)
         assert response.status_code == 200
         assert "Login" in response.content.decode()
 
     def test_login_user_client(self, client, test_user):
-        url = reverse("login")
+        url = reverse("dashboard:login")
         data = {"username": "testuser", "password": "testpass123"}
         response = client.post(url, data)
         assert response.status_code == 302
 
     def test_logout_client(self, authenticated_client):
-        url = reverse("logout")
+        url = reverse("dashboard:logout")
         response = authenticated_client.get(url)
         assert response.status_code == 302
 
     def test_signup_page_selenium(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("register")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("dashboard:register")}')
         assert "Register" in self.selenium.page_source
 
     def test_login_page_selenium(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("login")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("dashboard:login")}')
         assert "Login" in self.selenium.page_source
 
     def test_register_user_selenium(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("register")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("dashboard:register")}')
         username = "testuser"
         email = "test@example.com"
         password = "testpass123"
@@ -75,7 +75,7 @@ class AuthTests(SeleniumTestCase):
         assert User.objects.filter(username=username).exists()
 
     def test_login_user_selenium(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("login")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("dashboard:login")}')
         username = "testuser"
         password = "testpass123"
 
@@ -91,5 +91,8 @@ class AuthTests(SeleniumTestCase):
         assert "Welcome" in self.selenium.page_source
 
     def test_logout_selenium(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("logout")}')
-        assert self.selenium.current_url == f'{self.live_server_url}{reverse("login")}'
+        self.selenium.get(f'{self.live_server_url}{reverse("dashboard:logout")}')
+        assert (
+            self.selenium.current_url
+            == f'{self.live_server_url}{reverse("dashboard:login")}'
+        )

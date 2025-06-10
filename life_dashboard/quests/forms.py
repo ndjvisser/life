@@ -17,12 +17,12 @@ class QuestForm(forms.ModelForm):
         ]
         widgets = {
             "title": forms.TextInput(attrs={"class": "validate"}),
-            "description": forms.Textarea(attrs={"class": "materialize-textarea"}),
-            "quest_type": forms.Select(attrs={"class": "browser-default"}),
-            "status": forms.Select(attrs={"class": "browser-default"}),
-            "experience_reward": forms.NumberInput(attrs={"class": "validate"}),
-            "start_date": forms.DateInput(attrs={"class": "datepicker"}),
-            "due_date": forms.DateInput(attrs={"class": "datepicker"}),
+            "description": forms.Textarea(
+                attrs={"rows": 3, "class": "materialize-textarea"}
+            ),
+            "difficulty": forms.Select(attrs={"class": "browser-default"}),
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "due_date": forms.DateInput(attrs={"type": "date"}),
         }
 
 

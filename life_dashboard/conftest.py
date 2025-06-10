@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -5,6 +7,10 @@ from django.core.management import call_command
 from django.test import Client
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.core.os_manager import ChromeType
 
 from life_dashboard.quests.models import Habit, Quest
 
@@ -17,11 +23,10 @@ def client():
 
 
 @pytest.fixture
-def test_user(db):
+def test_user():
     user = User.objects.create_user(
         username="testuser", email="test@example.com", password="testpass123"
     )
-    # UserProfile is created by a signal, so no need to create it here
     return user
 
 
@@ -32,25 +37,27 @@ def authenticated_client(client, test_user):
 
 
 @pytest.fixture
-def test_quest(db, test_user):
+def test_quest(test_user):
     return Quest.objects.create(
-        user=test_user,
         title="Test Quest",
         description="Test Description",
-        quest_type="daily",
+        difficulty="medium",
+        quest_type="main",
         status="active",
-        experience_reward=100,
+        experience_reward=10,
+        start_date=date.today(),
+        due_date=date.today(),
+        user=test_user,
     )
 
 
 @pytest.fixture
-def test_habit(db, test_user):
+def test_habit(test_user):
     return Habit.objects.create(
-        user=test_user,
         name="Test Habit",
         description="Test Description",
         frequency="daily",
-        target_count=1,
+        user=test_user,
     )
 
 
@@ -63,32 +70,61 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     def setUpClass(cls):
         super().setUpClass()
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless=new")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        cls.selenium = webdriver.Chrome(options=chrome_options)
-        cls.selenium.implicitly_wait(10)
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--window-size=1920,1080")
+
+        try:
+            # Use ChromeDriverManager with explicit ChromeType
+            driver_path = ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install()
+            service = Service(executable_path=driver_path)
+            cls.driver = webdriver.Chrome(service=service, options=chrome_options)
+            cls.wait = WebDriverWait(cls.driver, 10)
+        except Exception as e:
+            print(f"Failed to initialize Chrome driver: {str(e)}")
+            raise
 
     @classmethod
     def tearDownClass(cls):
-        cls.selenium.quit()
+        if hasattr(cls, "driver"):
+            cls.driver.quit()
         super().tearDownClass()
         call_command("flush", verbosity=0, interactive=False)
+
+    def create_test_quest(self):
+        return Quest.objects.create(
+            title="Test Quest",
+            description="Test Description",
+            difficulty="medium",
+            quest_type="main",
+            status="active",
+            experience_reward=10,
+            start_date=date.today(),
+            due_date=date.today(),
+            user=self.user,
+        )
+
+    def create_test_habit(self):
+        return Habit.objects.create(
+            name="Test Habit",
+            description="Test Description",
+            frequency="daily",
+            user=self.user,
+        )
 
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", email="test@example.com", password="testpass123"
         )
-        # self.profile = UserProfile.objects.create(
-        # user=self.user, level=1, experience=0
-        # )
         self.client.login(username="testuser", password="testpass123")
-        cookie = self.client.cookies["sessionid"]
-        self.selenium.get(self.live_server_url)
-        self.selenium.add_cookie(
-            {"name": "sessionid", "value": cookie.value, "secure": False, "path": "/"}
+        session = self.client.session
+        session.save()
+        self.driver.add_cookie(
+            {
+                "name": "sessionid",
+                "value": session.session_key,
+                "path": "/",
+            }
         )
-
-    def tearDown(self):
-        self.user.delete()
-        super().tearDown()

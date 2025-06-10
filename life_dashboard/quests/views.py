@@ -1,10 +1,9 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils import timezone
 
-from life_dashboard.quests.forms import HabitCompletionForm, HabitForm, QuestForm
-from life_dashboard.quests.models import Habit, HabitCompletion, Quest
+from life_dashboard.quests.forms import HabitForm, QuestForm
+from life_dashboard.quests.models import Habit, Quest
 
 
 @login_required
@@ -49,6 +48,16 @@ def quest_update(request, pk):
 
 
 @login_required
+def quest_delete(request, pk):
+    quest = get_object_or_404(Quest, pk=pk, user=request.user)
+    if request.method == "POST":
+        quest.delete()
+        messages.success(request, "Quest deleted successfully!")
+        return redirect("quests:quest_list")
+    return render(request, "quests/quest_confirm_delete.html", {"quest": quest})
+
+
+@login_required
 def habit_list(request):
     habits = Habit.objects.filter(user=request.user)
     return render(request, "quests/habit_list.html", {"habits": habits})
@@ -57,9 +66,7 @@ def habit_list(request):
 @login_required
 def habit_detail(request, pk):
     habit = get_object_or_404(Habit, pk=pk, user=request.user)
-    completions = HabitCompletion.objects.filter(habit=habit).order_by("-completed_at")[
-        :10
-    ]
+    completions = habit.completions.all().order_by("-completed_at")[:10]
     return render(
         request,
         "quests/habit_detail.html",
@@ -79,7 +86,7 @@ def habit_create(request):
             return redirect("quests:habit_detail", pk=habit.pk)
     else:
         form = HabitForm()
-    return render(request, "quests/habit_form.html", {"form": form, "action": "Create"})
+    return render(request, "quests/habit_form.html", {"form": form})
 
 
 @login_required
@@ -93,25 +100,25 @@ def habit_update(request, pk):
             return redirect("quests:habit_detail", pk=habit.pk)
     else:
         form = HabitForm(instance=habit)
-    return render(request, "quests/habit_form.html", {"form": form, "action": "Update"})
+    return render(request, "quests/habit_form.html", {"form": form})
+
+
+@login_required
+def habit_delete(request, pk):
+    habit = get_object_or_404(Habit, pk=pk, user=request.user)
+    if request.method == "POST":
+        habit.delete()
+        messages.success(request, "Habit deleted successfully!")
+        return redirect("quests:habit_list")
+    return render(request, "quests/habit_confirm_delete.html", {"habit": habit})
 
 
 @login_required
 def complete_habit(request, pk):
     habit = get_object_or_404(Habit, pk=pk, user=request.user)
     if request.method == "POST":
-        form = HabitCompletionForm(request.POST)
-        if form.is_valid():
-            completion = form.save(commit=False)
-            completion.habit = habit
-            completion.completed_at = timezone.now()
-            completion.save()
-            habit.current_streak += 1
-            if habit.current_streak > habit.longest_streak:
-                habit.longest_streak = habit.current_streak
-            habit.save()
-            messages.success(request, "Habit completed successfully!")
-            return redirect("quests:habit_detail", pk=habit.pk)
-    else:
-        form = HabitCompletionForm()
-    return render(request, "quests/habit_complete.html", {"form": form, "habit": habit})
+        count = int(request.POST.get("count", 1))
+        habit.complete(count)
+        messages.success(request, "Habit completed successfully!")
+        return redirect("quests:habit_detail", pk=habit.pk)
+    return redirect("quests:habit_detail", pk=habit.pk)

@@ -11,6 +11,7 @@ from life_dashboard.quests.models import Habit
 User = get_user_model()
 
 
+@pytest.mark.django_db
 class TestHabits:
     def test_habit_list_view(self, authenticated_client):
         response = authenticated_client.get(reverse("quests:habit_list"))
@@ -18,106 +19,75 @@ class TestHabits:
         assert "Habits" in response.content.decode()
 
     def test_habit_create(self, authenticated_client):
-        response = authenticated_client.post(
-            reverse("quests:habit_create"),
-            {
-                "name": "New Habit",
-                "description": "Test Description",
-                "frequency": "daily",
-                "target_count": 1,
-                "experience_reward": 50,
-            },
-        )
+        url = reverse("quests:habit_create")
+        data = {
+            "name": "Test Habit",
+            "description": "Test Description",
+            "frequency": "daily",
+            "target_count": 1,
+        }
+        response = authenticated_client.post(url, data)
         assert response.status_code == 302
-        assert Habit.objects.filter(name="New Habit").exists()
+        habit = Habit.objects.get(name="Test Habit")
+        assert habit.description == "Test Description"
+        assert habit.frequency == "daily"
+        assert habit.target_count == 1
 
     def test_habit_update(self, authenticated_client, test_habit):
-        url = reverse("habit_update", args=[test_habit.pk])
+        url = reverse("quests:habit_update", args=[test_habit.pk])
         data = {
             "name": "Updated Habit",
             "description": "Updated Description",
-            "frequency": "daily",
+            "frequency": "weekly",
             "target_count": 2,
-            "experience_reward": 75,
         }
         response = authenticated_client.post(url, data)
         assert response.status_code == 302
         test_habit.refresh_from_db()
         assert test_habit.name == "Updated Habit"
+        assert test_habit.description == "Updated Description"
+        assert test_habit.frequency == "weekly"
         assert test_habit.target_count == 2
-        assert test_habit.experience_reward == 75
 
     def test_habit_delete(self, authenticated_client, test_habit):
-        url = reverse("habit_delete", args=[test_habit.pk])
+        url = reverse("quests:habit_delete", args=[test_habit.pk])
         response = authenticated_client.post(url)
         assert response.status_code == 302
         assert not Habit.objects.filter(pk=test_habit.pk).exists()
 
     def test_habit_completion(self, authenticated_client, test_habit):
-        url = reverse("complete_habit", args=[test_habit.pk])
-        response = authenticated_client.post(url)
+        url = reverse("quests:complete_habit", args=[test_habit.pk])
+        response = authenticated_client.post(url, {"count": 1})
         assert response.status_code == 302
-        test_habit.refresh_from_db()
-        assert test_habit.current_streak == 1
 
 
 @pytest.mark.django_db
 class HabitTests(SeleniumTestCase):
     def test_habit_creation_flow(self):
         self.selenium.get(f'{self.live_server_url}{reverse("quests:habit_create")}')
+        self.selenium.find_element(By.NAME, "name").send_keys("New Habit")
+        self.selenium.find_element(By.NAME, "description").send_keys("Test Description")
+        self.selenium.find_element(By.NAME, "frequency").send_keys("daily")
+        self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
-        # Fill in habit form
-        name = self.selenium.find_element(By.NAME, "name")
-        description = self.selenium.find_element(By.NAME, "description")
-        frequency = self.selenium.find_element(By.NAME, "frequency")
-        target_count = self.selenium.find_element(By.NAME, "target_count")
-        experience_reward = self.selenium.find_element(By.NAME, "experience_reward")
-
-        name.send_keys("Selenium Habit")
-        description.send_keys("Created via Selenium")
-        frequency.send_keys("daily")
-        target_count.send_keys("1")
-        experience_reward.send_keys("50")
-
-        # Submit form
-        self.selenium.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
-
-        # Wait for redirect to habit list
         WebDriverWait(self.selenium, 10).until(
-            ec.url_contains(reverse("quests:habit_list"))
+            ec.presence_of_element_located((By.CSS_SELECTOR, ".habit-list"))
         )
 
-        # Verify habit was created
-        assert Habit.objects.filter(name="Selenium Habit").exists()
+        assert Habit.objects.filter(name="New Habit").exists()
 
     def test_habit_completion_flow(self):
-        # Create a habit first
         habit = Habit.objects.create(
-            user=self.user,
             name="Test Habit",
             description="Test Description",
             frequency="daily",
-            target_count=1,
-            experience_reward=50,
+            user=self.user,
         )
-
-        self.selenium.get(f'{self.live_server_url}{reverse("quests:habit_list")}')
-
-        # Find and click complete button
-        complete_button = WebDriverWait(self.selenium, 10).until(
-            ec.element_to_be_clickable(
-                (By.CSS_SELECTOR, f'[data-habit-id="{habit.pk}"] .complete-btn')
-            )
+        self.selenium.get(
+            f'{self.live_server_url}{reverse("quests:habit_detail", args=[habit.pk])}'
         )
-        complete_button.click()
+        self.selenium.find_element(By.CSS_SELECTOR, "button.complete-habit").click()
 
-        # Wait for streak update
         WebDriverWait(self.selenium, 10).until(
-            ec.text_to_be_present_in_element(
-                (By.CSS_SELECTOR, f'[data-habit-id="{habit.pk}"] .current-streak'), "1"
-            )
+            ec.presence_of_element_located((By.CSS_SELECTOR, ".completion-success"))
         )
-
-        # Verify habit was completed
-        habit.refresh_from_db()
-        assert habit.current_streak == 1

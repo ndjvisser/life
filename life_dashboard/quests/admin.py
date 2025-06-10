@@ -8,13 +8,23 @@ class QuestAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "user",
+        "difficulty",
         "quest_type",
         "status",
         "experience_reward",
         "start_date",
         "due_date",
+        "created_at",
+        "updated_at",
     )
-    list_filter = ("quest_type", "status", "user")
+    list_filter = (
+        "difficulty",
+        "quest_type",
+        "status",
+        "created_at",
+        "start_date",
+        "due_date",
+    )
     search_fields = ("title", "description")
     date_hierarchy = "created_at"
 
@@ -28,15 +38,17 @@ class HabitAdmin(admin.ModelAdmin):
         "target_count",
         "current_streak",
         "longest_streak",
+        "created_at",
+        "updated_at",
     )
-    list_filter = ("frequency", "user")
+    list_filter = ("frequency", "created_at")
     search_fields = ("name", "description")
     date_hierarchy = "created_at"
 
 
 @admin.register(HabitCompletion)
 class HabitCompletionAdmin(admin.ModelAdmin):
-    list_display = ("habit", "completed_at", "notes")
-    list_filter = ("habit", "completed_at")
+    list_display = ("habit", "date", "count", "notes")
+    list_filter = ("habit", "date")
     search_fields = ("habit__name", "notes")
-    date_hierarchy = "completed_at"
+    date_hierarchy = "date"

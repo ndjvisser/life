@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 
 from life_dashboard.achievements.models import UserAchievement
 from life_dashboard.core_stats.models import CoreStat
-from life_dashboard.dashboard.forms import UserRegistrationForm
+from life_dashboard.dashboard.forms import UserProfileForm, UserRegistrationForm
 from life_dashboard.journals.models import JournalEntry
 from life_dashboard.life_stats.models import LifeStat, LifeStatCategory
 from life_dashboard.quests.models import Habit, Quest
@@ -115,15 +115,12 @@ def logout_view(request):
 
 @login_required
 def profile(request):
-    user = request.user
-    core_stats, created = CoreStat.objects.get_or_create(user=user)
-    achievements = UserAchievement.objects.filter(user=user).order_by("-unlocked_at")
-    recent_entries = JournalEntry.objects.filter(user=user).order_by("-created_at")[:5]
-
-    context = {
-        "user": user,
-        "core_stats": core_stats,
-        "achievements": achievements,
-        "recent_entries": recent_entries,
-    }
-    return render(request, "dashboard/profile.html", context)
+    if request.method == "POST":
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect("dashboard:profile")
+    else:
+        form = UserProfileForm(instance=request.user)
+    return render(request, "dashboard/profile.html", {"form": form})

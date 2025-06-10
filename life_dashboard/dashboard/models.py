@@ -18,6 +18,13 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Profile"
 
+    def add_experience(self, amount):
+        """Add experience points and handle leveling up."""
+        self.experience += amount
+        # Simple level calculation: every 1000 XP = 1 level
+        self.level = (self.experience // 1000) + 1
+        self.save()
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
