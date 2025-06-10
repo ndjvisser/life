@@ -2,7 +2,6 @@ from datetime import date
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 
 
 class Quest(models.Model):
@@ -84,7 +83,7 @@ class HabitCompletion(models.Model):
         Habit, on_delete=models.CASCADE, related_name="completions"
     )
     count = models.IntegerField(default=1)
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=date.today)
     notes = models.TextField(blank=True)
     experience_gained = models.IntegerField(default=0)
 
