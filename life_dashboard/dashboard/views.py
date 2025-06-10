@@ -8,6 +8,7 @@ from django.db import transaction
 from django.shortcuts import redirect, render
 
 from life_dashboard.achievements.models import UserAchievement
+from life_dashboard.core_stats.models import CoreStat
 from life_dashboard.dashboard.forms import (
     UserProfileForm,
     UserRegistrationForm,
@@ -19,7 +20,6 @@ from life_dashboard.quests.models import Habit, Quest
 logger = logging.getLogger(__name__)
 
 
-# Create your views here.
 @login_required
 def dashboard(request):
     user = request.user
@@ -101,10 +101,8 @@ def profile(request):
     # Safely get or create core stats
     try:
         core_stats = user.core_stats
-    except Exception:
-        from life_dashboard.stats.models import Stats
-
-        core_stats, created = Stats.objects.get_or_create(user=user)
+    except CoreStat.DoesNotExist:
+        core_stats, created = CoreStat.objects.get_or_create(user=user)
 
     achievements = UserAchievement.objects.filter(user=user).select_related(
         "achievement"

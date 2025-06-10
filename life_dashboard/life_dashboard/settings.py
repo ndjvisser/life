@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "life_dashboard.journals",
     "life_dashboard.achievements",
     "life_dashboard.stats",
+    "life_dashboard.core_stats",
 ]
 
 MIDDLEWARE = [

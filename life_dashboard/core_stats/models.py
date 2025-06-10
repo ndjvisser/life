@@ -24,6 +24,7 @@ class CoreStat(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        app_label = "core_stats"
         verbose_name = "Core Stat"
         verbose_name_plural = "Core Stats"
 
