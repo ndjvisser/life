@@ -42,6 +42,12 @@ class Quest(models.Model):
         difficulty_map = {"easy": "success", "medium": "warning", "hard": "danger"}
         return difficulty_map.get(self.difficulty, "secondary")
 
+    def complete(self):
+        """Mark the quest as complete and award experience."""
+        self.status = "completed"
+        self.save()
+        self.user.profile.add_experience(self.experience_reward)
+
 
 class Habit(models.Model):
     FREQUENCY_CHOICES = (
