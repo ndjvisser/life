@@ -32,6 +32,7 @@ class Quest(models.Model):
     experience_reward = models.PositiveIntegerField(default=10)
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
