@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 @login_required
 def dashboard(request):
     user = request.user
-    profile = user.profile
+    user_profile, created = UserProfile.objects.get_or_create(user=user)
     quests = Quest.objects.filter(user=user).order_by("-created_at")[:5]
     habits = Habit.objects.filter(user=user).order_by("-created_at")[:5]
     context = {
-        "profile": profile,
+        "profile": user_profile,
         "quests": quests,
         "habits": habits,
     }
@@ -96,7 +96,7 @@ def logout_view(request):
 @login_required
 def profile(request):
     user = request.user
-    user_profile = UserProfile.objects.get_or_create(user=user)[0]
+    user_profile, created = UserProfile.objects.get_or_create(user=user)
 
     # Safely get or create core stats
     try:
