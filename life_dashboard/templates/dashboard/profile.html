@@ -91,10 +91,7 @@
 {% block extra_js %}
 <script>
 document.getElementById('profile-form').addEventListener('submit', function(e) {
-    console.log('[DEBUG] Form submitted');
-    console.log('[DEBUG] First name:', document.getElementById('id_first_name').value);
-    console.log('[DEBUG] Last name:', document.getElementById('id_last_name').value);
-    console.log('[DEBUG] Email:', document.getElementById('id_email').value);
+    console.log('[DEBUG] Profile form submitted');
 });
 </script>
 {% endblock %}
