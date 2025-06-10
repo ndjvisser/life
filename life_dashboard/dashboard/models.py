@@ -34,9 +34,15 @@ class UserProfile(models.Model):
         return self.user.email
 
     def add_experience(self, points):
-        self.experience_points += points
+        if not isinstance(points, int) or points <= 0:
+            raise ValueError("Points must be a positive integer.")
+        max_experience = 2**31 - 1
+        if self.experience_points + points > max_experience:
+            self.experience_points = max_experience
+        else:
+            self.experience_points += points
         # Simple level calculation: 1000 XP per level
-        self.level = (self.experience_points // 1000) + 1
+        self.level = max(1, (self.experience_points // 1000) + 1)
         self.save()
 
 
