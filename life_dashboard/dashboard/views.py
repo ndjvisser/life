@@ -108,22 +108,12 @@ def profile(request):
 
     if request.method == "POST":
         print("[DEBUG] Processing profile update POST request")
-        # Update User model fields
+        # Update User model fields - single source of truth
         user.first_name = request.POST.get("first_name", user.first_name)
         user.last_name = request.POST.get("last_name", user.last_name)
         user.email = request.POST.get("email", user.email)
         user.save()
         print(f"[DEBUG] Updated User model: {user.first_name} {user.last_name}")
-
-        # Update UserProfile model fields
-        user_profile.first_name = user.first_name
-        user_profile.last_name = user.last_name
-        user_profile.email = user.email
-        user_profile.save()
-        print(
-            f"[DEBUG] Updated UserProfile model: {user_profile.first_name} "
-            f"{user_profile.last_name}"
-        )
 
         messages.success(request, "Profile updated successfully", extra_tags="profile")
         return redirect("dashboard:profile")
