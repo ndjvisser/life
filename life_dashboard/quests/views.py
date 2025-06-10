@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -6,6 +8,8 @@ from django.utils import timezone
 from life_dashboard.quests.forms import HabitForm, QuestForm
 from life_dashboard.quests.models import Habit, HabitCompletion, Quest
 from life_dashboard.stats.models import Stats
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -24,7 +28,7 @@ def quest_detail(request, pk):
 def quest_create(request):
     if request.method == "POST":
         form = QuestForm(request.POST)
-        print(f"[DEBUG] Form data: {request.POST}")
+        logger.debug("Form data: %s", request.POST)
         if form.is_valid():
             quest = form.save(commit=False)
             quest.user = request.user
@@ -32,7 +36,7 @@ def quest_create(request):
             messages.success(request, "Quest created successfully!", extra_tags="quest")
             return redirect("quests:quest_list")
         else:
-            print(f"[DEBUG] Form errors: {form.errors}")
+            logger.debug("Form errors: %s", form.errors)
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
@@ -46,13 +50,13 @@ def quest_update(request, pk):
     quest = get_object_or_404(Quest, pk=pk, user=request.user)
     if request.method == "POST":
         form = QuestForm(request.POST, instance=quest)
-        print(f"[DEBUG] Form data: {request.POST}")
+        logger.debug("Form data: %s", request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Quest updated successfully!", extra_tags="quest")
             return redirect("quests:quest_list")
         else:
-            print(f"[DEBUG] Form errors: {form.errors}")
+            logger.debug("Form errors: %s", form.errors)
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")

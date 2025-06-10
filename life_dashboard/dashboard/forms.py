@@ -1,3 +1,5 @@
+import logging
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
@@ -5,6 +7,7 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import UserProfile
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -15,19 +18,19 @@ class UserRegistrationForm(UserCreationForm):
         fields = ("username", "email", "password1", "password2")
 
     def save(self, commit=True):
-        print("[DEBUG] Saving user registration form")
+        logger.debug("Saving user registration form")
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
         if commit:
-            print("[DEBUG] Committing user to database")
+            logger.debug("Committing user to database")
             user.save()
-            print(f"[DEBUG] User saved with ID: {user.id}")
+            logger.debug("User saved with ID: %s", user.id)
         return user
 
     def clean(self):
-        print("[DEBUG] Cleaning registration form data")
+        logger.debug("Cleaning registration form data")
         cleaned_data = super().clean()
-        print(f"[DEBUG] Cleaned data: {cleaned_data}")
+        logger.debug("Cleaned data: %s", cleaned_data)
         return cleaned_data
 
 

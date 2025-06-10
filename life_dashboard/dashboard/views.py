@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -13,6 +15,8 @@ from life_dashboard.dashboard.forms import (
 from life_dashboard.dashboard.models import UserProfile
 from life_dashboard.journals.models import JournalEntry
 from life_dashboard.quests.models import Habit, Quest
+
+logger = logging.getLogger(__name__)
 
 
 # Create your views here.
@@ -34,27 +38,27 @@ def dashboard(request):
 @transaction.atomic
 def register(request):
     if request.method == "POST":
-        print(f"[DEBUG] Registration POST data: {request.POST}")
+        logger.debug("Registration POST data: %s", request.POST)
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            print("[DEBUG] Form is valid, creating user")
+            logger.debug("Form is valid, creating user")
             try:
                 user = form.save()
-                print(f"[DEBUG] User created: {user.username}")
+                logger.debug("User created: %s", user.username)
                 # Create user profile if it doesn't exist
                 profile, created = UserProfile.objects.get_or_create(user=user)
-                print(f"[DEBUG] Profile {'created' if created else 'already exists'}")
+                logger.debug("Profile %s", "created" if created else "already exists")
                 # Log the user in
                 login(request, user)
-                print("[DEBUG] User logged in")
+                logger.debug("User logged in")
                 messages.success(request, "Registration successful!")
-                print("[DEBUG] Redirecting to dashboard")
+                logger.debug("Redirecting to dashboard")
                 return redirect("dashboard:dashboard")
             except Exception as e:
-                print(f"[DEBUG] Error during user creation: {str(e)}")
+                logger.error("Error during user creation: %s", str(e))
                 messages.error(request, f"Error during registration: {str(e)}")
         else:
-            print(f"[DEBUG] Form errors: {form.errors}")
+            logger.debug("Form errors: %s", form.errors)
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
@@ -108,13 +112,13 @@ def profile(request):
     recent_entries = JournalEntry.objects.filter(user=user).order_by("-created_at")[:5]
 
     if request.method == "POST":
-        print("[DEBUG] Processing profile update POST request")
+        logger.debug("Processing profile update POST request")
         # Update User model fields - single source of truth
         user.first_name = request.POST.get("first_name", user.first_name)
         user.last_name = request.POST.get("last_name", user.last_name)
         user.email = request.POST.get("email", user.email)
         user.save()
-        print(f"[DEBUG] Updated User model: {user.first_name} {user.last_name}")
+        logger.debug("Updated User model: %s %s", user.first_name, user.last_name)
 
         messages.success(request, "Profile updated successfully", extra_tags="profile")
         return redirect("dashboard:profile")
