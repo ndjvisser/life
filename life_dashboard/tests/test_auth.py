@@ -57,12 +57,8 @@ class AuthTests(SeleniumTestCase):
         self.driver.get(f'{self.live_server_url}{reverse("dashboard:login")}')
         assert "Login" in self.driver.page_source
 
-    def test_register_user_selenium(self):
-        self.driver.get(f'{self.live_server_url}{reverse("dashboard:register")}')
-        username = "newuser_selenium"
-        email = "new@example.com"
-        password = "testpass123"
-
+    def fill_registration_form(self, username, email, password):
+        """Fill out the registration form with the provided data."""
         print(f"[DEBUG] Filling registration form for user: {username}")
 
         # Wait for form to be ready and page to be fully loaded
@@ -72,7 +68,7 @@ class AuthTests(SeleniumTestCase):
             == "complete"
         )
 
-        # Wait for and fill username
+        # Fill username
         username_input = self.wait.until(
             ec.presence_of_element_located((By.NAME, "username"))
         )
@@ -80,7 +76,7 @@ class AuthTests(SeleniumTestCase):
         username_input.send_keys(username)
         print(f"[DEBUG] Username field value: {username_input.get_attribute('value')}")
 
-        # Wait for and fill email
+        # Fill email
         email_input = self.wait.until(
             ec.presence_of_element_located((By.NAME, "email"))
         )
@@ -88,7 +84,7 @@ class AuthTests(SeleniumTestCase):
         email_input.send_keys(email)
         print(f"[DEBUG] Email field value: {email_input.get_attribute('value')}")
 
-        # Wait for and fill passwords
+        # Fill passwords
         password1_input = self.wait.until(
             ec.presence_of_element_located((By.NAME, "password1"))
         )
@@ -102,7 +98,19 @@ class AuthTests(SeleniumTestCase):
         password2_input.send_keys(password)
         print("[DEBUG] Passwords filled")
 
-        # Verify all fields have values
+        return username_input, email_input, password1_input, password2_input
+
+    def verify_form_values(
+        self,
+        username_input,
+        email_input,
+        password1_input,
+        password2_input,
+        username,
+        email,
+        password,
+    ):
+        """Verify that form fields contain the expected values."""
         assert (
             username_input.get_attribute("value") == username
         ), "Username not set correctly"
@@ -114,62 +122,80 @@ class AuthTests(SeleniumTestCase):
             password2_input.get_attribute("value") == password
         ), "Password2 not set correctly"
 
-        # Check for any JavaScript errors before submitting
+    def check_javascript_errors(self):
+        """Check for any JavaScript errors in the browser console."""
         js_errors = self.driver.execute_script(
             "return window.performance.getEntriesByType('resource')"
             ".filter(r => r.name.includes('error'));"
         )
         if js_errors:
             print(f"[DEBUG] JavaScript errors found: {js_errors}")
+        return js_errors
 
-        print("[DEBUG] Submitting registration form")
-        # Submit the form using JavaScript to ensure it's properly submitted
-        self.driver.execute_script(
-            "document.getElementById('registration-form').submit();"
-        )
-
-        # Check for form errors
+    def check_form_errors(self):
+        """Check for any form validation errors."""
         try:
             error_elements = self.driver.find_elements(By.CLASS_NAME, "errorlist")
             if error_elements:
                 print("[DEBUG] Form errors found:")
                 for error in error_elements:
                     print(f"[DEBUG] Error: {error.text}")
+            return error_elements
         except Exception as e:
             print(f"[DEBUG] Error checking form errors: {str(e)}")
+            return []
+
+    def wait_for_redirect(self, expected_url, timeout=20):
+        """Wait for the page to redirect to the expected URL."""
+        print(f"[DEBUG] Waiting for URL: {expected_url}")
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            current_url = self.driver.current_url
+            print(f"[DEBUG] Current URL: {current_url}")
+            if expected_url in current_url:
+                return True
+            time.sleep(0.5)
+        return False
+
+    def verify_user_creation(self, username):
+        """Verify that the user was created in the database."""
+        print(f"[DEBUG] Checking if user {username} exists in database")
+        user_exists = User.objects.filter(username=username).exists()
+        if not user_exists:
+            print("[DEBUG] User not found in database. Checking all users:")
+            for user in User.objects.all():
+                print(f"[DEBUG] Found user: {user.username} (ID: {user.id})")
+        assert user_exists, f"User {username} was not created in the database"
+
+    def test_register_user_selenium(self):
+        """Test the complete user registration flow."""
+        self.driver.get(f'{self.live_server_url}{reverse("dashboard:register")}')
+        username = "newuser_selenium"
+        email = "new@example.com"
+        password = "testpass123"
+
+        # Fill and verify form
+        form_inputs = self.fill_registration_form(username, email, password)
+        self.verify_form_values(*form_inputs, username, email, password)
+
+        # Check for JavaScript errors before submitting
+        self.check_javascript_errors()
+
+        # Submit the form
+        print("[DEBUG] Submitting registration form")
+        self.driver.execute_script(
+            "document.getElementById('registration-form').submit();"
+        )
+
+        # Check for form errors
+        self.check_form_errors()
 
         # Wait for redirect to dashboard
         expected_url = self.live_server_url + reverse("dashboard:dashboard")
-        print(f"[DEBUG] Waiting for URL: {expected_url}")
+        assert self.wait_for_redirect(expected_url), "Failed to redirect to dashboard"
 
-        # Wait for URL to change and contain the expected path
-        max_wait = 20  # Increase timeout to 20 seconds
-        start_time = time.time()
-        while time.time() - start_time < max_wait:
-            current_url = self.driver.current_url
-            print(f"[DEBUG] Current URL: {current_url}")
-
-            # Check for form errors again in case they appear after submission
-            try:
-                error_elements = self.driver.find_elements(By.CLASS_NAME, "errorlist")
-                if error_elements:
-                    print("[DEBUG] Form errors after submission:")
-                    for error in error_elements:
-                        print(f"[DEBUG] Error: {error.text}")
-            except Exception as e:
-                print(f"[DEBUG] Error checking form errors after submission: {str(e)}")
-
-            if expected_url in current_url:
-                break
-            time.sleep(0.5)
-
-        # Check for any JavaScript errors after submitting
-        js_errors = self.driver.execute_script(
-            "return window.performance.getEntriesByType('resource')"
-            ".filter(r => r.name.includes('error'));"
-        )
-        if js_errors:
-            print(f"[DEBUG] JavaScript errors after submit: {js_errors}")
+        # Check for JavaScript errors after submitting
+        self.check_javascript_errors()
 
         # Wait for dashboard to load
         print("[DEBUG] Waiting for dashboard container")
@@ -184,14 +210,8 @@ class AuthTests(SeleniumTestCase):
             print("[DEBUG] Current page source:")
             print(self.driver.page_source)
 
-        # Now check if user was created
-        print(f"[DEBUG] Checking if user {username} exists in database")
-        user_exists = User.objects.filter(username=username).exists()
-        if not user_exists:
-            print("[DEBUG] User not found in database. Checking all users:")
-            for user in User.objects.all():
-                print(f"[DEBUG] Found user: {user.username} (ID: {user.id})")
-        assert user_exists, f"User {username} was not created in the database"
+        # Verify user creation
+        self.verify_user_creation(username)
 
     def test_login_user_selenium(self):
         self.driver.get(f'{self.live_server_url}{reverse("dashboard:login")}')
