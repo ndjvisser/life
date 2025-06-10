@@ -64,13 +64,9 @@ class UserProfileForm(forms.ModelForm):
 
 
 class ProfileUpdateForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=100, required=False)
-    last_name = forms.CharField(max_length=100, required=False)
-    email = forms.EmailField(required=False)
-
     class Meta:
         model = UserProfile
-        fields = ["first_name", "last_name", "email"]
+        fields = []  # Remove fields that do not belong to UserProfile
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
