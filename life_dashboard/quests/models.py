@@ -37,6 +37,10 @@ class Quest(models.Model):
     def __str__(self):
         return self.title
 
+    def get_difficulty_color(self):
+        difficulty_map = {"easy": "success", "medium": "warning", "hard": "danger"}
+        return difficulty_map.get(self.difficulty, "secondary")
+
 
 class Habit(models.Model):
     FREQUENCY_CHOICES = (

@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 
 from life_dashboard.achievements.models import UserAchievement
 from life_dashboard.dashboard.forms import (
+    UserProfileForm,
     UserRegistrationForm,
 )
 from life_dashboard.dashboard.models import UserProfile
@@ -118,12 +119,16 @@ def profile(request):
         messages.success(request, "Profile updated successfully", extra_tags="profile")
         return redirect("dashboard:profile")
 
+    # Create form with initial data
+    form = UserProfileForm(instance=user_profile)
+
     context = {
         "user": user,
         "user_profile": user_profile,
         "core_stats": core_stats,
         "achievements": achievements,
         "recent_entries": recent_entries,
+        "form": form,
     }
     return render(request, "dashboard/profile.html", context)
 

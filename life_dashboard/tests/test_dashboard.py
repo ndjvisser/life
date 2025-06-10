@@ -80,9 +80,9 @@ class DashboardTests(SeleniumTestCase):
         self.driver.get(f'{self.live_server_url}{reverse("dashboard:profile")}')
 
         # Fill out the form
-        first_name_input = self.driver.find_element(By.NAME, "first_name")
-        last_name_input = self.driver.find_element(By.NAME, "last_name")
-        email_input = self.driver.find_element(By.NAME, "email")
+        first_name_input = self.driver.find_element(By.ID, "id_first_name")
+        last_name_input = self.driver.find_element(By.ID, "id_last_name")
+        email_input = self.driver.find_element(By.ID, "id_email")
 
         first_name_input.clear()
         last_name_input.clear()
