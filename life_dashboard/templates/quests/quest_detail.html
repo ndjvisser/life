@@ -62,12 +62,21 @@
                                 <span>{{ quest.start_date|date:"M d, Y" }}</span>
                             </div>
                         </div>
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between">
-                                <strong>Due Date</strong>
-                                <span>{{ quest.due_date|date:"M d, Y" }}</span>
+                        {% if quest.due_date %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Due Date</strong>
+                                    <span>{{ quest.due_date|date:"M d, Y" }}</span>
+                                </div>
                             </div>
-                        </div>
+                        {% else %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Due Date</strong>
+                                    <span class="text-muted">Not set</span>
+                                </div>
+                            </div>
+                        {% endif %}
                         <div class="list-group-item">
                             <div class="d-flex justify-content-between">
                                 <strong>Created</strong>

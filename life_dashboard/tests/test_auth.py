@@ -68,23 +68,25 @@ class AuthTests(SeleniumTestCase):
             == "complete"
         )
 
-        # Fill username
+        # Fill username using JavaScript
         username_input = self.wait.until(
             ec.presence_of_element_located((By.ID, "id_username"))
         )
-        username_input.clear()
-        username_input.send_keys(username)
+        self.driver.execute_script(
+            "arguments[0].value = arguments[1];", username_input, username
+        )
         print(f"[DEBUG] Username field value: {username_input.get_attribute('value')}")
 
-        # Fill email
+        # Fill email using JavaScript
         email_input = self.wait.until(
             ec.presence_of_element_located((By.ID, "id_email"))
         )
-        email_input.clear()
-        email_input.send_keys(email)
+        self.driver.execute_script(
+            "arguments[0].value = arguments[1];", email_input, email
+        )
         print(f"[DEBUG] Email field value: {email_input.get_attribute('value')}")
 
-        # Fill passwords
+        # Fill passwords using JavaScript
         password1_input = self.wait.until(
             ec.presence_of_element_located((By.ID, "id_password1"))
         )
@@ -92,10 +94,12 @@ class AuthTests(SeleniumTestCase):
             ec.presence_of_element_located((By.ID, "id_password2"))
         )
 
-        password1_input.clear()
-        password1_input.send_keys(password)
-        password2_input.clear()
-        password2_input.send_keys(password)
+        self.driver.execute_script(
+            "arguments[0].value = arguments[1];", password1_input, password
+        )
+        self.driver.execute_script(
+            "arguments[0].value = arguments[1];", password2_input, password
+        )
         print("[DEBUG] Passwords filled")
 
         return username_input, email_input, password1_input, password2_input
