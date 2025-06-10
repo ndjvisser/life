@@ -92,7 +92,15 @@ def logout_view(request):
 def profile(request):
     user = request.user
     user_profile = UserProfile.objects.get_or_create(user=user)[0]
-    core_stats = user.stats
+
+    # Safely get or create core stats
+    try:
+        core_stats = user.core_stats
+    except Exception:
+        from life_dashboard.stats.models import Stats
+
+        core_stats, created = Stats.objects.get_or_create(user=user)
+
     achievements = UserAchievement.objects.filter(user=user).select_related(
         "achievement"
     )
