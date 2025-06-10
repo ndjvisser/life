@@ -173,8 +173,23 @@ LOGOUT_REDIRECT_URL = "login"
 TEST_RUNNER = "life_dashboard.life_dashboard.test_runner.PytestTestRunner"
 
 
-# Redis Connection Validation
+# Celery Configuration
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+
+# Redis Configuration
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
+REDIS_DB = int(os.getenv("REDIS_DB", 0))
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+
+
 def validate_redis_connection():
+    """Validate Redis connection and print warning if connection fails."""
     try:
         redis_client = redis.from_url(CELERY_BROKER_URL)
         redis_client.ping()
@@ -185,14 +200,6 @@ def validate_redis_connection():
         else:
             raise ImproperlyConfigured(f"Redis connection failed: {e}") from e
 
-
-# Celery Configuration
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = "UTC"
 
 # Validate Redis connection
 validate_redis_connection()
