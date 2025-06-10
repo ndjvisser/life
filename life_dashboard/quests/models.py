@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
@@ -67,7 +69,6 @@ class Habit(models.Model):
 
     def complete(self, count=1):
         """Record a habit completion and award experience."""
-        from datetime import date
 
         completion = HabitCompletion.objects.create(
             habit=self, count=count, date=date.today()
