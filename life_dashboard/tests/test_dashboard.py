@@ -10,19 +10,19 @@ from life_dashboard.quests.models import Quest
 
 class TestDashboard:
     def test_dashboard_view(self, authenticated_client):
-        url = reverse("dashboard")
+        url = reverse("dashboard:dashboard")
         response = authenticated_client.get(url)
         assert response.status_code == 200
         assert "Dashboard" in response.content.decode()
 
     def test_profile_view(self, authenticated_client):
-        url = reverse("profile")
+        url = reverse("dashboard:profile")
         response = authenticated_client.get(url)
         assert response.status_code == 200
         assert "Profile" in response.content.decode()
 
     def test_profile_update(self, authenticated_client, test_user):
-        url = reverse("profile")
+        url = reverse("dashboard:profile")
         data = {
             "first_name": "Test",
             "last_name": "User",
@@ -37,8 +37,10 @@ class TestDashboard:
 
     def test_experience_gain(self, authenticated_client, test_user, test_quest):
         initial_experience = test_user.profile.experience
-        url = reverse("complete_quest", args=[test_quest.pk])
-        response = authenticated_client.post(url)
+        response = authenticated_client.post(
+            reverse("quests:complete_habit", args=[test_quest.id]),
+            {"count": 1},
+        )
         assert response.status_code == 302
         test_user.profile.refresh_from_db()
         assert (
@@ -50,7 +52,7 @@ class TestDashboard:
 @pytest.mark.django_db
 class DashboardTests(SeleniumTestCase):
     def test_dashboard_page(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("dashboard")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("dashboard:dashboard")}')
 
         # Verify dashboard elements
         assert "Welcome" in self.selenium.page_source
@@ -58,7 +60,7 @@ class DashboardTests(SeleniumTestCase):
         assert "Recent Activity" in self.selenium.page_source
 
     def test_profile_update_flow(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("profile")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("dashboard:profile")}')
 
         # Fill in profile form
         first_name = self.selenium.find_element(By.NAME, "first_name")

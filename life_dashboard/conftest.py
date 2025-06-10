@@ -1,11 +1,11 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from django.core.management import call_command
 from django.test import Client
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from life_dashboard.dashboard.models import UserProfile
 from life_dashboard.quests.models import Habit, Quest
 
 User = get_user_model()
@@ -21,7 +21,7 @@ def test_user(db):
     user = User.objects.create_user(
         username="testuser", email="test@example.com", password="testpass123"
     )
-    UserProfile.objects.create(user=user, level=1, experience=0)
+    # UserProfile is created by a signal, so no need to create it here
     return user
 
 
@@ -51,11 +51,14 @@ def test_habit(db, test_user):
         description="Test Description",
         frequency="daily",
         target_count=1,
-        experience_reward=50,
     )
 
 
 class SeleniumTestCase(StaticLiveServerTestCase):
+    @pytest.fixture(autouse=True)
+    def enable_transactional_db(self, transactional_db):
+        pass
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -70,15 +73,22 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     def tearDownClass(cls):
         cls.selenium.quit()
         super().tearDownClass()
+        call_command("flush", verbosity=0, interactive=False)
 
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", email="test@example.com", password="testpass123"
         )
-        self.profile = UserProfile.objects.create(user=self.user, level=1, experience=0)
+        # self.profile = UserProfile.objects.create(
+        # user=self.user, level=1, experience=0
+        # )
         self.client.login(username="testuser", password="testpass123")
         cookie = self.client.cookies["sessionid"]
         self.selenium.get(self.live_server_url)
         self.selenium.add_cookie(
             {"name": "sessionid", "value": cookie.value, "secure": False, "path": "/"}
         )
+
+    def tearDown(self):
+        self.user.delete()
+        super().tearDown()

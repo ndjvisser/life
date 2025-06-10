@@ -10,14 +10,15 @@ from life_dashboard.conftest import SeleniumTestCase
 User = get_user_model()
 
 
-class TestAuthentication:
+@pytest.mark.django_db
+class AuthTests(SeleniumTestCase):
     def test_register_view(self, client):
         url = reverse("register")
         response = client.get(url)
         assert response.status_code == 200
         assert "Register" in response.content.decode()
 
-    def test_register_user(self, client):
+    def test_register_user_client(self, client):
         url = reverse("register")
         data = {
             "username": "newuser",
@@ -35,94 +36,26 @@ class TestAuthentication:
         assert response.status_code == 200
         assert "Login" in response.content.decode()
 
-    def test_login_user(self, client, test_user):
+    def test_login_user_client(self, client, test_user):
         url = reverse("login")
         data = {"username": "testuser", "password": "testpass123"}
         response = client.post(url, data)
         assert response.status_code == 302
 
-    def test_logout(self, authenticated_client):
+    def test_logout_client(self, authenticated_client):
         url = reverse("logout")
         response = authenticated_client.get(url)
         assert response.status_code == 302
 
-
-class TestAuthenticationSelenium(SeleniumTestCase):
-    def test_register_flow(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("register")}')
-
-        # Fill in registration form
-        username = self.selenium.find_element(By.NAME, "username")
-        email = self.selenium.find_element(By.NAME, "email")
-        password1 = self.selenium.find_element(By.NAME, "password1")
-        password2 = self.selenium.find_element(By.NAME, "password2")
-
-        username.send_keys("seleniumuser")
-        email.send_keys("selenium@example.com")
-        password1.send_keys("testpass123")
-        password2.send_keys("testpass123")
-
-        # Submit form
-        self.selenium.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
-
-        # Wait for redirect to dashboard
-        WebDriverWait(self.selenium, 10).until(ec.url_contains(reverse("dashboard")))
-
-        assert User.objects.filter(username="seleniumuser").exists()
-
-    def test_login_flow(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("login")}')
-
-        # Fill in login form
-        username = self.selenium.find_element(By.NAME, "username")
-        password = self.selenium.find_element(By.NAME, "password")
-
-        username.send_keys("testuser")
-        password.send_keys("testpass123")
-
-        # Submit form
-        self.selenium.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
-
-        # Wait for redirect to dashboard
-        WebDriverWait(self.selenium, 10).until(ec.url_contains(reverse("dashboard")))
-
-        # Verify we're logged in
-        assert "Welcome" in self.selenium.page_source
-
-    def test_register_user(self):
-        """Test user registration."""
-        self.selenium.get(f"{self.live_server_url}{reverse('register')}")
-
-        # Fill in registration form
-        username = "testuser"
-        email = "test@example.com"
-        password = "testpass123"
-
-        self.selenium.find_element(By.NAME, "username").send_keys(username)
-        self.selenium.find_element(By.NAME, "email").send_keys(email)
-        self.selenium.find_element(By.NAME, "password1").send_keys(password)
-        self.selenium.find_element(By.NAME, "password2").send_keys(password)
-
-        # Submit form
-        self.selenium.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-
-        # Wait for redirect to dashboard
-        WebDriverWait(self.selenium, 10).until(
-            ec.presence_of_element_located((By.CSS_SELECTOR, ".dashboard-container"))
-        )
-
-
-@pytest.mark.django_db
-class AuthTests(SeleniumTestCase):
-    def test_signup_page(self):
+    def test_signup_page_selenium(self):
         self.selenium.get(f'{self.live_server_url}{reverse("register")}')
         assert "Register" in self.selenium.page_source
 
-    def test_login_page(self):
+    def test_login_page_selenium(self):
         self.selenium.get(f'{self.live_server_url}{reverse("login")}')
         assert "Login" in self.selenium.page_source
 
-    def test_register_user(self):
+    def test_register_user_selenium(self):
         self.selenium.get(f'{self.live_server_url}{reverse("register")}')
         username = "testuser"
         email = "test@example.com"
@@ -141,7 +74,7 @@ class AuthTests(SeleniumTestCase):
 
         assert User.objects.filter(username=username).exists()
 
-    def test_login_user(self):
+    def test_login_user_selenium(self):
         self.selenium.get(f'{self.live_server_url}{reverse("login")}')
         username = "testuser"
         password = "testpass123"
@@ -157,10 +90,6 @@ class AuthTests(SeleniumTestCase):
 
         assert "Welcome" in self.selenium.page_source
 
-    def test_logout(self):
+    def test_logout_selenium(self):
         self.selenium.get(f'{self.live_server_url}{reverse("logout")}')
         assert self.selenium.current_url == f'{self.live_server_url}{reverse("login")}'
-
-
-# if __name__ == "__main__":
-#     unittest.main()

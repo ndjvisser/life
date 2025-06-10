@@ -1,7 +1,12 @@
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": ":memory:",
+        "NAME": ":memory:",  # Use ":memory:" for in-memory DB with pytest-django
     }
 }
 
@@ -42,6 +47,10 @@ MIDDLEWARE = [
 ROOT_URLCONF = "life_dashboard.life_dashboard.urls"
 
 STATIC_URL = "/static/"
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles_test")
 
 TEMPLATES = [
     {

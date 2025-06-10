@@ -11,21 +11,21 @@ from life_dashboard.quests.models import Quest
 @pytest.mark.django_db
 class QuestTests(SeleniumTestCase):
     def test_quest_list_page(self):
-        url = reverse("quest_list")
-        response = self.client.get(url)
+        response = self.client.get(reverse("quests:quest_list"))
         assert response.status_code == 200
         assert "Quests" in response.content.decode()
 
     def test_quest_create(self, authenticated_client):
-        url = reverse("quest_create")
-        data = {
-            "title": "New Quest",
-            "description": "Test Description",
-            "quest_type": "daily",
-            "status": "in_progress",
-            "experience_reward": 100,
-        }
-        response = authenticated_client.post(url, data)
+        response = authenticated_client.post(
+            reverse("quests:quest_create"),
+            {
+                "title": "New Quest",
+                "description": "Test Description",
+                "quest_type": "daily",
+                "status": "in_progress",
+                "experience_reward": 100,
+            },
+        )
         assert response.status_code == 302
         assert Quest.objects.filter(title="New Quest").exists()
 
@@ -51,7 +51,7 @@ class QuestTests(SeleniumTestCase):
         assert not Quest.objects.filter(pk=test_quest.pk).exists()
 
     def test_quest_creation_flow(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("quest_create")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("quests:quest_create")}')
 
         # Fill in quest form
         title = self.selenium.find_element(By.NAME, "title")
@@ -68,7 +68,9 @@ class QuestTests(SeleniumTestCase):
         self.selenium.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
 
         # Wait for redirect to quest list
-        WebDriverWait(self.selenium, 10).until(ec.url_contains(reverse("quest_list")))
+        WebDriverWait(self.selenium, 10).until(
+            ec.url_contains(reverse("quests:quest_list"))
+        )
 
         # Verify quest was created
         assert Quest.objects.filter(title="Selenium Quest").exists()
@@ -84,7 +86,7 @@ class QuestTests(SeleniumTestCase):
             experience_reward=100,
         )
 
-        self.selenium.get(f'{self.live_server_url}{reverse("quest_list")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("quests:quest_list")}')
 
         # Find and click complete button
         complete_button = WebDriverWait(self.selenium, 10).until(

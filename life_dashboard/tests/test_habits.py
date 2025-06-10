@@ -13,21 +13,21 @@ User = get_user_model()
 
 class TestHabits:
     def test_habit_list_view(self, authenticated_client):
-        url = reverse("habit_list")
-        response = authenticated_client.get(url)
+        response = authenticated_client.get(reverse("quests:habit_list"))
         assert response.status_code == 200
         assert "Habits" in response.content.decode()
 
     def test_habit_create(self, authenticated_client):
-        url = reverse("habit_create")
-        data = {
-            "name": "New Habit",
-            "description": "Test Description",
-            "frequency": "daily",
-            "target_count": 1,
-            "experience_reward": 50,
-        }
-        response = authenticated_client.post(url, data)
+        response = authenticated_client.post(
+            reverse("quests:habit_create"),
+            {
+                "name": "New Habit",
+                "description": "Test Description",
+                "frequency": "daily",
+                "target_count": 1,
+                "experience_reward": 50,
+            },
+        )
         assert response.status_code == 302
         assert Habit.objects.filter(name="New Habit").exists()
 
@@ -64,7 +64,7 @@ class TestHabits:
 @pytest.mark.django_db
 class HabitTests(SeleniumTestCase):
     def test_habit_creation_flow(self):
-        self.selenium.get(f'{self.live_server_url}{reverse("habit_create")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("quests:habit_create")}')
 
         # Fill in habit form
         name = self.selenium.find_element(By.NAME, "name")
@@ -83,7 +83,9 @@ class HabitTests(SeleniumTestCase):
         self.selenium.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
 
         # Wait for redirect to habit list
-        WebDriverWait(self.selenium, 10).until(ec.url_contains(reverse("habit_list")))
+        WebDriverWait(self.selenium, 10).until(
+            ec.url_contains(reverse("quests:habit_list"))
+        )
 
         # Verify habit was created
         assert Habit.objects.filter(name="Selenium Habit").exists()
@@ -99,7 +101,7 @@ class HabitTests(SeleniumTestCase):
             experience_reward=50,
         )
 
-        self.selenium.get(f'{self.live_server_url}{reverse("habit_list")}')
+        self.selenium.get(f'{self.live_server_url}{reverse("quests:habit_list")}')
 
         # Find and click complete button
         complete_button = WebDriverWait(self.selenium, 10).until(
