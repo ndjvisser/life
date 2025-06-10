@@ -5,6 +5,7 @@ from django.utils import timezone
 
 from life_dashboard.quests.forms import HabitForm, QuestForm
 from life_dashboard.quests.models import Habit, HabitCompletion, Quest
+from life_dashboard.stats.models import Stats
 
 
 @login_required
@@ -161,45 +162,45 @@ def habit_delete(request, pk):
 
 
 @login_required
-def complete_habit(request, pk):
-    habit = get_object_or_404(Habit, pk=pk, user=request.user)
-    if request.method == "POST":
-        initial_level = request.user.stats.level
-        # completion = HabitCompletion.objects.create(
-        #     habit=habit,
-        #     date=timezone.now().date(),
-        #     experience_gained=habit.experience_reward,
-        # )
-        # Add experience to user's stats
-        request.user.stats.gain_experience(habit.experience_reward)
+def complete_habit(request, habit_id):
+    """Complete a habit and award experience points."""
+    habit = get_object_or_404(Habit, id=habit_id, user=request.user)
 
-        # Check if level up occurred
-        if request.user.stats.level > initial_level:
+    # Create completion record with correct fields
+    HabitCompletion.objects.create(
+        habit=habit,
+        date=timezone.now().date(),
+        experience_gained=habit.experience_reward,
+    )
+
+    # Update habit streak
+    habit.current_streak += 1
+    if habit.current_streak > habit.longest_streak:
+        habit.longest_streak = habit.current_streak
+    habit.save()
+
+    # Award experience points
+    try:
+        # Get or create stats for the user
+        stats, created = Stats.objects.get_or_create(user=request.user)
+        old_level = stats.level
+        stats.gain_experience(habit.experience_reward)
+
+        # Check for level up
+        if stats.level > old_level:
             messages.success(
                 request,
-                f"Habit '{habit.name}' completed!"
-                f"Level up to {request.user.stats.level}!",
+                f"Level up! You are now level {stats.level}",
+                extra_tags="level-up",
             )
-            return redirect("dashboard:level_up")
-        else:
-            messages.success(request, f"Habit '{habit.name}' completed!")
-            return redirect("quests:habit_list")
-    return redirect("quests:habit_detail", pk=habit.pk)
 
-
-@login_required
-def habit_complete(request, pk):
-    habit = get_object_or_404(Habit, pk=pk, user=request.user)
-    if request.method == "POST":
-        # Create a new completion record
-        HabitCompletion.objects.create(
-            habit=habit,
-            completed_at=timezone.now(),
-            notes=request.POST.get("notes", ""),
+        messages.success(
+            request, f"Habit '{habit.name}' completed! +{habit.experience_reward} XP"
         )
-        messages.success(request, "Habit marked as completed!")
-        return redirect("quests:habit_list")
-    return redirect("quests:habit_detail", pk=habit.pk)
+    except Exception as e:
+        messages.error(request, f"Error updating stats: {str(e)}")
+
+    return redirect("quests:habit_detail", pk=habit.id)
 
 
 @login_required
