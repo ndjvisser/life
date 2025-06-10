@@ -35,13 +35,21 @@ class Stats(models.Model):
         self.save()
 
     def check_level_up(self):
-        """Check if user should level up based on experience."""
-        required_exp = self.level * 1000  # Simple formula: level * 1000
-        if self.experience >= required_exp:
-            self.level += 1
-            self.experience -= required_exp
-            return True
-        return False
+        """Check if user should level up based on experience.
+
+        Returns:
+            int: Number of levels gained
+        """
+        levels_gained = 0
+        while True:
+            required_exp = self.level * 1000  # Simple formula: level * 1000
+            if self.experience >= required_exp:
+                self.level += 1
+                self.experience -= required_exp
+                levels_gained += 1
+            else:
+                break
+        return levels_gained
 
 
 @receiver(post_save, sender=User)
