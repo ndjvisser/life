@@ -1,0 +1,12 @@
+{
+  "experience_to_next_level": 450,
+  "level_progress_percentage": 55.0,
+  "level_up_occurred": true,
+  "level_up_rewards": {
+    "achievement_unlocked": false,
+    "bonus_experience": 0,
+    "unlocked_features": []
+  },
+  "new_level": 3,
+  "total_experience": 2550
+}

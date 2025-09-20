@@ -8,7 +8,7 @@
       "completion_estimate": "Close to completion",
       "is_close_to_completion": true,
       "is_eligible": false,
-      "last_updated": "2024-01-25T12:00:00",
+      "last_updated": "2024-01-25T12:00:00+00:00",
       "missing_requirements": [
         "Complete 13 more quests (currently 37/50)"
       ],
@@ -23,7 +23,7 @@
       "completion_estimate": "Making progress",
       "is_close_to_completion": false,
       "is_eligible": false,
-      "last_updated": "2024-01-25T12:00:00",
+      "last_updated": "2024-01-25T12:00:00+00:00",
       "missing_requirements": [
         "Reach level 80 (currently 35)",
         "Reach skill level 90 (currently 60)",
@@ -33,7 +33,7 @@
       "progress_percentage": 45.0
     }
   ],
-  "progress_updated_at": "2024-01-25T12:00:00",
+  "progress_updated_at": "2024-01-25T12:00:00+00:00",
   "summary": {
     "average_progress": 60.0,
     "close_to_completion": 1,

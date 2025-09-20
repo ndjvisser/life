@@ -1,0 +1,29 @@
+{
+  "achievement_statistics": {
+    "bronze_achievements": 8,
+    "completion_rate": 75.0,
+    "gold_achievements": 1,
+    "silver_achievements": 3,
+    "total_achievements": 12
+  },
+  "activity_statistics": {
+    "account_age_days": 45,
+    "average_session_duration_minutes": 25.5,
+    "days_active": 45,
+    "last_active": "2023-02-15T18:45:00",
+    "total_sessions": 120
+  },
+  "progress_statistics": {
+    "habits_maintained": 5,
+    "journal_entries": 42,
+    "quests_completed": 28,
+    "skills_practiced": 7
+  },
+  "user_profile": {
+    "experience_points": 5750,
+    "level": 1,
+    "level_progress_percentage": 100.0,
+    "user_id": 1,
+    "username": "johndoe"
+  }
+}

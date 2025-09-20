@@ -97,9 +97,11 @@ class TestBaseEvent:
 
     def test_timestamp_is_recent(self):
         """Test that timestamp is set to current time."""
-        before = datetime.utcnow()
+        from datetime import timezone
+
+        before = datetime.now(timezone.utc)
         event = TestEvent()
-        after = datetime.utcnow()
+        after = datetime.now(timezone.utc)
 
         assert before <= event.timestamp <= after
 

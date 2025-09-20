@@ -30,6 +30,7 @@ class TestVerificationMethodFix:
         mock_request = MagicMock(spec=DataSubjectRequest)
         mock_request.user_id = 123
         mock_request.data_categories = {DataCategory.BASIC_PROFILE}
+        mock_request.identity_verified = False  # Ensure identity needs verification
 
         self.request_repo.get_by_id.return_value = mock_request
         self.service._collect_user_data = MagicMock(return_value={"test": "data"})
@@ -67,6 +68,7 @@ class TestVerificationMethodFix:
         # Arrange
         mock_request = MagicMock(spec=DataSubjectRequest)
         mock_request.user_id = 123
+        mock_request.identity_verified = False  # Ensure identity needs verification
 
         self.request_repo.get_by_id.return_value = mock_request
         self.service._delete_user_data = MagicMock(return_value=42)

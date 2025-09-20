@@ -1,0 +1,23 @@
+{
+  "available_actions": [
+    "complete_profile_setup",
+    "skip_to_dashboard"
+  ],
+  "completion_requirements": {
+    "profile_setup": {
+      "optional_fields": [
+        "bio",
+        "location",
+        "birth_date"
+      ],
+      "required_fields": [
+        "first_name",
+        "last_name"
+      ]
+    }
+  },
+  "current_state": "profile_setup",
+  "is_complete": false,
+  "next_step": "initial_goals",
+  "progress_percentage": 33.3
+}

@@ -383,9 +383,13 @@ class TestHabitProperties:
         experience_reward,
     ):
         """Test that streak bonus increases with longer streaks"""
+        # Ensure longest streak doesn't exceed the maximum allowed value
         longest_streak_value = min(
             10000, max(current_streak.value, current_streak.value + 10)
         )
+        # If current_streak is already at max, use it as longest_streak
+        if current_streak.value >= 10000:
+            longest_streak_value = current_streak.value
         longest_streak = StreakCount(longest_streak_value)
 
         habit = Habit(

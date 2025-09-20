@@ -1,0 +1,41 @@
+[
+  {
+    "content": "Established a better morning routine for increased productivity.",
+    "created_at": "2023-01-01T12:00:00.000000",
+    "entry_id": "search-result-3",
+    "entry_type": "daily",
+    "mood": 7,
+    "related_achievement_id": null,
+    "related_quest_id": null,
+    "tags": [],
+    "title": "Daily Routine",
+    "updated_at": "2023-01-01T12:00:00.000000",
+    "user_id": 1
+  },
+  {
+    "content": "Focused on learning new productivity skills and techniques.",
+    "created_at": "2023-01-01T12:00:00.000000",
+    "entry_id": "search-result-2",
+    "entry_type": "daily",
+    "mood": 7,
+    "related_achievement_id": null,
+    "related_quest_id": null,
+    "tags": [],
+    "title": "Learning Goals",
+    "updated_at": "2023-01-01T12:00:00.000000",
+    "user_id": 1
+  },
+  {
+    "content": "Today I learned about time management and productivity techniques.",
+    "created_at": "2023-01-01T12:00:00.000000",
+    "entry_id": "search-result-1",
+    "entry_type": "daily",
+    "mood": 7,
+    "related_achievement_id": null,
+    "related_quest_id": null,
+    "tags": [],
+    "title": "Productivity Tips",
+    "updated_at": "2023-01-01T12:00:00.000000",
+    "user_id": 1
+  }
+]

@@ -5,7 +5,7 @@ Tests event handler registration, version compatibility checking,
 event publishing, and privacy-aware processing.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
 from life_dashboard.shared.domain.event_dispatcher import (
@@ -397,9 +397,13 @@ class TestPrivacyAwareDispatcher:
 
     def test_is_consent_required(self):
         """Test consent requirement detection."""
+
+        # Create a privacy-sensitive event class
+        class PrivacySensitiveEvent(BaseEvent):
+            privacy_sensitive = True
+
         # Events that require consent
-        consent_event = BaseEvent()
-        consent_event.__class__.__name__ = "PatternDetected"
+        consent_event = PrivacySensitiveEvent()
         assert is_consent_required(consent_event) is True
 
         # Events that don't require consent
@@ -408,7 +412,7 @@ class TestPrivacyAwareDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
         )
         assert is_consent_required(no_consent_event) is False

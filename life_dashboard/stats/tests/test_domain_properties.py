@@ -481,4 +481,7 @@ class TestStatChangeProperties:
         # Property: Significance threshold works correctly
         threshold = 10.0
         is_significant = change.is_significant(threshold)
-        assert is_significant == (abs(change.percentage_change) >= threshold)
+        if change.percentage_change is None:
+            assert not is_significant
+        else:
+            assert is_significant == (abs(change.percentage_change) >= threshold)

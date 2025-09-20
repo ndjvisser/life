@@ -4,6 +4,7 @@ Quests application services - use case orchestration and business workflows.
 
 from datetime import date, datetime
 from typing import Any
+from uuid import uuid4
 
 from ..domain.entities import (
     Habit,
@@ -62,11 +63,13 @@ class QuestService:
         else:
             difficulty_enum = difficulty
         quest = Quest(
+            quest_id=str(uuid4()),  # Generate a unique quest ID
             user_id=user_id,
             title=title,
             description=description,
             quest_type=quest_type,
             difficulty=difficulty_enum,
+            status=QuestStatus.DRAFT,  # New quests start as draft
             experience_reward=experience_reward,
             due_date=due_date,
             created_at=datetime.utcnow(),
