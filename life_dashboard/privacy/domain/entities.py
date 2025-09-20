@@ -1,6 +1,7 @@
 """
 Privacy domain entities - pure Python privacy and consent management logic.
 """
+
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum

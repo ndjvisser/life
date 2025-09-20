@@ -2,6 +2,7 @@
 """
 Simple script to run import-linter for pre-commit hooks.
 """
+
 import os
 import subprocess
 import sys

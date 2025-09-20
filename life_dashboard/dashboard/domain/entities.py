@@ -1,6 +1,7 @@
 """
 Dashboard domain entities - pure Python business logic without Django dependencies.
 """
+
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Optional, Tuple

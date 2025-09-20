@@ -2,6 +2,7 @@
 """
 Check for proper layering violations in the DDD architecture.
 """
+
 import glob
 import os
 import re

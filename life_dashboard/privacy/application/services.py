@@ -1,6 +1,7 @@
 """
 Privacy application services - use case orchestration for privacy and consent management.
 """
+
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set
 

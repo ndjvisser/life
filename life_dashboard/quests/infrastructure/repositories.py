@@ -1,6 +1,7 @@
 """
 Quests infrastructure repositories - Django ORM implementations.
 """
+
 from datetime import date, timedelta
 from typing import Any, Dict, List, Optional
 

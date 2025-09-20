@@ -1,6 +1,7 @@
 """
 Stats infrastructure models - Django ORM models for persistence.
 """
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models.signals import post_save

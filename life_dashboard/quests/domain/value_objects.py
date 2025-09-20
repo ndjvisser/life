@@ -1,6 +1,7 @@
 """
 Quests domain value objects - immutable objects that represent concepts.
 """
+
 from dataclasses import dataclass
 from datetime import date, timedelta
 from enum import Enum

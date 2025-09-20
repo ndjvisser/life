@@ -1,6 +1,7 @@
 """
 Dashboard domain state machines - pure Python state management.
 """
+
 from dataclasses import dataclass
 from typing import Dict, Optional, Set
 

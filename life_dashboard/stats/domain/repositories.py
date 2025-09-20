@@ -1,6 +1,7 @@
 """
 Stats domain repository interfaces - abstract data access contracts.
 """
+
 from abc import ABC, abstractmethod
 from datetime import date
 from typing import Any, Dict, List, Optional

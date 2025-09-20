@@ -1,6 +1,7 @@
 """
 Basic tests to ensure the Django setup is working correctly.
 """
+
 from django.conf import settings
 from django.test import TestCase
 

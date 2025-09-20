@@ -1,6 +1,7 @@
 """
 Dashboard service factory - dependency injection and service wiring.
 """
+
 from .application.services import AuthenticationService, OnboardingService, UserService
 from .infrastructure.repositories import (
     DjangoUserProfileRepository,

@@ -1,6 +1,7 @@
 """
 Stats infrastructure repositories - Django ORM implementations.
 """
+
 from datetime import date
 from typing import Any, Dict, List, Optional
 

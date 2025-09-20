@@ -1,6 +1,7 @@
 """
 Tests for stats domain layer - pure Python business logic tests.
 """
+
 from decimal import Decimal
 
 import pytest

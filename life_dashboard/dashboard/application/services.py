@@ -1,6 +1,7 @@
 """
 Dashboard application services - use case orchestration and business workflows.
 """
+
 from datetime import datetime
 from typing import Optional, Tuple
 

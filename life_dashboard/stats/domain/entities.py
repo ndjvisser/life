@@ -1,6 +1,7 @@
 """
 Stats domain entities - pure Python business logic without Django dependencies.
 """
+
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal

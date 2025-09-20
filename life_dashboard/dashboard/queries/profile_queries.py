@@ -1,6 +1,7 @@
 """
 Dashboard profile queries - read-only data access for views.
 """
+
 from typing import Any, Dict, Optional
 
 from django.contrib.auth.models import User

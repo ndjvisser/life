@@ -1,6 +1,7 @@
 """
 Skills domain entities - pure Python business logic without Django dependencies.
 """
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, Optional, Tuple

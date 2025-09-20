@@ -1,6 +1,7 @@
 """
 Dashboard infrastructure repositories - Django ORM implementations.
 """
+
 from typing import Optional
 
 from django.contrib.auth import authenticate

@@ -1,6 +1,7 @@
 """
 Stats service factory - dependency injection and service wiring.
 """
+
 from .application.services import LifeStatService, StatAnalyticsService, StatService
 from .infrastructure.repositories import (
     DjangoCoreStatRepository,

@@ -1,6 +1,7 @@
 """
 Dashboard domain repository interfaces - abstract data access contracts.
 """
+
 from abc import ABC, abstractmethod
 from typing import Optional
 

@@ -1,6 +1,7 @@
 """
 Quests domain entities - pure Python business logic without Django dependencies.
 """
+
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum

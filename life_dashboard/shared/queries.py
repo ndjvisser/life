@@ -5,6 +5,7 @@ This module provides a thin abstraction for cross-context data access
 without violating bounded context boundaries. Only read-only operations
 are allowed to maintain context independence.
 """
+
 from typing import Any, Dict, List, Optional
 
 from django.contrib.auth.models import User

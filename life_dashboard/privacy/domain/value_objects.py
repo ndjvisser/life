@@ -1,6 +1,7 @@
 """
 Privacy domain value objects - immutable privacy-related concepts.
 """
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum

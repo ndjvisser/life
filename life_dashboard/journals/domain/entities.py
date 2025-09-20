@@ -1,6 +1,7 @@
 """
 Journals domain entities - pure Python business logic without Django dependencies.
 """
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum

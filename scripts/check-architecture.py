@@ -5,6 +5,7 @@ Architecture boundary checker script.
 This script validates that the bounded context architecture is properly
 maintained and provides detailed feedback on any violations.
 """
+
 import re
 import subprocess
 import sys

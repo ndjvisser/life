@@ -1,6 +1,7 @@
 """
 Dashboard domain value objects - immutable objects that represent concepts.
 """
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional

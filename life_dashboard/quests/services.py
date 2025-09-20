@@ -1,6 +1,7 @@
 """
 Quests service factory - dependency injection and service wiring.
 """
+
 from .application.services import HabitService, QuestChainService, QuestService
 from .infrastructure.repositories import (
     DjangoHabitCompletionRepository,

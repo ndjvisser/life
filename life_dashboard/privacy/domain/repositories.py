@@ -1,6 +1,7 @@
 """
 Privacy domain repository interfaces - abstract data access contracts.
 """
+
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Dict, List, Optional
