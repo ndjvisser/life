@@ -39,11 +39,29 @@ class StatService:
         """
         core_stats = self.core_stat_repo.get_by_user_id(user_id)
         if not core_stats:
-            core_stats = CoreStat(
-                user_id=user_id,
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
-            )
+from datetime import date, datetime, timedelta
+from ..domain.entities import CoreStat, LifeStat, StatHistory
+from django.utils import timezone
+
+def get_or_create_core_stats(self, user_id: int) -> CoreStat:
+    core_stats = CoreStat(
+        user_id=user_id,
+        created_at=timezone.now(),
+        updated_at=timezone.now(),
+    )
+    # ... (rest unchanged)
+
+# inside create_or_update_stat(...) — keep surrounding code as-is
+                created_at=timezone.now(),
+                last_updated=timezone.now(),
+    # ... (rest unchanged)
+
+def get_recent_activity(self, user_id: int, days: int = 7) -> List[StatHistory]:
+    end_date = timezone.localdate()
+    if days < 1:
+        days = 1
+    start_date = end_date - timedelta(days=days - 1)
+    # ... (rest unchanged)
             core_stats = self.core_stat_repo.create(core_stats)
 
         return core_stats
