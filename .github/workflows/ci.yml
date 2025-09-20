@@ -116,16 +116,19 @@ jobs:
           - test-type: domain
             make-target: test-domain
             description: "Pure Domain Tests (Fastest)"
+            env: { HYPOTHESIS_PROFILE: default }
           - test-type: properties
             make-target: test-properties
             description: "Property-Based Tests"
-            env: "HYPOTHESIS_PROFILE=ci"
+            env: { HYPOTHESIS_PROFILE: ci }
           - test-type: contracts
             make-target: test-contracts
             description: "Service Contract Tests"
+            env: { HYPOTHESIS_PROFILE: default }
           - test-type: snapshots
             make-target: test-snapshots
             description: "API Snapshot Tests"
+            env: { HYPOTHESIS_PROFILE: default }
 
     steps:
       - name: Checkout code
@@ -143,8 +146,7 @@ jobs:
 
       - name: Run ${{ matrix.description }}
         run: make ${{ matrix.make-target }}
-        env:
-          HYPOTHESIS_PROFILE: ${{ matrix.test-type == 'properties' && 'ci' || 'default' }}
+        env: ${{ matrix.env }}
         continue-on-error: ${{ github.ref != 'refs/heads/main' }}
 
   comprehensive-testing:
