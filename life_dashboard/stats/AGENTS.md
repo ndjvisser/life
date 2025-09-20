@@ -32,7 +32,9 @@ Add type hints everywhere; mypy --strict must pass.
 
 Lint
 
-ruff check . && ruff format . before commit.
+ruff check . && ruff format . before commit. Type hints + mypy --strict. Ruff handles formatting (no Black/Flake8).
+
+Python >=3.12, Django >=5.1.1,<5.2.0
 
 1) Scope of the stats context
 
@@ -231,7 +233,7 @@ is idempotent.
 
  Events emitted are canonical & versioned.
 
- mypy --strict clean; ruff check clean.
+ mypy --strict clean; ruff check clean; import-linter check
 
  No Django import in domain/**.
 
