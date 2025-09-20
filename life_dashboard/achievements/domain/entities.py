@@ -175,11 +175,12 @@ class Achievement:
         total_requirements = 0
         met_requirements = 0
 
-        # Level requirement progress
-        user_level = user_stats.get("level", 1)
-        level_progress = min(user_level / self.required_level.value, 1.0)
-        total_requirements += 1
-        met_requirements += level_progress
+        # Level requirement progress (only if meaningful)
+        if self.required_level.value > 1:
+            user_level = user_stats.get("level", 1)
+            level_progress = min(user_level / self.required_level.value, 1.0)
+            total_requirements += 1
+            met_requirements += level_progress
 
         # Skill level requirement progress
         if self.required_skill_level:
@@ -188,7 +189,7 @@ class Achievement:
             total_requirements += 1
             met_requirements += skill_progress
 
-        # Quest completions requirement progress
+        # Quest completions requirement progress (only if meaningful)
         if self.required_quest_completions.value > 0:
             quest_completions = user_stats.get("quest_completions", 0)
             quest_progress = min(
@@ -202,7 +203,6 @@ class Achievement:
             if total_requirements > 0
             else 100.0
         )
-
     def get_missing_requirements(self, user_stats: dict[str, Any]) -> list[str]:
         """Get list of missing requirements for this achievement"""
         missing = []

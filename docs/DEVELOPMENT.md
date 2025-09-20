@@ -32,8 +32,7 @@ If you're using GitHub Desktop and encounter issues with the `import-linter` hoo
    git commit -m "Your commit message"
    ```
 
-3. **The hook will gracefully degrade** - if import-linter is not available, it will show a warning but won't block your commit.
-
+3. If `import-linter` is not available locally, pre-commit will warn. In CI, architecture violations are blocking. Recommended: install it locally so the hook fails on violations.
 ### Hook Details
 
 The pre-commit configuration includes:
