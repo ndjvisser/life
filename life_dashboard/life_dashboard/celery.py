@@ -32,30 +32,56 @@ except ImportError:
             """
             pass
 
-        def task(self, *args, **kwargs):
-            """
-            No-op task decorator used when Celery is not available.
-
-            Returns a decorator that, when applied to a function, returns the function unchanged
-            (in other words, it does not register or modify the function as a Celery task).
-            Accepts the same args/kwargs as the real Celery `task` decorator but ignores them.
-            """
+        def task(self, bind: bool = False, **kwargs):
+            """Dummy task decorator for when Celery is not installed."""
 
             def decorator(func):
-                """
-                No-op decorator that returns the original callable unchanged.
+                def wrapped(*args, **kw):
+                    if bind:
 
-                Used as a fallback for Celery's `task` decorator when Celery is not installed.
+                        class _Self:
+                            # minimal task-like object
+                            request = type("R", (), {})()
 
-                Parameters:
-                    func (callable): The function or callable to decorate; returned unmodified.
+                        return func(_Self(), *args, **kw)
+                    return func(*args, **kw)
 
-                Returns:
-                    callable: The same callable passed in.
-                """
-                return func
+                # Synchronous fallbacks
+                wrapped.delay = lambda *a, **k: wrapped(*a, **k)
+                wrapped.apply_async = lambda args=None, kwargs=None, **opts: wrapped(
+                    *(args or ()), **(kwargs or {})
+                )
+                return wrapped
 
             return decorator
+
+    def shared_task(bind: bool = False, **kwargs):
+        """Dummy shared_task decorator for when Celery is not installed."""
+
+        def decorator(func):
+            def wrapped(*args, **kw):
+                if bind:
+
+                    class _Self:
+                        # minimal task-like object with request and retry method
+                        request = type("R", (), {"retries": 0})()
+
+                        def retry(self, exc=None, countdown=None, **retry_kwargs):
+                            # In no-celery mode, just re-raise the exception
+                            if exc:
+                                raise exc
+
+                    return func(_Self(), *args, **kw)
+                return func(*args, **kw)
+
+            # Synchronous fallbacks
+            wrapped.delay = lambda *a, **k: wrapped(*a, **k)
+            wrapped.apply_async = lambda args=None, kwargs=None, **opts: wrapped(
+                *(args or ()), **(kwargs or {})
+            )
+            return wrapped
+
+        return decorator
 
 
 # Set the default Django settings module for the 'celery' program.
@@ -64,6 +90,13 @@ os.environ.setdefault(
 )
 
 app = Celery("life_dashboard")
+
+# Make shared_task available at module level when Celery is not installed
+try:
+    from celery import shared_task
+except ImportError:
+    # Use the dummy shared_task from our Celery class
+    shared_task = app.shared_task
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
