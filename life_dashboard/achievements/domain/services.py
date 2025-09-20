@@ -117,8 +117,9 @@ class AchievementService:
             ):
                 raise ValueError("User already has this achievement")
 
-        # Generate user achievement ID (in real implementation, this would come from repository)
-        user_achievement_id = UserAchievementId(1)  # Placeholder
+        # Repository will assign ID during save
+        # Use placeholder ID for entity creation, repository will replace
+        user_achievement_id = UserAchievementId(-1)  # Temporary placeholder
 
         # Create user achievement
         user_achievement = UserAchievement(

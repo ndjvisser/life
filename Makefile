@@ -60,10 +60,7 @@ dev-install:
 
 generate-constraints:
 	@echo "Generating constraints.txt from pyproject.toml..."
-	pip install pip-tools
-	pip-compile --output-file=constraints.txt pyproject.toml
-	@echo "✅ Generated constraints.txt"
-
+	$(MAKE) compile-deps
 setup: dev-install migrate setup-sample-data
 	@echo "✅ Project setup complete!"
 

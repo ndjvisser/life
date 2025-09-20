@@ -64,7 +64,7 @@ class Achievement:
     required_level: RequiredLevel
     required_skill_level: RequiredSkillLevel | None = None
     required_quest_completions: RequiredQuestCompletions = field(
-        default_factory=lambda: RequiredQuestCompletions(0)
+        default_factory=lambda: RequiredQuestCompletions(1)
     )
     is_hidden: bool = False  # Hidden until unlocked
     is_repeatable: bool = False  # Can be unlocked multiple times
