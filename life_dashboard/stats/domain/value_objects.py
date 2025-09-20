@@ -312,16 +312,31 @@ class StatChange:
         return self.change_amount < 0
 
     @property
-    def percentage_change(self) -> float:
+    def percentage_change(self) -> float | None:
         """
-        Return the signed percentage change from old_value to new_value as a float.
+        Return the signed percentage change from old_value to new_value.
 
-        If old_value is zero, returns 100.0 when new_value > 0 and 0.0 when new_value == 0. The result is (new_value - old_value) / old_value * 100 and may be negative for decreases. Values are computed from Decimal fields but returned as a float.
+        Matches semantics used elsewhere in the domain: when `old_value == 0`,
+        percentage change is undefined and this property returns None.
+
+        For non-zero `old_value`, returns ((new - old) / old) * 100 as a float.
+        The value may be negative for decreases.
         """
         if self.old_value == 0:
-            return 100.0 if self.new_value > 0 else 0.0
+            return None
 
         return float((self.change_amount / self.old_value) * 100)
+
+    def percentage_change_from_zero(self) -> float:
+        """
+        Return a special-case percentage for transitions starting from zero.
+
+        This helper provides an explicit interpretation for the `old_value == 0`
+        case, returning 100.0 when `new_value > 0` and 0.0 when `new_value == 0`.
+        Use this method instead of overloading `percentage_change` when this
+        behaviour is desired.
+        """
+        return 100.0 if self.new_value > 0 else 0.0
 
     def is_significant(self, threshold_percentage: float = 10.0) -> bool:
         """
@@ -332,5 +347,9 @@ class StatChange:
 
         Returns:
             bool: True if abs(percentage_change) >= threshold_percentage, otherwise False.
+                  When percentage_change is undefined (old_value == 0), returns False.
         """
-        return abs(self.percentage_change) >= threshold_percentage
+        pc = self.percentage_change
+        if pc is None:
+            return False
+        return abs(pc) >= threshold_percentage

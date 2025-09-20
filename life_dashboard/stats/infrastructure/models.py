@@ -14,7 +14,7 @@ class CoreStatModel(models.Model):
     """Django model for core RPG stats - consolidated from core_stats app."""
 
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="consolidated_core_stats"
+        User, on_delete=models.CASCADE, related_name="core_stats"
     )
 
     # RPG-style attributes

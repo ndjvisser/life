@@ -233,8 +233,18 @@ class Habit:
             self.current_streak = StreakCount(1)
         else:
             days_diff = (completion_date - previous_completion_date).days
+            # For monthly frequency, compute month-delta across years to handle Dec→Jan
+            if self.frequency == HabitFrequency.MONTHLY:
+                prev_idx = (
+                    previous_completion_date.year * 12 + previous_completion_date.month
+                )
+                curr_idx = completion_date.year * 12 + completion_date.month
+                month_delta = curr_idx - prev_idx
+                is_consecutive = month_delta in (0, 1)
+            else:
+                is_consecutive = self._is_consecutive_completion(days_diff)
 
-            if self._is_consecutive_completion(days_diff):
+            if is_consecutive:
                 new_streak = self.current_streak.value + 1
                 self.current_streak = StreakCount(new_streak)
 

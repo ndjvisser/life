@@ -35,7 +35,7 @@ def update_foreign_key_references_backward(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("stats", "0003_consolidate_core_stats_data"),
+        ("stats", "0002_consolidate_stats_models"),
     ]
 
     operations = [

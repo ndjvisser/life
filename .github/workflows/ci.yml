@@ -24,12 +24,26 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y zlib1g-dev libjpeg-dev libpng-dev redis-server
+          sudo apt-get install -y zlib1g-dev libjpeg-dev libpng-dev redis-server redis-tools
 
       - name: Start Redis
         run: |
-          sudo systemctl start redis-server
-          sudo systemctl status redis-server
+          set -euo pipefail
+          # Start Redis in the background (daemonized)
+          sudo redis-server --daemonize yes
+          # Health check loop: wait up to ~10 seconds for Redis to respond
+          for i in {1..20}; do
+            if redis-cli ping | grep -q PONG; then
+              echo "Redis is up"
+              break
+            fi
+            sleep 0.5
+          done
+          # Fail the step if Redis is not healthy
+          if ! redis-cli ping | grep -q PONG; then
+            echo "Redis failed to start" >&2
+            exit 1
+          fi
 
       - name: Install dependencies
         run: |

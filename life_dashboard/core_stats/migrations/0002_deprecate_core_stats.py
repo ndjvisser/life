@@ -17,7 +17,7 @@ def verify_data_migration_forward(apps, schema_editor):
         raise Exception(
             f"Data migration incomplete: {old_count} records in core_stats.CoreStat "
             f"but {new_count} records in stats.CoreStatModel. "
-            "Run stats migration 0003_consolidate_core_stats_data first."
+            "Run stats migration 0002_consolidate_stats_models first."
         )
 
     # Log the migration status
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
         ("core_stats", "0001_initial"),
         (
             "stats",
-            "0004_remove_old_core_stats_references",
+            "0002_consolidate_stats_models",
         ),  # Ensure stats migration is complete
     ]
 

@@ -154,7 +154,7 @@ def profile(request):
 
     # Safely get or create core stats
     try:
-        core_stats = user.consolidated_core_stats
+        core_stats = user.core_stats
     except CoreStatModel.DoesNotExist:
         core_stats, created = CoreStatModel.objects.get_or_create(user=user)
 
