@@ -70,7 +70,9 @@ def achievement_descriptions(draw):
 @composite
 def experience_rewards(draw):
     """Generate valid experience rewards"""
-    return ExperienceReward(draw(st.integers(min_value=0, max_value=50000)))
+    return ExperienceReward(
+        draw(st.integers(min_value=0, max_value=50000)), max_value=50000
+    )
 
 
 @composite
@@ -623,7 +625,7 @@ class TestValueObjectProperties:
     @given(st.integers(min_value=0, max_value=50000))
     def test_experience_reward_accepts_valid_range(self, value):
         """Test that ExperienceReward accepts valid range"""
-        reward = ExperienceReward(value)
+        reward = ExperienceReward(value, max_value=50000)
         assert reward.value == value
         assert 0 <= reward.value <= 50000
 
@@ -631,7 +633,7 @@ class TestValueObjectProperties:
     def test_experience_reward_rejects_excessive_values(self, value):
         """Test that ExperienceReward rejects excessive values"""
         with pytest.raises(ValueError):
-            ExperienceReward(value)
+            ExperienceReward(value, max_value=50000)
 
     @given(st.integers(min_value=1, max_value=100))
     def test_required_level_accepts_valid_range(self, value):

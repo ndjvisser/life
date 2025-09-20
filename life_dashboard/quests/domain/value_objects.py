@@ -7,6 +7,8 @@ No Django dependencies allowed in this module.
 
 from dataclasses import dataclass
 
+from life_dashboard.common.value_objects import ExperienceReward, UserId
+
 
 @dataclass(frozen=True)
 class QuestId:
@@ -17,17 +19,6 @@ class QuestId:
     def __post_init__(self):
         if self.value <= 0:
             raise ValueError("Quest ID must be positive")
-
-
-@dataclass(frozen=True)
-class UserId:
-    """User identifier value object"""
-
-    value: int
-
-    def __post_init__(self):
-        if self.value <= 0:
-            raise ValueError("User ID must be positive")
 
 
 @dataclass(frozen=True)
@@ -52,19 +43,6 @@ class QuestDescription:
     def __post_init__(self):
         if len(self.value) > 2000:
             raise ValueError("Quest description cannot exceed 2000 characters")
-
-
-@dataclass(frozen=True)
-class ExperienceReward:
-    """Experience reward value object with validation"""
-
-    value: int
-
-    def __post_init__(self):
-        if self.value < 0:
-            raise ValueError("Experience reward cannot be negative")
-        if self.value > 10000:
-            raise ValueError("Experience reward cannot exceed 10000")
 
 
 @dataclass(frozen=True)
