@@ -50,6 +50,7 @@ class TestVerificationMethodFix:
         mock_request = MagicMock(spec=DataSubjectRequest)
         mock_request.user_id = 123
         mock_request.data_categories = {DataCategory.BASIC_PROFILE}
+        mock_request.identity_verified = True
 
         self.request_repo.get_by_id.return_value = mock_request
         self.service._collect_user_data = MagicMock(return_value={"test": "data"})
@@ -60,7 +61,6 @@ class TestVerificationMethodFix:
         # Assert
         mock_request.verify_identity.assert_not_called()
         mock_request.start_processing.assert_called_once_with(456)
-
     def test_process_deletion_request_with_verification_method(self):
         """Test that process_deletion_request accepts and uses verification_method parameter."""
         # Arrange
