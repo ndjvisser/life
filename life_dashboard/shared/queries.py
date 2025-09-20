@@ -81,19 +81,26 @@ class CrossContextQueries:
                     }
                 )
 
-            # Add core stats if available
-            if hasattr(user, "core_stats"):
+            # Add core stats if available (check both old and new relations)
+            core_stats_data = None
+            if hasattr(user, "consolidated_core_stats"):
+                core_stats_data = user.consolidated_core_stats
+            elif hasattr(user, "core_stats"):
+                # Fallback to old relation during migration period
+                core_stats_data = user.core_stats
+
+            if core_stats_data:
                 summary.update(
                     {
                         "core_stats": {
-                            "strength": user.core_stats.strength,
-                            "endurance": user.core_stats.endurance,
-                            "agility": user.core_stats.agility,
-                            "intelligence": user.core_stats.intelligence,
-                            "wisdom": user.core_stats.wisdom,
-                            "charisma": user.core_stats.charisma,
-                            "level": user.core_stats.level,
-                            "experience_points": user.core_stats.experience_points,
+                            "strength": core_stats_data.strength,
+                            "endurance": core_stats_data.endurance,
+                            "agility": core_stats_data.agility,
+                            "intelligence": core_stats_data.intelligence,
+                            "wisdom": core_stats_data.wisdom,
+                            "charisma": core_stats_data.charisma,
+                            "level": core_stats_data.level,
+                            "experience_points": core_stats_data.experience_points,
                         }
                     }
                 )
