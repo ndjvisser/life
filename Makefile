@@ -1,6 +1,6 @@
 # Life Dashboard - Development Commands
 
-.PHONY: help install dev-install test lint format check-architecture clean reset setup-sample-data
+.PHONY: help install dev-install generate-constraints setup test test-unit test-integration test-bdd test-domain test-domain-fast test-properties test-contracts test-snapshots test-all-unit test-domain-coverage test-thorough test-parallel test-all lint format type-check type-check-strict check-architecture pre-commit compile-deps sync-deps update-deps check-deps migrate resetdb setup-sample-data reset-admin-password check-dev-env check-boundaries architecture-report dependency-graph runserver clean reset ci-install ci-check docker-build docker-run docs dev collectstatic deploy-check
 
 # Default target
 help:
