@@ -61,16 +61,17 @@ class UserAchievementAdapter:
     """Adapter for mapping between domain UserAchievement entities and Django models."""
 
     @staticmethod
+from django.contrib.auth import get_user_model
+
     def domain_to_django(
         domain_user_achievement: DomainUserAchievement,
         django_achievement: DjangoAchievement,
         user_id: int,
     ) -> DjangoUserAchievement:
         """Convert domain UserAchievement entity to Django model."""
-        from django.contrib.auth.models import User
+        User = get_user_model()
 
         user = User.objects.get(id=user_id)
-
         django_user_achievement = DjangoUserAchievement(
             user=user,
             achievement=django_achievement,
