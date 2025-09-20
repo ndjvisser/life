@@ -47,9 +47,12 @@ def register(request):
                 user = form.save()
                 logger.debug("User created: %s", user.username)
 
-                # Create user profile in the same transaction
-                _ = UserProfile.objects.create(user=user)
-                logger.debug("User profile created")
+                # Ensure user profile exists (signals may already create it)
+                _, _created = UserProfile.objects.get_or_create(user=user)
+                logger.debug(
+                    "User profile %s",
+                    "created" if _created else "already existed",
+                )
 
                 # Log in the user
                 login(request, user)
@@ -58,7 +61,8 @@ def register(request):
             except Exception as e:
                 logger.error("Error during user creation: %s", str(e))
                 messages.error(request, f"Error during registration: {str(e)}")
-                transaction.set_rollback(True)  # Rollback the transaction on error
+                # Let the atomic block handle rollback implicitly by
+                # re-rendering the form
         else:
             logger.debug("Form errors: %s", form.errors)
             for field, errors in form.errors.items():

@@ -25,23 +25,26 @@ Provide a single source of truth for how product features (PRD) map to monetizab
 ## Domain Event Flow (Enhanced Example)
 
 ### Manual Quest Completion Flow
-1. User completes quest → `QuestCompleted` event
-2. `AchievementEngine` listens → grants badge if criteria met
-3. `StatService` awards XP to relevant CoreStat
+1. User completes quest → `QuestCompleted` event (v1.0.0)
+2. `AchievementEngine` listens → evaluates rules → `AchievementUnlocked` event (v1.0.0)
+3. `StatService` awards XP → `ExperienceAwarded` event (v1.0.0) → potential `LevelUp` event (v1.0.0)
 4. `OverviewAggregator` recalculates dashboards (asynchronous task) → front-end refresh via WebSocket
 
 ### Automated Integration Flow
-1. External API sync → `ExternalDataReceived` event
-2. `ValidationService` validates and transforms data → `StatUpdated` event
-3. `TrendDetectionService` analyzes patterns → `InsightGenerated` event
-4. `PredictionService` forecasts trends → `RecommendationCreated` event
-5. `NotificationService` alerts user to insights and recommendations
+1. External API sync → `ExternalDataReceived` event (v1.0.0)
+2. `ValidationService` validates and transforms data → `LifeStatUpdated` event (v1.0.0)
+3. `TrendDetectionService` analyzes patterns → `TrendDetected` event (v1.0.0)
+4. `InsightEngine` processes trends → `InsightGenerated` event (v1.0.0)
+5. `PredictionService` forecasts outcomes → `PredictionGenerated` event (v1.0.0)
+6. `RecommendationEngine` creates actions → `RecommendationCreated` event (v1.0.0)
+7. `NotificationService` alerts user to insights and recommendations
 
 ### Cross-Context Intelligence Flow
-1. Multiple stat updates → `PatternDetected` event
-2. `BalanceScorer` evaluates life balance → `BalanceShiftDetected` event
-3. `InsightEngine` generates actionable recommendations → `ActionableInsightCreated` event
-4. `CoachingService` suggests quest/habit adjustments → `PersonalizedRecommendation` event
+1. Multiple stat updates → `TrendDetected` + `PatternDetected` events (v1.0.0)
+2. `BalanceScorer` evaluates life balance → `BalanceScoreCalculated` event (v1.0.0)
+3. Significant changes → `BalanceShiftDetected` event (v1.0.0)
+4. `InsightEngine` generates actionable recommendations → `InsightGenerated` event (v1.0.0)
+5. `CoachingService` suggests quest/habit adjustments → `RecommendationCreated` event (v1.0.0)
 
 ## Key Business Rules
 
@@ -113,11 +116,22 @@ Unlocking certain achievements automatically creates new, higher-tier challenges
 ## Technical Anchors
 
 - **Hexagonal Ports & Adapters** around each context
-- **Domain Events** via Django signals → future-proof for Kafka
+- **Custom Domain Event Dispatcher** with in-process publisher/subscriber pattern for decoupled communication
+- **Pure Domain Event Publishing** from domain layer (no Django signal imports in domain code)
 - **Service Layer** resides in `application/` package within each app
 - **Pure Domain Models** in `domain/` (no Django imports)
 - **Repository Pattern** for data access abstraction
 - **Anti-Corruption Layers** at context boundaries
+
+### Event System Architecture
+
+The domain event system uses a custom in-process dispatcher that:
+- Maintains type safety with canonical event schemas from the [Domain Events Catalog](./domain-events-catalog.md)
+- Supports synchronous event handling for fast tests and immediate consistency
+- Provides version compatibility checking for schema evolution
+- Enables pure domain logic without framework dependencies
+
+**External System Adapters**: Bridge adapters will connect the domain event dispatcher to external systems (Celery for async processing, Kafka for distributed events) without polluting domain code with infrastructure concerns.
 
 ## Business Rule Implementation Patterns
 

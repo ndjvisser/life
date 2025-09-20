@@ -123,59 +123,55 @@ The system is organized into eight bounded contexts, each with clear responsibil
 
 ### Domain Events
 
-The system uses domain events for loose coupling between contexts:
+The system uses domain events for loose coupling between contexts. All events follow the canonical schema defined in [Domain Events Catalog](../../steering/domain-events-catalog.md).
 
 ```python
-# Core Events
-class QuestCompleted(DomainEvent):
+# Import canonical events from catalog
+from life_domain.events import (
+    # Core Events
+    QuestCompleted,
+    HabitStreakAchieved,
+    SkillLevelUp,
+    AchievementUnlocked,
+    StatMilestoneReached,
+    ExperienceAwarded,
+    LevelUp,
+
+    # Integration Events
+    ExternalDataReceived,
+    DataSyncCompleted,
+    AutoCompletionTriggered,
+
+    # Intelligence Events
+    PatternDetected,
+    InsightGenerated,
+    RecommendationCreated,
+    BalanceShiftDetected,
+    PredictionGenerated
+)
+
+# Example canonical event usage
+@dataclass
+class QuestCompleted(BaseEvent):
+    """Quest completion event - v1.0.0"""
     user_id: int
     quest_id: int
+    quest_type: str
     experience_reward: int
-    completion_date: datetime
+    completion_timestamp: datetime
+    auto_completed: bool
+    version: str = "1.0.0"
 
-class HabitStreakAchieved(DomainEvent):
+@dataclass
+class ExternalDataReceived(BaseEvent):
+    """External data sync event - v1.0.0"""
     user_id: int
-    habit_id: int
-    streak_count: int
-
-class SkillLevelUp(DomainEvent):
-    user_id: int
-    skill_id: int
-    new_level: int
-    experience_gained: int
-
-class AchievementUnlocked(DomainEvent):
-    user_id: int
-    achievement_id: int
-    tier: str
-
-class StatMilestoneReached(DomainEvent):
-    user_id: int
-    stat_name: str
-    milestone_value: int
-
-# Integration Events
-class ExternalDataReceived(DomainEvent):
-    user_id: int
-    source: str
+    integration_id: int
     data_type: str
-    raw_data: dict
-
-class IntegrationSyncCompleted(DomainEvent):
-    user_id: int
-    integration_type: str
+    data_points_count: int
     sync_timestamp: datetime
-
-# Intelligence Events
-class PatternDetected(DomainEvent):
-    user_id: int
-    pattern_type: str
-    confidence_score: float
-
-class InsightGenerated(DomainEvent):
-    user_id: int
-    insight_type: str
-    content: str
+    data_quality_score: float
+    version: str = "1.0.0"
 ```
 
 ## Components and Interfaces

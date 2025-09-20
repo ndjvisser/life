@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "life_dashboard.dashboard",
+    "life_dashboard.stats",
     "life_dashboard.core_stats",
     "life_dashboard.life_stats",
     "life_dashboard.quests",
@@ -55,7 +56,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles_test")
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        # Include project-level templates (e.g., life_dashboard/templates/...)
+        "DIRS": [
+            os.path.join(BASE_DIR, "life_dashboard", "templates"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -71,3 +75,12 @@ TEMPLATES = [
 SECRET_KEY = "test-secret-key"
 
 DEBUG = True
+
+# Ensure login redirects use our dashboard views during tests
+LOGIN_URL = "dashboard:login"
+LOGIN_REDIRECT_URL = "dashboard:dashboard"
+LOGOUT_REDIRECT_URL = "dashboard:login"
+
+# Crispy Forms configuration for tests
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"

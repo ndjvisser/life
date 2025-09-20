@@ -2,103 +2,125 @@
 
 ## Phase 1: Core Foundation (MVP) - 4-6 weeks
 
-### 1. Architecture Refactoring and DDD Implementation
+### 1. Modular Monolith Architecture Foundation
 
-- [ ] 1.1 Refactor existing Django apps to DDD structure
-  - Restructure existing apps (dashboard, quests, core_stats, achievements, journals, skills) with domain/, infrastructure/, application/, interfaces/ layers
-  - Extract business logic from existing models into domain services
-  - Create repository interfaces and move Django ORM code to infrastructure layer
+- [ ] 1.1 Implement strict context boundaries with dependency enforcement
+  - Restructure existing apps as bounded contexts: `life_dashboard.quests`, `life_dashboard.stats`, etc.
+  - Set up import-linter or python-archgraph to prevent cross-context imports
+  - Create CI guard that fails builds on boundary violations
+  - Implement thin read-only query layer for cross-context data access
   - _Requirements: 11.1, 11.2_
 
-- [ ] 1.2 Consolidate stats apps and implement domain event system
-  - Merge core_stats and stats apps into unified stats context
-  - Create base DomainEvent class and event dispatcher using Django signals
-  - Refactor existing XP award logic to use domain events
-  - Write unit tests for consolidated stats domain and event system
+- [ ] 1.2 Implement layered Ports & Adapters architecture per context
+  - Create interfaces/, services.py, domain/, persistence/, infrastructure/ structure in each context
+  - Move business logic from Django models to pure Python domain objects (dataclasses/Pydantic)
+  - Implement repository pattern with Django ORM in persistence layer
+  - Ensure Views → Service → Domain/Repos flow with no Django imports in domain layer
+  - _Requirements: 11.1, 11.3, 11.4_
+
+- [ ] 1.3 Implement canonical domain event system
+  - Create BaseEvent class with event_id, timestamp, and version fields
+  - Implement all canonical events from domain-events-catalog.md with exact payload schemas
+  - Create lightweight event dispatcher with version compatibility checking
+  - Add event serialization/deserialization for JSON persistence and debugging
   - _Requirements: 11.2, 11.4_
 
-- [ ] 1.3 Enhance development environment and add missing tooling
-  - Add Behave to requirements.txt and configure for BDD testing
-  - Set up pre-commit hooks for existing Ruff configuration
-  - Configure pytest-django for existing test structure
-  - Add additional dependencies for Life OS features (pandas, numpy, scikit-learn)
-  - _Requirements: 14.3, 18.1_
+- [ ] 1.4 Replace Django signals with canonical domain events
+  - Refactor existing XP award logic to use QuestCompleted and ExperienceAwarded events
+  - Implement event handlers with version compatibility (@handles decorator)
+  - Add event publishing to all domain services (StatService, QuestService, etc.)
+  - Create optional Celery adapter for async event processing
+  - _Requirements: 11.2, 11.4_
 
-### 2. User Management Enhancement
+- [ ] 1.5 Set up development tooling and architecture enforcement
+  - Add mypy --strict + django-stubs for type checking per context
+  - Configure structlog with request/trace ID for observability
+  - Set up opentelemetry-instrumentation-django for tracing
+  - Create make reset && make setup-sample-data one-liner commands
+  - _Requirements: 14.3, 18.1, 18.5_
 
-- [ ] 2.1 Enhance existing UserProfile model
-  - Review and optimize existing UserProfile.add_experience() method
-  - Add user preferences and dashboard customization fields
-  - Create UserService in dashboard/application/ layer to encapsulate business logic
-  - Refactor existing views to use UserService instead of direct model access
+### 2. Dashboard Context Refactoring with Command/Query Segregation
+
+- [ ] 2.1 Implement CQRS pattern for UserProfile management
+  - Create UserService with command methods (register_user, update_profile, add_experience)
+  - Implement read-only queries in dashboard/queries/ package for profile data
+  - Move UserProfile.add_experience() business logic to pure domain objects
+  - Add state validation and business rules to domain layer
   - _Requirements: 10.1, 10.2, 10.3_
 
-- [ ] 2.2 Improve existing authentication system
-  - Review existing LoginRequiredMiddleware and authentication setup
-  - Enhance password validation and security measures
-  - Improve existing login/logout views with better error handling
-  - Add comprehensive session management and security headers
+- [ ] 2.2 Refactor authentication with proper service layer
+  - Create AuthenticationService for login/logout/registration commands
+  - Implement authentication queries for session management
+  - Add comprehensive input validation using Pydantic models
+  - Create typed contracts for authentication API responses
   - _Requirements: 10.1, 10.2, 10.4, 10.5_
 
-- [ ] 2.3 Enhance user onboarding experience
-  - Improve existing user registration flow
-  - Create guided onboarding for new users to set initial stats and goals
-  - Enhance welcome dashboard with better initial user experience
-  - Write integration tests for improved authentication and onboarding flow
+- [ ] 2.3 Build onboarding state machine
+  - Implement OnboardingStateMachine using django-fsm or dataclass with Enum states
+  - Create explicit transitions: Registration → Profile Setup → Initial Goals → Dashboard
+  - Add idempotent onboarding steps with rollback capabilities
+  - Write unit tests for state machine transitions without Django dependencies
   - _Requirements: 10.1, 1.4_
 
-### 3. Core Stats System Enhancement
+### 3. Stats Context with Pure Domain Logic
 
-- [ ] 3.1 Refactor existing CoreStat model to DDD structure
-  - Move existing CoreStat model to infrastructure layer
-  - Create CoreStat domain entity with business logic
-  - Implement StatValue value object with validation
-  - Create StatService in stats/application/ layer and refactor existing stat update logic
+- [ ] 3.1 Extract stats business logic to pure Python domain
+  - Create CoreStat and LifeStat domain entities as dataclasses with validation
+  - Implement StatValue value object with 1-100 range validation
+  - Move level calculation logic to pure Python functions (no Django dependencies)
+  - Create StatService commands: update_stat, calculate_level_up, award_experience
   - _Requirements: 1.1, 1.2, 1.5_
 
-- [ ] 3.2 Enhance existing stats interface
-  - Improve existing stats views with better UX and visual design
-  - Add visual progress bars and level indicators to existing stat displays
-  - Implement responsive design improvements for mobile devices
-  - Enhance stat update forms with better validation and feedback
-  - _Requirements: 1.1, 1.2, 17.2, 17.4_
+- [ ] 3.2 Implement stats persistence layer with repository pattern
+  - Move existing CoreStat Django model to stats/persistence/models.py
+  - Create StatRepository interface in domain layer
+  - Implement DjangoStatRepository in persistence layer
+  - Add StatHistory model for trend tracking with proper indexing
+  - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 3.3 Add stat history tracking to existing system
-  - Create StatHistory model to track changes over time
-  - Implement automatic history recording when stats are updated
-  - Build basic trend visualization components
-  - Write integration tests for enhanced stat system with history
-  - _Requirements: 1.3, 15.4_
+- [ ] 3.3 Build stats queries and interface layer
+  - Create read-only queries in stats/queries/ for dashboard data
+  - Implement stats views using service commands and queries
+  - Add Pydantic models for API contracts with snapshot testing
+  - Create responsive stats interface with hot-reload for domain changes
+  - _Requirements: 1.2, 17.2, 17.4, 15.4_
 
-### 4. Quest and Habit System Enhancement
+- [ ] 3.4 Add stats domain events and cross-context integration
+  - Publish StatUpdated, LevelUp, MilestoneReached events from StatService
+  - Create event handlers for achievement unlocking and XP awards
+  - Implement stats consolidation (merge core_stats and stats apps)
+  - Write unit tests for pure domain logic without Django test database
+  - _Requirements: 1.5, 11.2, 11.4_
 
-- [ ] 4.1 Refactor existing Quest model to DDD structure
-  - Move existing Quest model to infrastructure layer
-  - Create Quest domain entity with enhanced business logic
-  - Extend existing quest types to include Life Goals, Annual Goals, Weekly Quests
-  - Refactor existing QuestService and enhance with new quest completion logic
+### 4. Quests Context with State Machine Workflows
+
+- [ ] 4.1 Implement Quest domain with state machine pattern
+  - Create Quest domain entity with QuestState enum (Draft, Active, Completed, Failed)
+  - Implement QuestStateMachine with explicit transitions and validation
+  - Add quest types (Life Goals, Annual, Main, Side, Weekly, Daily) as value objects
+  - Create pure Python quest completion logic with XP calculation
   - _Requirements: 3.1, 3.2, 3.5_
 
-- [ ] 4.2 Enhance existing quest management interface
-  - Improve existing quest views with better categorization and filtering
-  - Enhance quest creation and editing forms with new quest types
-  - Improve quest completion interface with better visual feedback
-  - Add quest status indicators and enhanced progress tracking
-  - _Requirements: 3.3, 17.1, 17.3_
+- [ ] 4.2 Build quest command/query separation
+  - Create QuestService commands: create_quest, complete_quest, update_progress
+  - Implement quest queries for dashboard and quest log views
+  - Add quest chain logic with dependency validation in domain layer
+  - Publish QuestCompleted, QuestChainUnlocked domain events
+  - _Requirements: 3.3, 11.2, 11.4_
 
-- [ ] 4.3 Refactor existing Habit model and enhance functionality
-  - Move existing Habit and HabitCompletion models to infrastructure layer
-  - Create Habit domain entity with enhanced streak calculation
-  - Improve existing habit completion logic and XP rewards
-  - Add habit difficulty levels and category grouping
+- [ ] 4.3 Implement Habit domain with streak calculation
+  - Create Habit domain entity with streak business logic as pure functions
+  - Implement HabitCompletion value object with validation
+  - Add habit frequency patterns (daily, weekly, monthly) with smart scheduling
+  - Create habit difficulty multipliers and category grouping logic
   - _Requirements: 4.1, 4.2, 4.3_
 
-- [ ] 4.4 Enhance existing habit tracking interface
-  - Improve existing habit views with better streak visualization
-  - Enhance habit completion interface with one-click actions
-  - Add habit analytics and performance tracking
-  - Create celebration animations for streak milestones
-  - _Requirements: 4.2, 4.3, 17.3_
+- [ ] 4.4 Build habit persistence and interface layers
+  - Move existing Habit/HabitCompletion models to persistence layer
+  - Create HabitRepository with streak calculation queries
+  - Implement habit completion workflow with idempotent operations
+  - Add habit analytics queries with caching for performance
+  - _Requirements: 4.2, 4.3, 17.3, 15.1_
 
 ### 5. Achievement System Enhancement
 
@@ -146,21 +168,37 @@
   - Write integration tests for enhanced journal relationships
   - _Requirements: 7.4_
 
-### 7. Skills System Integration
+### 7. Skills Context with Extension Registry
 
-- [ ] 7.1 Refactor existing Skills models to DDD structure
-  - Move existing Skill and SkillCategory models to infrastructure layer
-  - Create Skill domain entities with enhanced leveling logic
-  - Improve existing skill experience and level-up calculations
-  - Create SkillService in skills/application/ layer
+- [ ] 7.1 Implement Skills domain with plugin architecture
+  - Create Skill domain entity with exponential XP curve (base * 1.1^level)
+  - Implement SkillCategory as extensible registry using importlib.metadata.entry_points
+  - Add skill mastery levels and prerequisite validation logic
+  - Create SkillService with practice logging and level-up events
   - _Requirements: 5.1, 5.2, 5.4_
 
-- [ ] 7.2 Enhance existing skills interface
-  - Improve existing skills views with better visualization
-  - Enhance skill practice logging with better UX
-  - Add skill level progression display with visual feedback
-  - Create basic skill recommendation system
+- [ ] 7.2 Build extensible skills system
+  - Implement plugin registry for third-party skill modules
+  - Create skill recommendation engine based on user activity patterns
+  - Add skill tree visualization with dependency mapping
+  - Implement skill practice scheduling and reminder system
   - _Requirements: 5.3, 5.5_
+
+### 8. Plugin System and Extensibility
+
+- [ ] 8.1 Implement core plugin architecture
+  - Create life.modules entry point group for external packages
+  - Implement plugin discovery and registration system
+  - Add plugin lifecycle management (load, initialize, teardown)
+  - Create plugin API contracts with versioning support
+  - _Requirements: 11.1, 11.3_
+
+- [ ] 8.2 Build plugin development framework
+  - Create base plugin classes and interfaces
+  - Implement plugin configuration and settings management
+  - Add plugin-specific database migrations and models
+  - Create plugin testing utilities and documentation templates
+  - _Requirements: 11.3, 14.1_
 
 ### 7. Basic Dashboard and UI
 
@@ -185,41 +223,64 @@
   - Write tests for notification delivery and display
   - _Requirements: 9.3, 18.2_
 
-### 8. Testing and Quality Assurance
+### 9. Testing Strategy with Architecture Enforcement
 
-- [ ] 8.1 Set up comprehensive test suite
-  - Create unit tests for all domain models and services
-  - Implement integration tests for API endpoints
-  - Set up BDD tests for critical user journeys
-  - Configure test coverage reporting with 85% minimum
+- [ ] 9.1 Implement domain-first testing approach
+  - Create fast unit tests for pure Python domain logic (no Django test database)
+  - Add property-based testing for domain validation using Hypothesis
+  - Implement contract testing for service layer APIs with Pydantic models
+  - Set up snapshot testing for JSON API responses to prevent breaking changes
   - _Requirements: 14.1, 14.2, 14.3_
 
-- [ ] 8.2 Implement BDD scenarios for core features
-  - Write Gherkin scenarios for user registration and authentication
-  - Create BDD tests for quest completion and habit tracking
-  - Implement achievement unlocking scenarios
-  - Add journal entry creation and management scenarios
-  - _Requirements: 14.1, 14.4_
+- [ ] 9.2 Build comprehensive BDD test suite
+  - Write Gherkin scenarios covering complete user workflows
+  - Implement step definitions that test through service layer, not Django views
+  - Add integration scenarios for cross-context event flows
+  - Create performance scenarios with response time assertions
+  - _Requirements: 14.1, 14.4, 14.5_
 
-- [ ] 8.3 Set up CI/CD pipeline
-  - Configure GitHub Actions for automated testing
-  - Set up linting and code quality checks
-  - Implement automated deployment to staging environment
-  - Add security scanning and dependency checks
-  - _Requirements: 18.3_
+- [ ] 9.3 Set up architecture-aware CI/CD pipeline
+  - Configure GitHub Actions with dependency graph checking
+  - Add automated architecture linting with LLM-powered feedback
+  - Implement mypy strict type checking per context
+  - Set up automated Mermaid diagram generation on PRs
+  - _Requirements: 18.3, 11.1, 11.5_
+
+- [ ] 9.4 Add observability and monitoring foundation
+  - Implement structured logging with trace IDs across all contexts
+  - Add OpenTelemetry instrumentation for database and external API calls
+  - Create health check endpoints for each bounded context
+  - Set up basic metrics collection for business KPIs
+  - _Requirements: 18.1, 18.2, 18.5_
+
+### 10. Developer Experience and Hot-Reload Setup
+
+- [ ] 10.1 Implement hot-reload for domain layer changes
+  - Set up watchmedo for domain/ directory changes without Django restart
+  - Create development server configuration with domain layer hot-reload
+  - Add automatic test running on domain logic changes
+  - Implement fast feedback loop for business logic development
+  - _Requirements: 18.1_
+
+- [ ] 10.2 Create comprehensive development utilities
+  - Build make reset && make setup-sample-data commands
+  - Add database seeding with realistic test data for all contexts
+  - Create development dashboard for monitoring domain events
+  - Implement context health checks and dependency validation
+  - _Requirements: 18.1, 18.5_
 
 ## Phase 2: Enhanced Gamification - 3-4 weeks
 
-### 9. Advanced Achievement System
+### 11. Advanced Achievement System
 
-- [ ] 9.1 Implement dynamic achievement rules
+- [ ] 11.1 Implement dynamic achievement rules
   - Create rule engine for complex achievement criteria
   - Implement streak-based achievements with milestone rewards
   - Add cross-context achievement triggers (stats + quests + habits)
   - Write unit tests for complex achievement rule evaluation
   - _Requirements: 6.1, 6.5_
 
-- [ ] 9.2 Add title and badge system
+- [ ] 11.2 Add title and badge system
   - Implement Title entity with unlock conditions
   - Create badge collection and display system
   - Add title selection and profile display

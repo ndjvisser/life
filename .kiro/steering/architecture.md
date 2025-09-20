@@ -96,26 +96,42 @@ class QuestService:
 
 ## Domain Events
 
-Use in-memory domain events to decouple contexts:
+Use in-memory domain events to decouple contexts. All events follow the canonical schema defined in [Domain Events Catalog](./domain-events-catalog.md).
 
-### Core Events
-- `QuestCompleted(user_id, quest_id, experience_gained)`
-- `HabitStreakAchieved(user_id, habit_id, streak_count)`
-- `SkillLevelUp(user_id, skill_id, new_level)`
-- `AchievementUnlocked(user_id, achievement_id)`
+### Event Categories
 
-### Integration Events
-- `ExternalDataReceived(user_id, source, data_type, raw_data)`
-- `DataSyncCompleted(user_id, integration_type, sync_timestamp)`
-- `IntegrationFailed(user_id, integration_type, error_details)`
-- `AutoCompletionTriggered(user_id, quest_id, trigger_source)`
+**Core System Events**: User management, experience, and leveling
+- See catalog: `UserRegistered`, `ExperienceAwarded`, `LevelUp`
 
-### Intelligence Events
-- `PatternDetected(user_id, pattern_type, confidence_score)`
-- `InsightGenerated(user_id, insight_type, content)`
-- `RecommendationCreated(user_id, recommendation_type, action)`
-- `BalanceShiftDetected(user_id, shift_type, severity)`
-- `PredictionUpdated(user_id, prediction_type, forecast_data)`
+**Stats Events**: RPG stats and life metrics tracking
+- See catalog: `CoreStatUpdated`, `LifeStatUpdated`, `StatMilestoneReached`, `TrendDetected`
+
+**Quest & Habit Events**: Goal management and habit tracking
+- See catalog: `QuestCompleted`, `QuestChainUnlocked`, `HabitStreakAchieved`
+
+**Skills Events**: Skill development and progression
+- See catalog: `SkillLevelUp`, `SkillMasteryAchieved`, `SkillRecommendationGenerated`
+
+**Achievement Events**: Recognition and milestone system
+- See catalog: `AchievementUnlocked`, `TitleUnlocked`, `BadgeEarned`
+
+**Journal Events**: Personal reflection and insights
+- See catalog: `JournalEntryCreated`, `InsightGenerated`, `PatternDetected`
+
+**Integration Events**: External API connections and data sync
+- See catalog: `ExternalDataReceived`, `DataSyncCompleted`, `AutoCompletionTriggered`
+
+**Analytics Events**: Intelligence and predictions
+- See catalog: `BalanceScoreCalculated`, `PredictionGenerated`, `RecommendationCreated`
+
+### Event Implementation Requirements
+
+All domain events MUST:
+1. Follow the canonical payload schema from the catalog
+2. Include semantic versioning for schema evolution
+3. Be JSON serializable for persistence and debugging
+4. Include event_id and timestamp for tracing
+5. Specify owner context for responsibility boundaries
 
 ## Database Strategy
 
