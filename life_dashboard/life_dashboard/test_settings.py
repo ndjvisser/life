@@ -26,9 +26,10 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "life_dashboard.dashboard",
-    "life_dashboard.stats",
+    # Stats-related apps
     "life_dashboard.core_stats",
     "life_dashboard.life_stats",
+    "life_dashboard.stats",
     "life_dashboard.quests",
     "life_dashboard.skills",
     "life_dashboard.achievements",
