@@ -4,7 +4,7 @@ Property-based tests for Achievements domain using Hypothesis.
 These tests generate random inputs to validate domain invariants and edge cases.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from hypothesis import assume, given
@@ -404,7 +404,7 @@ class TestUserAchievementProperties:
         self, user_achievement_id, user_id, achievement_id, notes, days_ago
     ):
         """Test that user achievement creation always succeeds with valid inputs"""
-        unlocked_at = datetime.utcnow() - timedelta(days=days_ago)
+        unlocked_at = datetime.now(timezone.utc) - timedelta(days=days_ago)
 
         user_achievement = UserAchievement(
             user_achievement_id=user_achievement_id,
@@ -429,7 +429,7 @@ class TestUserAchievementProperties:
         self, user_achievement_id, user_id, achievement_id, days_ago
     ):
         """Test that unlock age calculation is accurate"""
-        unlocked_at = datetime.utcnow() - timedelta(days=days_ago)
+        unlocked_at = datetime.now(timezone.utc) - timedelta(days=days_ago)
 
         user_achievement = UserAchievement(
             user_achievement_id=user_achievement_id,
@@ -454,7 +454,7 @@ class TestUserAchievementProperties:
         self, user_achievement_id, user_id, achievement_id, days_ago, threshold
     ):
         """Test that recent unlock detection is consistent"""
-        unlocked_at = datetime.utcnow() - timedelta(days=days_ago)
+        unlocked_at = datetime.now(timezone.utc) - timedelta(days=days_ago)
 
         user_achievement = UserAchievement(
             user_achievement_id=user_achievement_id,
@@ -489,7 +489,7 @@ class TestAchievementProgressProperties:
             user_id=user_id,
             achievement_id=achievement_id,
             progress_percentage=progress_percentage,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
             is_eligible=is_eligible,
         )
 
@@ -513,7 +513,7 @@ class TestAchievementProgressProperties:
             user_id=user_id,
             achievement_id=achievement_id,
             progress_percentage=initial_progress,
-            last_updated=datetime.utcnow() - timedelta(hours=1),
+            last_updated=datetime.now(timezone.utc) - timedelta(hours=1),
             is_eligible=False,
         )
 
@@ -544,7 +544,7 @@ class TestAchievementProgressProperties:
             user_id=user_id,
             achievement_id=achievement_id,
             progress_percentage=progress_percentage,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
         )
 
         is_close = progress.is_close_to_completion(threshold)
@@ -569,7 +569,7 @@ class TestAchievementProgressProperties:
             user_id=user_id,
             achievement_id=achievement_id,
             progress_percentage=progress_percentage,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
             is_eligible=is_eligible,
         )
 

@@ -4,7 +4,7 @@ Contract tests for Achievements domain services using Pydantic models.
 These tests validate service layer APIs and ensure consistent interfaces.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from unittest.mock import Mock
 
@@ -249,7 +249,7 @@ class TestAchievementServiceContracts:
             experience_reward=ExperienceReward(100),
             required_level=RequiredLevel(1),
             required_quest_completions=RequiredQuestCompletions(1),
-            created_at=datetime(2024, 1, 1, 10, 0, 0),
+            created_at=datetime(2024, 1, 1, 10, 0, 0, tzinfo=timezone.utc),
         )
         self.mock_achievement_repository.save.return_value = mock_achievement
 
@@ -312,7 +312,7 @@ class TestAchievementServiceContracts:
             user_achievement_id=UserAchievementId(1),
             user_id=UserId(1),
             achievement_id=AchievementId(1),
-            unlocked_at=datetime(2024, 1, 15, 14, 30, 0),
+            unlocked_at=datetime(2024, 1, 15, 14, 30, 0, tzinfo=timezone.utc),
             notes="Great job!",
         )
 
@@ -372,7 +372,7 @@ class TestAchievementServiceContracts:
                 user_achievement_id=UserAchievementId(1),
                 user_id=UserId(1),
                 achievement_id=AchievementId(1),
-                unlocked_at=datetime(2024, 1, 15, 14, 30, 0),
+                unlocked_at=datetime(2024, 1, 15, 14, 30, 0, tzinfo=timezone.utc),
             ),
         ]
 

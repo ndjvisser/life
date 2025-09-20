@@ -5,7 +5,7 @@ Pure business logic services for achievements operations.
 No Django dependencies allowed in this module.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from .entities import (
@@ -125,7 +125,7 @@ class AchievementService:
             user_achievement_id=user_achievement_id,
             user_id=user_id,
             achievement_id=achievement_id,
-            unlocked_at=datetime.utcnow(),
+            unlocked_at=datetime.now(timezone.utc),
             notes=notes,
             unlock_context=unlock_context or {},
         )
@@ -212,7 +212,7 @@ class AchievementService:
                     user_id=user_id,
                     achievement_id=achievement.achievement_id,
                     progress_percentage=progress_percentage,
-                    last_updated=datetime.utcnow(),
+                    last_updated=datetime.now(timezone.utc),
                     missing_requirements=missing_requirements,
                     is_eligible=is_eligible,
                 )
@@ -360,7 +360,7 @@ class AchievementService:
         # Find earliest achievement
         earliest_unlock = min(ua.unlocked_at for ua in user_achievements)
         months_active = max(
-            1, (datetime.utcnow() - earliest_unlock).days / 30.44
+            1, (datetime.now(timezone.utc) - earliest_unlock).days / 30.44
         )  # Average days per month
 
         return round(len(user_achievements) / months_active, 2)

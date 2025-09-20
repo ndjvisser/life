@@ -62,9 +62,13 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install the dependencies:
+3. Install the project in development mode with all dependencies:
 ```bash
-pip install -r requirements.txt
+# Install the project in development mode with all dependencies
+pip install -e ".[dev]"
+
+# Generate the constraints file (used for reproducible builds)
+make generate-constraints
 ```
 
 4. Create a .env file in the project root with the following content:
@@ -72,6 +76,11 @@ pip install -r requirements.txt
 DEBUG=True
 SECRET_KEY=your-secret-key-here
 ALLOWED_HOSTS=localhost,127.0.0.1
+```
+
+5. (Optional) For production, you can install with production-only dependencies:
+```bash
+pip install -e .
 ```
 
 5. Set up the database:

@@ -5,7 +5,7 @@ These tests capture API response structures to prevent breaking changes.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import Mock
 
 from life_dashboard.achievements.domain.entities import (
@@ -62,7 +62,7 @@ class TestAchievementAPISnapshots:
             required_quest_completions=RequiredQuestCompletions(25),
             is_hidden=False,
             is_repeatable=False,
-            created_at=datetime(2024, 1, 1, 10, 0, 0),
+            created_at=datetime(2024, 1, 1, 10, 0, 0, tzinfo=timezone.utc),
         )
         self.mock_achievement_repository.save.return_value = mock_achievement
 
@@ -127,7 +127,7 @@ class TestAchievementAPISnapshots:
             user_achievement_id=UserAchievementId(1),
             user_id=UserId(1),
             achievement_id=AchievementId(1),
-            unlocked_at=datetime(2024, 1, 15, 14, 30, 0),
+            unlocked_at=datetime(2024, 1, 15, 14, 30, 0, tzinfo=timezone.utc),
             notes="Congratulations on completing your first quest! This is just the beginning of your journey.",
             unlock_context={
                 "trigger_quest": "Learn Python Basics",
@@ -239,13 +239,13 @@ class TestAchievementAPISnapshots:
                 user_achievement_id=UserAchievementId(1),
                 user_id=UserId(1),
                 achievement_id=AchievementId(1),
-                unlocked_at=datetime(2024, 1, 15, 14, 30, 0),
+                unlocked_at=datetime(2024, 1, 15, 14, 30, 0, tzinfo=timezone.utc),
             ),
             UserAchievement(
                 user_achievement_id=UserAchievementId(2),
                 user_id=UserId(1),
                 achievement_id=AchievementId(2),
-                unlocked_at=datetime(2024, 1, 20, 16, 45, 0),
+                unlocked_at=datetime(2024, 1, 20, 16, 45, 0, tzinfo=timezone.utc),
             ),
         ]
 
@@ -275,7 +275,9 @@ class TestAchievementAPISnapshots:
         # Convert to API response format
         api_response = {
             "user_id": 1,
-            "statistics_generated_at": datetime(2024, 1, 25, 18, 0, 0).isoformat(),
+            "statistics_generated_at": datetime(
+                2024, 1, 25, 18, 0, 0, tzinfo=timezone.utc
+            ).isoformat(),
             "achievement_statistics": stats,
             "progress_insights": {
                 "completion_level": "Getting Started"
@@ -309,7 +311,7 @@ class TestAchievementAPISnapshots:
                 user_id=UserId(1),
                 achievement_id=AchievementId(3),
                 progress_percentage=75.0,
-                last_updated=datetime(2024, 1, 25, 12, 0, 0),
+                last_updated=datetime(2024, 1, 25, 12, 0, 0, tzinfo=timezone.utc),
                 missing_requirements=["Complete 13 more quests (currently 37/50)"],
                 is_eligible=False,
             ),
@@ -317,7 +319,7 @@ class TestAchievementAPISnapshots:
                 user_id=UserId(1),
                 achievement_id=AchievementId(4),
                 progress_percentage=45.0,
-                last_updated=datetime(2024, 1, 25, 12, 0, 0),
+                last_updated=datetime(2024, 1, 25, 12, 0, 0, tzinfo=timezone.utc),
                 missing_requirements=[
                     "Reach level 80 (currently 35)",
                     "Reach skill level 90 (currently 60)",
@@ -359,7 +361,9 @@ class TestAchievementAPISnapshots:
         # Convert to API response format
         api_response = {
             "user_id": 1,
-            "progress_updated_at": datetime(2024, 1, 25, 12, 0, 0).isoformat(),
+            "progress_updated_at": datetime(
+                2024, 1, 25, 12, 0, 0, tzinfo=timezone.utc
+            ).isoformat(),
             "achievement_progress": [
                 {
                     "achievement_id": progress.achievement_id.value,

@@ -4,7 +4,7 @@ Fast unit tests for Achievements domain entities.
 These tests run without Django and focus on pure business logic validation.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -225,7 +225,7 @@ class TestUserAchievement:
             user_achievement_id=UserAchievementId(1),
             user_id=UserId(1),
             achievement_id=AchievementId(1),
-            unlocked_at=datetime(2024, 1, 15, 10, 30, 0),
+            unlocked_at=datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc),
             notes="Great job completing your first quest!",
         )
 
@@ -243,14 +243,14 @@ class TestUserAchievement:
                 user_achievement_id=UserAchievementId(1),
                 user_id=UserId(1),
                 achievement_id=AchievementId(1),
-                unlocked_at=datetime.utcnow(),
+                unlocked_at=datetime.now(timezone.utc),
                 notes="x" * 1001,  # Too long
             )
 
     def test_user_achievement_unlock_age_calculation(self):
         """Test unlock age calculation"""
         # Achievement unlocked 5 days ago
-        unlock_date = datetime.utcnow() - timedelta(days=5)
+        unlock_date = datetime.now(timezone.utc) - timedelta(days=5)
         user_achievement = UserAchievement(
             user_achievement_id=UserAchievementId(1),
             user_id=UserId(1),
@@ -264,7 +264,7 @@ class TestUserAchievement:
     def test_user_achievement_recent_unlock_check(self):
         """Test recent unlock detection"""
         # Recent achievement (3 days ago)
-        recent_unlock = datetime.utcnow() - timedelta(days=3)
+        recent_unlock = datetime.now(timezone.utc) - timedelta(days=3)
         recent_achievement = UserAchievement(
             user_achievement_id=UserAchievementId(1),
             user_id=UserId(1),
@@ -273,7 +273,7 @@ class TestUserAchievement:
         )
 
         # Old achievement (30 days ago)
-        old_unlock = datetime.utcnow() - timedelta(days=30)
+        old_unlock = datetime.now(timezone.utc) - timedelta(days=30)
         old_achievement = UserAchievement(
             user_achievement_id=UserAchievementId(2),
             user_id=UserId(1),
@@ -290,7 +290,7 @@ class TestUserAchievement:
             user_achievement_id=UserAchievementId(1),
             user_id=UserId(1),
             achievement_id=AchievementId(1),
-            unlocked_at=datetime.utcnow(),
+            unlocked_at=datetime.now(timezone.utc),
         )
 
         # Add context
@@ -313,7 +313,7 @@ class TestAchievementProgress:
             user_id=UserId(1),
             achievement_id=AchievementId(1),
             progress_percentage=75.5,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
             missing_requirements=["Reach level 20 (currently 15)"],
             is_eligible=False,
         )
@@ -333,7 +333,7 @@ class TestAchievementProgress:
                 user_id=UserId(1),
                 achievement_id=AchievementId(1),
                 progress_percentage=-5.0,
-                last_updated=datetime.utcnow(),
+                last_updated=datetime.now(timezone.utc),
             )
 
         # Invalid percentage (over 100)
@@ -344,7 +344,7 @@ class TestAchievementProgress:
                 user_id=UserId(1),
                 achievement_id=AchievementId(1),
                 progress_percentage=105.0,
-                last_updated=datetime.utcnow(),
+                last_updated=datetime.now(timezone.utc),
             )
 
     def test_achievement_progress_update(self):
@@ -353,7 +353,7 @@ class TestAchievementProgress:
             user_id=UserId(1),
             achievement_id=AchievementId(1),
             progress_percentage=50.0,
-            last_updated=datetime.utcnow() - timedelta(hours=1),
+            last_updated=datetime.now(timezone.utc) - timedelta(hours=1),
             missing_requirements=["Reach level 20 (currently 10)"],
             is_eligible=False,
         )
@@ -378,7 +378,7 @@ class TestAchievementProgress:
             user_id=UserId(1),
             achievement_id=AchievementId(1),
             progress_percentage=85.0,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
         )
 
         # Not close to completion
@@ -386,7 +386,7 @@ class TestAchievementProgress:
             user_id=UserId(1),
             achievement_id=AchievementId(2),
             progress_percentage=45.0,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
         )
 
         assert close_progress.is_close_to_completion(80.0)
@@ -399,7 +399,7 @@ class TestAchievementProgress:
             user_id=UserId(1),
             achievement_id=AchievementId(1),
             progress_percentage=100.0,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
             is_eligible=True,
         )
 
@@ -408,7 +408,7 @@ class TestAchievementProgress:
             user_id=UserId(1),
             achievement_id=AchievementId(2),
             progress_percentage=95.0,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
             is_eligible=False,
         )
 
@@ -417,7 +417,7 @@ class TestAchievementProgress:
             user_id=UserId(1),
             achievement_id=AchievementId(3),
             progress_percentage=15.0,
-            last_updated=datetime.utcnow(),
+            last_updated=datetime.now(timezone.utc),
             is_eligible=False,
         )
 

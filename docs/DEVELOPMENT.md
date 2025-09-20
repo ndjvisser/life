@@ -69,6 +69,45 @@ make format
 make type-check
 ```
 
+## Dependency Management
+
+This project uses `pyproject.toml` as the single source of truth for dependencies. We use `pip-tools` to generate a `constraints.txt` file for reproducible builds.
+
+#### Updating Dependencies
+
+1. **Add/Update Dependencies**:
+   - Add or update dependencies in `pyproject.toml` under `[project]` or `[project.optional-dependencies]`
+   - For development dependencies, add them to the `dev` extra
+
+2. **Regenerate Constraints**:
+   ```bash
+   make generate-constraints
+   ```
+   This will update `constraints.txt` with pinned versions of all dependencies.
+
+3. **Verify Dependencies**:
+   ```bash
+   make check-deps
+   ```
+   This ensures your local `constraints.txt` is up to date.
+
+#### Common Tasks
+
+- Install in development mode with all dependencies:
+  ```bash
+  pip install -e ".[dev]"
+  ```
+
+- Install production dependencies only:
+  ```bash
+  pip install -e .
+  ```
+
+- Sync your environment with the latest constraints:
+  ```bash
+  make sync-deps
+  ```
+
 ## Troubleshooting
 
 ### Import-linter Issues
@@ -76,7 +115,7 @@ make type-check
 If you see "import-linter not installed" errors:
 
 1. Make sure you're in the correct virtual environment
-2. Install the development dependencies: `pip install -r requirements-dev.txt`
+2. Install the development dependencies: `pip install -e ".[dev]"`
 3. Or install import-linter specifically: `pip install import-linter`
 
 ### Pre-commit Hook Failures

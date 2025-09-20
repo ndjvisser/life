@@ -52,11 +52,17 @@ help:
 
 # Installation
 install:
-	pip install -r requirements.txt
+	pip install -e .
 
 dev-install:
-	pip install -r requirements-dev.txt || pip install pytest pytest-django pytest-cov import-linter mypy django-stubs ruff pre-commit behave selenium
+	pip install -e ".[dev]"
 	pre-commit install
+
+generate-constraints:
+	@echo "Generating constraints.txt from pyproject.toml..."
+	pip install pip-tools
+	pip-compile --output-file=constraints.txt pyproject.toml
+	@echo "✅ Generated constraints.txt"
 
 setup: dev-install migrate setup-sample-data
 	@echo "✅ Project setup complete!"
@@ -135,14 +141,15 @@ compile-deps:
 	python scripts/generate-constraints.py
 
 sync-deps:
-	pip-sync constraints.txt constraints-dev.txt
+	pip-sync constraints.txt
 
-update-deps:
-	pip-compile --upgrade requirements.in --output-file constraints.txt --resolver=backtracking
-	pip-compile --upgrade requirements-dev.in --output-file constraints-dev.txt --resolver=backtracking
+update-deps: generate-constraints
 
 check-deps:
 	@echo "Checking if constraints are up to date..."
+	pip install pip-tools
+	pip-compile --dry-run --output-file=constraints.txt pyproject.toml || (echo "❌ constraints.txt is out of date. Run 'make generate-constraints' to update it." && exit 1)
+	@echo "✅ constraints.txt is up to date"
 	@python scripts/generate-constraints.py --check || (echo "❌ Constraints are out of date. Run 'make compile-deps' to update." && exit 1)
 
 # Database

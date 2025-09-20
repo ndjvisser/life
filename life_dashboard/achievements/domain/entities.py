@@ -6,7 +6,7 @@ No Django dependencies allowed in this module.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
@@ -68,7 +68,7 @@ class Achievement:
     )
     is_hidden: bool = False  # Hidden until unlocked
     is_repeatable: bool = False  # Can be unlocked multiple times
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __post_init__(self):
         """Validate achievement data after initialization"""
@@ -257,7 +257,7 @@ class UserAchievement:
 
     def get_unlock_age_days(self) -> int:
         """Get number of days since achievement was unlocked"""
-        return (datetime.utcnow() - self.unlocked_at).days
+        return (datetime.now(timezone.utc) - self.unlocked_at).days
 
     def is_recent_unlock(self, days_threshold: int = 7) -> bool:
         """Check if achievement was unlocked recently"""
@@ -298,7 +298,7 @@ class AchievementProgress:
         self.progress_percentage = new_percentage
         self.missing_requirements = missing_reqs
         self.is_eligible = eligible
-        self.last_updated = datetime.utcnow()
+        self.last_updated = datetime.now(timezone.utc)
 
     def is_close_to_completion(self, threshold: float = 80.0) -> bool:
         """Check if user is close to completing this achievement"""
