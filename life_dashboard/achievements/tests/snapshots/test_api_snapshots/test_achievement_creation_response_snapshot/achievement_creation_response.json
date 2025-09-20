@@ -13,6 +13,6 @@
   "required_level": 25,
   "required_quest_completions": 25,
   "required_skill_level": 50,
-  "tier": "gold",
+  "tier": "GOLD",
   "tier_multiplier": 2.0
 }

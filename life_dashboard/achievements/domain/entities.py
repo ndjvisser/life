@@ -27,10 +27,10 @@ from .value_objects import (
 class AchievementTier(Enum):
     """Achievement tier enumeration"""
 
-    BRONZE = "bronze"
-    SILVER = "silver"
-    GOLD = "gold"
-    PLATINUM = "platinum"
+    BRONZE = "BRONZE"
+    SILVER = "SILVER"
+    GOLD = "GOLD"
+    PLATINUM = "PLATINUM"
 
 
 class AchievementCategory(Enum):

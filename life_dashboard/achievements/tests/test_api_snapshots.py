@@ -70,7 +70,7 @@ class TestAchievementAPISnapshots:
         result = self.achievement_service.create_achievement(
             name="Master of Skills",
             description="Reach level 50 in any skill and complete 25 quests to demonstrate mastery",
-            tier="gold",
+            tier="GOLD",
             category="skill_mastery",
             icon="master-crown",
             experience_reward=2500,
@@ -287,7 +287,7 @@ class TestAchievementAPISnapshots:
                     stats["category_breakdown"].items(),
                     key=lambda x: x[1]["percentage"],
                 )[0],
-                "next_tier_focus": "silver",  # Based on current progress
+                "next_tier_focus": "SILVER",  # Based on current progress
                 "achievements_this_month": stats["recent_achievements_count"],
             },
             "recommendations": [

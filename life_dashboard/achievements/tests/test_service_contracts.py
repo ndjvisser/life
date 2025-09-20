@@ -51,7 +51,7 @@ class AchievementCreateRequest(BaseModel):
             "example": {
                 "name": "First Steps",
                 "description": "Complete your first quest",
-                "tier": "bronze",
+                "tier": "BRONZE",
                 "category": "quest_completion",
                 "icon": "trophy",
                 "experience_reward": 100,
@@ -87,7 +87,7 @@ class AchievementResponse(BaseModel):
                 "achievement_id": 1,
                 "name": "First Steps",
                 "description": "Complete your first quest",
-                "tier": "bronze",
+                "tier": "BRONZE",
                 "category": "quest_completion",
                 "icon": "trophy",
                 "experience_reward": 100,
@@ -163,10 +163,10 @@ class AchievementStatisticsResponse(BaseModel):
                 "unlocked_achievements": 12,
                 "completion_percentage": 24.0,
                 "tier_breakdown": {
-                    "bronze": {"unlocked": 8, "total": 20, "percentage": 40.0},
-                    "silver": {"unlocked": 3, "total": 15, "percentage": 20.0},
-                    "gold": {"unlocked": 1, "total": 10, "percentage": 10.0},
-                    "platinum": {"unlocked": 0, "total": 5, "percentage": 0.0},
+                    "BRONZE": {"unlocked": 8, "total": 20, "percentage": 40.0},
+                    "SILVER": {"unlocked": 3, "total": 15, "percentage": 20.0},
+                    "GOLD": {"unlocked": 1, "total": 10, "percentage": 10.0},
+                    "PLATINUM": {"unlocked": 0, "total": 5, "percentage": 0.0},
                 },
                 "category_breakdown": {
                     "progression": {"unlocked": 5, "total": 15, "percentage": 33.33},
@@ -205,7 +205,7 @@ class TestAchievementServiceContracts:
         valid_request = AchievementCreateRequest(
             name="First Steps",
             description="Complete your first quest",
-            tier="bronze",
+            tier="BRONZE",
             category="quest_completion",
             icon="trophy",
             experience_reward=100,
@@ -213,7 +213,7 @@ class TestAchievementServiceContracts:
         )
 
         assert valid_request.name == "First Steps"
-        assert valid_request.tier == "bronze"
+        assert valid_request.tier == "BRONZE"
         assert valid_request.category == "quest_completion"
 
     def test_unlock_achievement_contract_validation(self):
@@ -257,7 +257,7 @@ class TestAchievementServiceContracts:
         result = self.achievement_service.create_achievement(
             name="First Steps",
             description="Complete your first quest",
-            tier="bronze",
+            tier="BRONZE",
             category="quest_completion",
             icon="trophy",
             experience_reward=100,
@@ -351,7 +351,7 @@ class TestAchievementServiceContracts:
                 description=AchievementDescription("Bronze test"),
                 tier=AchievementTier.BRONZE,
                 category=AchievementCategory.PROGRESSION,
-                icon=AchievementIcon("bronze"),
+                icon=AchievementIcon("BRONZE"),
                 experience_reward=ExperienceReward(100),
                 required_level=RequiredLevel(5),
             ),
@@ -361,7 +361,7 @@ class TestAchievementServiceContracts:
                 description=AchievementDescription("Silver test"),
                 tier=AchievementTier.SILVER,
                 category=AchievementCategory.QUEST_COMPLETION,
-                icon=AchievementIcon("silver"),
+                icon=AchievementIcon("SILVER"),
                 experience_reward=ExperienceReward(200),
                 required_level=RequiredLevel(10),
             ),

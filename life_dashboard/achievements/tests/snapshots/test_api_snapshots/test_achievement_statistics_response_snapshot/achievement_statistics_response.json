@@ -41,22 +41,22 @@
     "completion_percentage": 50.0,
     "recent_achievements_count": 1,
     "tier_breakdown": {
-      "bronze": {
+      "BRONZE": {
         "percentage": 100.0,
         "total": 1,
         "unlocked": 1
       },
-      "gold": {
+      "GOLD": {
         "percentage": 0.0,
         "total": 1,
         "unlocked": 0
       },
-      "platinum": {
+      "PLATINUM": {
         "percentage": 0.0,
         "total": 1,
         "unlocked": 0
       },
-      "silver": {
+      "SILVER": {
         "percentage": 100.0,
         "total": 1,
         "unlocked": 1
@@ -69,7 +69,7 @@
   "progress_insights": {
     "achievements_this_month": 1,
     "completion_level": "Making Progress",
-    "next_tier_focus": "silver",
+    "next_tier_focus": "SILVER",
     "strongest_category": "skill_mastery"
   },
   "recommendations": [

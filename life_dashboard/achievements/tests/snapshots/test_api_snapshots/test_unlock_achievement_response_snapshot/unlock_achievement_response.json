@@ -5,7 +5,7 @@
     "difficulty_rating": "Easy",
     "icon": "first-trophy",
     "name": "First Steps",
-    "tier": "bronze"
+    "tier": "BRONZE"
   },
   "experience_gained": 100,
   "tier_multiplier": 1.0,

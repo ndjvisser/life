@@ -80,7 +80,7 @@ class TestAchievement:
             description=AchievementDescription("Bronze tier test"),
             tier=AchievementTier.BRONZE,
             category=AchievementCategory.PROGRESSION,
-            icon=AchievementIcon("bronze"),
+            icon=AchievementIcon("BRONZE"),
             experience_reward=ExperienceReward(100),
             required_level=RequiredLevel(5),
         )
@@ -91,7 +91,7 @@ class TestAchievement:
             description=AchievementDescription("Platinum tier test"),
             tier=AchievementTier.PLATINUM,
             category=AchievementCategory.PROGRESSION,
-            icon=AchievementIcon("platinum"),
+            icon=AchievementIcon("PLATINUM"),
             experience_reward=ExperienceReward(100),
             required_level=RequiredLevel(50),
         )

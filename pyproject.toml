@@ -6,6 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "life-dashboard"
 version = "0.1.0"
 description = "RPG-inspired personal life dashboard"
+readme = "README.md"
+license = {text = "MIT"}
 authors = [{name = "Life Dashboard Team"}]
 requires-python = ">=3.10"
 dependencies = [
@@ -17,7 +19,7 @@ dependencies = [
     "redis>=4.6.0,<5.0.0",
     "python-dotenv>=1.0.0,<2.0.0",
     "pydantic>=2.4.0,<3.0.0",
-    "pydantic[email]>=2.4.0,<3.0.0",
+    "pydantic-email-validator>=1.3.0,<2.0.0",
     "psycopg2-binary>=2.9.7,<3.0.0",
     "whitenoise>=6.5.0,<7.0.0",
     "django-cors-headers>=4.3.0,<5.0.0",
