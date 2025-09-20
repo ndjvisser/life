@@ -3,9 +3,8 @@ Dashboard API contracts - Pydantic models for request/response validation.
 """
 
 from datetime import date, datetime
-from typing import Optional
 
-from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class UserRegistrationRequest(BaseModel):
@@ -14,10 +13,11 @@ class UserRegistrationRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=150)
     email: EmailStr
     password: str = Field(..., min_length=8)
-    first_name: Optional[str] = Field(None, max_length=150)
-    last_name: Optional[str] = Field(None, max_length=150)
+    first_name: str | None = Field(None, max_length=150)
+    last_name: str | None = Field(None, max_length=150)
 
-    @validator("username")
+    @field_validator("username")
+    @classmethod
     def validate_username(cls, v):
         """
         Validate that a username contains only letters, digits, or underscores.
@@ -31,7 +31,7 @@ class UserRegistrationRequest(BaseModel):
         Raises:
             ValueError: If `v` contains characters other than letters, digits, or underscores.
         """
-        if not v.isalnum() and "_" not in v:
+        if not all(c.isalnum() or c == "_" for c in v):
             raise ValueError(
                 "Username must contain only letters, numbers, and underscores"
             )
@@ -60,8 +60,8 @@ class LoginRequest(BaseModel):
 class LoginResponse(BaseModel):
     """Response model for user login."""
 
-    user_id: Optional[int] = None
-    username: Optional[str] = None
+    user_id: int | None = None
+    username: str | None = None
     success: bool
     message: str
 
@@ -69,12 +69,12 @@ class LoginResponse(BaseModel):
 class ProfileUpdateRequest(BaseModel):
     """Request model for profile updates."""
 
-    first_name: Optional[str] = Field(None, max_length=150)
-    last_name: Optional[str] = Field(None, max_length=150)
-    email: Optional[EmailStr] = None
-    bio: Optional[str] = Field(None, max_length=500)
-    location: Optional[str] = Field(None, max_length=30)
-    birth_date: Optional[date] = None
+    first_name: str | None = Field(None, max_length=150)
+    last_name: str | None = Field(None, max_length=150)
+    email: EmailStr | None = None
+    bio: str | None = Field(None, max_length=500)
+    location: str | None = Field(None, max_length=30)
+    birth_date: date | None = None
 
 
 class ProfileResponse(BaseModel):
@@ -88,7 +88,7 @@ class ProfileResponse(BaseModel):
     email: str
     bio: str
     location: str
-    birth_date: Optional[date]
+    birth_date: date | None
     experience_points: int
     level: int
     experience_to_next_level: int
@@ -101,7 +101,7 @@ class ExperienceAwardRequest(BaseModel):
     """Request model for awarding experience points."""
 
     points: int = Field(..., gt=0, le=10000)
-    reason: Optional[str] = Field(None, max_length=200)
+    reason: str | None = Field(None, max_length=200)
 
 
 class ExperienceAwardResponse(BaseModel):
@@ -120,7 +120,7 @@ class OnboardingStateResponse(BaseModel):
     """Response model for onboarding state."""
 
     current_state: str
-    next_step: Optional[str]
+    next_step: str | None
     progress_percentage: float
     is_complete: bool
     available_transitions: list[str]
@@ -131,5 +131,5 @@ class ErrorResponse(BaseModel):
 
     success: bool = False
     message: str
-    error_code: Optional[str] = None
-    details: Optional[dict] = None
+    error_code: str | None = None
+    details: dict | None = None
