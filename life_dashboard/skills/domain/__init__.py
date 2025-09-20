@@ -1,1 +1,2 @@
-# Skills domain layer - pure Python business logic
+# Skills Domain Layer
+# Pure Python business logic without Django dependencies

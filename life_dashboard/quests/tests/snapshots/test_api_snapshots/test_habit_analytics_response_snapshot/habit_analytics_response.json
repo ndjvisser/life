@@ -1,0 +1,20 @@
+{
+  "analytics": {
+    "achieved_milestones": [
+      "7_day_streak",
+      "21_day_streak"
+    ],
+    "completion_rate_30_days": 0.7,
+    "consistency_rate": 0.7,
+    "current_streak": 21,
+    "longest_streak": 45,
+    "streak_bonus_multiplier": 1.5,
+    "total_completions": 21
+  },
+  "habit_id": 1,
+  "streak_info": {
+    "current_milestone": "habit_formation",
+    "days_to_next_milestone": 9,
+    "next_milestone": "month"
+  }
+}

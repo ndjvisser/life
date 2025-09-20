@@ -1,1 +1,2 @@
-# Quests domain layer - pure Python business logic
+# Quests Domain Layer
+# Pure Python business logic without Django dependencies

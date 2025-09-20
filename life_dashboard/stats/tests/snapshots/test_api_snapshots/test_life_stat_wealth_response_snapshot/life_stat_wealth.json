@@ -1,0 +1,12 @@
+{
+  "category": "wealth",
+  "distance_to_target": 34999.5,
+  "is_target_achieved": false,
+  "name": "savings",
+  "notes": "Emergency fund target",
+  "progress_percentage": 30.0,
+  "target": 50000.0,
+  "unit": "USD",
+  "user_id": 1,
+  "value": 15000.5
+}

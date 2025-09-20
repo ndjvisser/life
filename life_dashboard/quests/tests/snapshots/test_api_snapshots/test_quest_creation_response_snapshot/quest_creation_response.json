@@ -1,0 +1,18 @@
+{
+  "completed_at": null,
+  "created_at": "2024-01-01T10:00:00",
+  "description": "Complete comprehensive Python tutorial with hands-on projects",
+  "difficulty": "medium",
+  "difficulty_multiplier": 1.5,
+  "due_date": "2024-01-31",
+  "experience_reward": 150,
+  "final_experience": 225,
+  "is_overdue": true,
+  "quest_id": 1,
+  "quest_type": "main",
+  "start_date": "2024-01-01",
+  "status": "draft",
+  "title": "Learn Python Programming",
+  "updated_at": "2024-01-01T10:00:00",
+  "user_id": 1
+}

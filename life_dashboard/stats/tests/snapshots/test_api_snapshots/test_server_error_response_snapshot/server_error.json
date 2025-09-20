@@ -1,0 +1,10 @@
+{
+  "details": {
+    "error_id": "err_abc123def456",
+    "support_contact": "support@lifedashboard.com"
+  },
+  "error": "InternalServerError",
+  "message": "An unexpected error occurred",
+  "request_id": "req_error_001",
+  "timestamp": "2024-01-15T10:30:00Z"
+}

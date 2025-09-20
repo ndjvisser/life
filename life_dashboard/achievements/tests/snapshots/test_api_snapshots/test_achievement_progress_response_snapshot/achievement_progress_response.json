@@ -1,0 +1,44 @@
+{
+  "achievement_progress": [
+    {
+      "achievement_category": "quest_completion",
+      "achievement_id": 3,
+      "achievement_name": "Quest Master",
+      "achievement_tier": "gold",
+      "completion_estimate": "Close to completion",
+      "is_close_to_completion": true,
+      "is_eligible": false,
+      "last_updated": "2024-01-25T12:00:00",
+      "missing_requirements": [
+        "Complete 13 more quests (currently 37/50)"
+      ],
+      "potential_experience_reward": 3000,
+      "progress_percentage": 75.0
+    },
+    {
+      "achievement_category": "milestone",
+      "achievement_id": 4,
+      "achievement_name": "Legendary Master",
+      "achievement_tier": "platinum",
+      "completion_estimate": "Making progress",
+      "is_close_to_completion": false,
+      "is_eligible": false,
+      "last_updated": "2024-01-25T12:00:00",
+      "missing_requirements": [
+        "Reach level 80 (currently 35)",
+        "Reach skill level 90 (currently 60)",
+        "Complete 65 more quests (currently 35/100)"
+      ],
+      "potential_experience_reward": 15000,
+      "progress_percentage": 45.0
+    }
+  ],
+  "progress_updated_at": "2024-01-25T12:00:00",
+  "summary": {
+    "average_progress": 60.0,
+    "close_to_completion": 1,
+    "eligible_to_unlock": 0,
+    "total_tracked": 2
+  },
+  "user_id": 1
+}

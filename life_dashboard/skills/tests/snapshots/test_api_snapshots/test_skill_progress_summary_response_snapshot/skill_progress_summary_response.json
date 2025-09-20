@@ -1,0 +1,119 @@
+{
+  "recommendations": {
+    "focus_areas": [
+      "Consider practicing Database Design - it's been stagnant for 45 days",
+      "You're close to reaching level 70 in Machine Learning - great progress!",
+      "System Architecture is at Master level - excellent expertise!"
+    ],
+    "suggested_practice_time": {
+      "daily_minutes": 60,
+      "skill_to_prioritize": "Database Design",
+      "weekly_focus": "Database Design"
+    }
+  },
+  "skill_statistics": {
+    "average_level": 45.0,
+    "mastery_distribution": {
+      "apprentice": 2,
+      "expert": 1,
+      "journeyman": 0,
+      "master": 1,
+      "novice": 1
+    },
+    "next_milestones": [
+      {
+        "current_level": 12,
+        "next_milestone": 15,
+        "progress_percentage": 28.07017543859649,
+        "skill_name": "Database Design"
+      },
+      {
+        "current_level": 28,
+        "next_milestone": 30,
+        "progress_percentage": 13.760415870346304,
+        "skill_name": "JavaScript Development"
+      },
+      {
+        "current_level": 35,
+        "next_milestone": 40,
+        "progress_percentage": 9.809691975671964,
+        "skill_name": "Python Programming"
+      },
+      {
+        "current_level": 65,
+        "next_milestone": 70,
+        "progress_percentage": 1.1245456835438483,
+        "skill_name": "Machine Learning"
+      },
+      {
+        "current_level": 85,
+        "next_milestone": 90,
+        "progress_percentage": 0.4011789311523463,
+        "skill_name": "System Architecture"
+      }
+    ],
+    "stagnant_skills": [
+      {
+        "days_since_practice": 615,
+        "level": 35,
+        "name": "Python Programming"
+      },
+      {
+        "days_since_practice": 616,
+        "level": 28,
+        "name": "JavaScript Development"
+      },
+      {
+        "days_since_practice": 614,
+        "level": 65,
+        "name": "Machine Learning"
+      },
+      {
+        "days_since_practice": 659,
+        "level": 12,
+        "name": "Database Design"
+      },
+      {
+        "days_since_practice": 615,
+        "level": 85,
+        "name": "System Architecture"
+      }
+    ],
+    "top_skills": [
+      {
+        "level": 85,
+        "mastery": "master",
+        "name": "System Architecture",
+        "rank": "Master"
+      },
+      {
+        "level": 65,
+        "mastery": "expert",
+        "name": "Machine Learning",
+        "rank": "Expert"
+      },
+      {
+        "level": 35,
+        "mastery": "apprentice",
+        "name": "Python Programming",
+        "rank": "Advanced Apprentice"
+      },
+      {
+        "level": 28,
+        "mastery": "apprentice",
+        "name": "JavaScript Development",
+        "rank": "Skilled Apprentice"
+      },
+      {
+        "level": 12,
+        "mastery": "novice",
+        "name": "Database Design",
+        "rank": "Developing"
+      }
+    ],
+    "total_experience": 34745224,
+    "total_skills": 5
+  },
+  "summary_generated_at": "2024-01-15T18:00:00",
+  "user_id": 1
+}

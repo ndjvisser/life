@@ -1,0 +1,13 @@
+{
+  "change_amount": 3.0,
+  "change_reason": "Completed strength training quest",
+  "is_decrease": false,
+  "is_increase": true,
+  "new_value": 18.0,
+  "old_value": 15.0,
+  "percentage_change": 20.0,
+  "stat_name": "strength",
+  "stat_type": "core",
+  "timestamp": "2024-01-15T10:30:00+00:00",
+  "user_id": 1
+}

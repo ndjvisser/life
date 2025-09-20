@@ -1,0 +1,18 @@
+{
+  "details": [
+    {
+      "field": "strength",
+      "invalid_value": 0,
+      "message": "Stat value must be between 1 and 100"
+    },
+    {
+      "field": "user_id",
+      "invalid_value": -1,
+      "message": "User ID must be positive"
+    }
+  ],
+  "error": "ValidationError",
+  "message": "Invalid input data",
+  "request_id": "req_123456789",
+  "timestamp": "2024-01-15T10:30:00Z"
+}

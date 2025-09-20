@@ -18,6 +18,17 @@ help:
 	@echo "  test-integration Run integration tests only"
 	@echo "  test-bdd         Run BDD feature tests"
 	@echo ""
+	@echo "Domain-First Testing Commands:"
+	@echo "  test-domain      Run pure domain tests (fastest)"
+	@echo "  test-domain-fast Run domain tests with minimal examples"
+	@echo "  test-properties  Run property-based tests with Hypothesis"
+	@echo "  test-contracts   Run contract tests with Pydantic validation"
+	@echo "  test-snapshots   Run snapshot tests for API responses"
+	@echo "  test-all-unit    Run all unit tests (domain + contracts + properties + snapshots)"
+	@echo "  test-domain-coverage Run domain tests with coverage"
+	@echo "  test-thorough    Run comprehensive tests with maximum examples"
+	@echo "  test-parallel    Run tests in parallel"
+	@echo ""
 	@echo "Code Quality Commands:"
 	@echo "  lint             Run linting (ruff)"
 	@echo "  format           Format code (ruff format)"
@@ -62,6 +73,34 @@ test-integration:
 
 test-bdd:
 	behave features/ || echo "BDD tests not yet implemented"
+
+# Domain-first testing targets
+test-domain:
+	python scripts/run-domain-tests.py --domain-only
+
+test-domain-fast:
+	python scripts/run-domain-tests.py --domain-only --profile dev
+
+test-properties:
+	python scripts/run-domain-tests.py --with-properties
+
+test-contracts:
+	python scripts/run-domain-tests.py --with-contracts
+
+test-snapshots:
+	python scripts/run-domain-tests.py --with-snapshots
+
+test-all-unit:
+	python scripts/run-domain-tests.py --all-unit
+
+test-domain-coverage:
+	python scripts/run-domain-tests.py --domain-only --coverage
+
+test-thorough:
+	python scripts/run-domain-tests.py --all-unit --profile thorough --coverage
+
+test-parallel:
+	python scripts/run-domain-tests.py --all-unit --parallel
 
 test-all: test test-bdd
 	@echo "✅ All tests completed"

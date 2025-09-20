@@ -1,0 +1,12 @@
+{
+  "category": "health",
+  "distance_to_target": null,
+  "is_target_achieved": false,
+  "name": "steps_today",
+  "notes": "Daily step count",
+  "progress_percentage": 0.0,
+  "target": null,
+  "unit": "steps",
+  "user_id": 1,
+  "value": 8500.0
+}

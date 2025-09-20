@@ -41,6 +41,10 @@ dev = [
     "pytest>=8.0.0,<9.0.0",
     "pytest-django>=4.8.0,<5.0.0",
     "pytest-cov>=5.0.0,<6.0.0",
+    "pytest-xdist>=3.3.0,<4.0.0",
+    "pytest-mock>=3.11.0,<4.0.0",
+    "hypothesis>=6.82.0,<7.0.0",
+    "pytest-snapshot>=0.9.0,<1.0.0",
     "import-linter>=2.0.0,<3.0.0",
     "mypy>=1.18.2,<2.0.0",
     "django-stubs>=5.1.0,<6.0.0",
@@ -98,11 +102,18 @@ warn_unused_configs = true
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "life_dashboard.life_dashboard.test_settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-addopts = "--tb=short --strict-markers"
+addopts = "--tb=short --strict-markers --disable-warnings -v"
+testpaths = ["tests", "life_dashboard"]
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests (require Django)",
+    "unit: marks tests as pure unit tests (no Django dependencies)",
+    "domain: marks tests as domain layer tests (pure Python)",
+    "application: marks tests as application service layer tests",
+    "interface: marks tests as interface/view layer tests",
+    "contract: marks tests as contract/API tests with Pydantic validation",
+    "property: marks property-based tests using Hypothesis",
+    "snapshot: marks snapshot tests for API responses",
 ]
 
 [tool.coverage.run]

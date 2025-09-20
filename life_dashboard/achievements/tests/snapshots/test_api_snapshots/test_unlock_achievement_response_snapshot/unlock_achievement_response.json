@@ -1,0 +1,27 @@
+{
+  "achievement_details": {
+    "category": "quest_completion",
+    "description": "Complete your very first quest",
+    "difficulty_rating": "Easy",
+    "icon": "first-trophy",
+    "name": "First Steps",
+    "tier": "bronze"
+  },
+  "experience_gained": 100,
+  "tier_multiplier": 1.0,
+  "unlock_timestamp": "2024-01-15T14:30:00",
+  "user_achievement": {
+    "achievement_id": 1,
+    "is_recent_unlock": false,
+    "notes": "Congratulations on completing your first quest! This is just the beginning of your journey.",
+    "unlock_age_days": 613,
+    "unlock_context": {
+      "auto_unlock": true,
+      "trigger_quest": "Learn Python Basics",
+      "user_level": 2
+    },
+    "unlocked_at": "2024-01-15T14:30:00",
+    "user_achievement_id": 1,
+    "user_id": 1
+  }
+}
