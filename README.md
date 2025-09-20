@@ -7,7 +7,7 @@ LIFE is a comprehensive, RPG-inspired personal life dashboard that helps you "le
 ### Core RPG System
 - **Core Stats**: Strength, Endurance, Agility, Intelligence, Wisdom, Charisma
 - **Experience Points**: Progression system with leveling
-- **Achievements & Titles**: Bronze, Silver, Gold badges with custom titles
+- **Achievements & Titles**: Bronze, Silver, Gold, Platinum badges with custom titles
 
 ### Life Tracking
 - **Life Stats**: Comprehensive tracking across Health, Wealth, and Relationships

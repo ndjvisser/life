@@ -3,17 +3,24 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 
+class AchievementTierChoices(models.TextChoices):
+    """Django choices for achievement tiers."""
+
+    BRONZE = "BRONZE", "Bronze"
+    SILVER = "SILVER", "Silver"
+    GOLD = "GOLD", "Gold"
+    PLATINUM = "PLATINUM", "Platinum"
+
+
 class Achievement(models.Model):
-    TIER_CHOICES = [
-        ("BRONZE", "Bronze"),
-        ("SILVER", "Silver"),
-        ("GOLD", "Gold"),
-        ("PLATINUM", "Platinum"),
-    ]
+    TIER_CHOICES = AchievementTierChoices.choices
 
     name = models.CharField(max_length=200)
     description = models.TextField()
-    tier = models.CharField(max_length=10, choices=TIER_CHOICES)
+    tier = models.CharField(
+        max_length=10,
+        choices=AchievementTierChoices.choices,
+    )
     icon = models.CharField(max_length=50, blank=True)  # For UI icons
     experience_reward = models.IntegerField(
         default=0, validators=[MinValueValidator(0)]
