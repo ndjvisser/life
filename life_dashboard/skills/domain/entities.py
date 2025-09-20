@@ -17,6 +17,11 @@ class SkillCategory:
     icon: str = ""
 
     def __post_init__(self):
+        """
+        Validate the dataclass after initialization.
+        
+        Ensures the category has a non-empty `name`; raises ValueError if the name is missing or empty.
+        """
         if not self.name:
             raise ValueError("Category name is required")
 
@@ -41,7 +46,17 @@ class Skill:
     last_practiced: Optional[datetime] = None
 
     def __post_init__(self):
-        """Validate skill on creation."""
+        """
+        Validate Skill fields after initialization.
+        
+        Ensures the required invariants for a newly created Skill:
+        - `name` must be non-empty.
+        - `level` must be at least 1.
+        - `experience_points` must not be negative.
+        
+        Raises:
+            ValueError: If any validation fails.
+        """
         if not self.name:
             raise ValueError("Skill name is required")
 
@@ -53,10 +68,18 @@ class Skill:
 
     def add_experience(self, amount: int) -> Tuple[int, bool]:
         """
-        Add experience points and handle leveling up.
-
+        Add experience to the skill, update timestamps, and handle level ups.
+        
+        Parameters:
+            amount (int): Positive number of experience points to add; raises ValueError if <= 0.
+        
         Returns:
-            tuple: (new_level, level_up_occurred)
+            Tuple[int, bool]: (current_level, level_up_occurred) where `level_up_occurred` is True if the skill's level increased.
+        
+        Notes:
+            - Total experience is capped at 2^31 - 1 to avoid integer overflow.
+            - The method will repeatedly call level_up() while experience meets or exceeds the threshold and the level is below the maximum (100).
+            - Updates `last_practiced` to the current UTC time.
         """
         if amount <= 0:
             raise ValueError("Experience amount must be positive")
@@ -82,7 +105,17 @@ class Skill:
         return self.level, level_up_occurred
 
     def level_up(self) -> None:
-        """Handle leveling up logic."""
+        """
+        Increment the skill's level by one and adjust experience counters.
+        
+        If the skill is already at the maximum level (100), this is a no-op.
+        Otherwise this method:
+        - Increments `level` by 1.
+        - Subtracts the current `experience_to_next_level` from `experience_points`.
+        - Increases `experience_to_next_level` by 10%, capped at 2**31 - 1 to avoid integer overflow.
+        
+        Modifies the instance in place; returns None.
+        """
         max_level = 100
         if self.level >= max_level:
             return
@@ -96,7 +129,12 @@ class Skill:
         )
 
     def get_progress_percentage(self) -> float:
-        """Get progress percentage towards next level."""
+        """
+        Return the current progress toward the next level as a percentage.
+        
+        If `experience_to_next_level` is zero this returns 100.0. The result is capped at 100.0 and represents
+        (experience_points / experience_to_next_level) * 100.
+        """
         if self.experience_to_next_level == 0:
             return 100.0
 
@@ -105,7 +143,26 @@ class Skill:
         )
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
+        """
+        Return a dictionary representation of the Skill suitable for serialization.
+        
+        The dictionary includes identifiers, core attributes, derived progress, and ISO-8601 timestamp strings.
+        
+        Returns:
+            Dict[str, Any]: {
+                "skill_id": Optional[str],
+                "user_id": int,
+                "category_id": str,
+                "name": str,
+                "description": str,
+                "level": int,
+                "experience_points": int,
+                "experience_to_next_level": int,
+                "progress_percentage": float,            # progress toward next level (0.0–100.0)
+                "created_at": Optional[str],             # ISO-8601 string or None
+                "last_practiced": Optional[str]          # ISO-8601 string or None
+            }
+        """
         return {
             "skill_id": self.skill_id,
             "user_id": self.user_id,

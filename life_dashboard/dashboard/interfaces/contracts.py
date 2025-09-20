@@ -18,6 +18,18 @@ class UserRegistrationRequest(BaseModel):
 
     @validator("username")
     def validate_username(cls, v):
+        """
+        Validate that a username contains only letters, digits, or underscores.
+        
+        Parameters:
+            v (str): Candidate username to validate.
+        
+        Returns:
+            str: The validated username (unchanged).
+        
+        Raises:
+            ValueError: If `v` contains characters other than letters, digits, or underscores.
+        """
         if not v.isalnum() and "_" not in v:
             raise ValueError(
                 "Username must contain only letters, numbers, and underscores"

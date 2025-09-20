@@ -14,7 +14,11 @@ class BasicSetupTest(TestCase):
         self.assertIn("life_dashboard.dashboard", settings.INSTALLED_APPS)
 
     def test_database_connection(self):
-        """Test that database connection works."""
+        """
+        Verify the Django database connection can execute a simple query.
+        
+        Runs a raw SQL query (`SELECT 1`) using Django's default DB connection and asserts the fetched value is 1.
+        """
         from django.db import connection
 
         with connection.cursor() as cursor:

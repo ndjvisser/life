@@ -16,6 +16,18 @@ class ArchitectureChecker:
     """Check architecture boundaries and constraints."""
 
     def __init__(self, root_path: str = "."):
+        """
+        Initialize the ArchitectureChecker.
+        
+        Parameters:
+            root_path (str): Filesystem path to the repository root (defaults to ".").
+        
+        Creates these attributes:
+            root_path (Path): Path object for the repository root.
+            life_dashboard_path (Path): Path to the `life_dashboard` package inside the root.
+            contexts (List[str]): Names of bounded-context directories to inspect.
+            layers (List[str]): Expected layer names within each context.
+        """
         self.root_path = Path(root_path)
         self.life_dashboard_path = self.root_path / "life_dashboard"
         self.contexts = [
@@ -30,7 +42,17 @@ class ArchitectureChecker:
         self.layers = ["domain", "application", "infrastructure", "interfaces"]
 
     def check_all(self) -> bool:
-        """Run all architecture checks."""
+        """
+        Run the full suite of architecture validation checks and return overall success.
+        
+        This method orchestrates the individual checks (context structure, Django imports in domain,
+        cross-context imports, layering violations, and an optional external import-linter) and
+        returns True only if every check passes. It prints a brief header and a final pass/fail
+        summary as side effects.
+        
+        Returns:
+            bool: True when all checks pass, False if any check fails.
+        """
         print("🏗️  Checking Architecture Boundaries")
         print("=" * 50)
 
@@ -65,7 +87,14 @@ class ArchitectureChecker:
         return all_passed
 
     def check_context_structure(self) -> bool:
-        """Check that all contexts have proper DDD structure."""
+        """
+        Verify that each configured context exists under the life_dashboard folder and that required DDD layers are present.
+        
+        For every context in self.contexts this scans life_dashboard/<context> and checks for the presence of each layer in self.layers. Missing "domain" or "application" layers mark the check as failing; missing other layers are reported but do not make the check fail. The function prints a brief status for each context and layer.
+        
+        Returns:
+            bool: True if all contexts contain the required layers ("domain" and "application"); False if any required layer is missing.
+        """
         print("\n📁 Checking Context Structure")
         print("-" * 30)
 
@@ -92,7 +121,15 @@ class ArchitectureChecker:
         return all_good
 
     def check_django_imports_in_domain(self) -> bool:
-        """Check for Django imports in domain layers."""
+        """
+        Scan each context's domain layer for Django imports and return whether the check passed.
+        
+        Recursively examines Python files under each context's `domain` directory and treats matches of top-level import patterns
+        like `from django...` or `import django...` as violations.
+        
+        Returns:
+            bool: True if no Django imports were found in any domain layer, False if one or more violations were detected.
+        """
         print("\n🚫 Checking Django Imports in Domain Layers")
         print("-" * 45)
 
@@ -128,7 +165,14 @@ class ArchitectureChecker:
             return True
 
     def check_cross_context_imports(self) -> bool:
-        """Check for cross-context imports in domain layers."""
+        """
+        Check domain-layer Python files for imports from other bounded contexts.
+        
+        Scans each context's domain/ directory for *.py files and looks for import statements that reference another context using the pattern `from life_dashboard.<other_context>...`. Reports any offending import lines and returns False when violations are found.
+        
+        Returns:
+            bool: True if no cross-context imports were detected; False if one or more violations were found.
+        """
         print("\n🔒 Checking Cross-Context Imports")
         print("-" * 35)
 
@@ -167,7 +211,20 @@ class ArchitectureChecker:
             return True
 
     def check_layering_violations(self) -> bool:
-        """Check for layering violations."""
+        """
+        Check for violations of the module layering rules within each bounded context.
+        
+        Scans Python files under each context's `domain` and `application` layers and detects:
+        - Domain files importing from the same context's `application` or `infrastructure` layers.
+        - Application files importing from the same context's `interfaces` layer.
+        
+        Returns:
+            bool: True if no layering violations were found; False if any offending import lines were detected.
+        
+        Notes:
+        - Context directories or individual layers that do not exist are skipped.
+        - Matches are based on simple regex patterns that capture the offending import lines; the function reports the file paths and matched import strings when violations are present.
+        """
         print("\n📚 Checking Layer Dependencies")
         print("-" * 30)
 
@@ -235,7 +292,12 @@ class ArchitectureChecker:
             return True
 
     def run_import_linter(self) -> bool:
-        """Run import-linter if available."""
+        """
+        Run the external `import-linter` using the project's pyproject.toml config.
+        
+        Returns:
+            bool: True if the linter exited with code 0 or if the `import-linter` executable was not found (skipped); False if the linter ran and returned a non-zero exit code.
+        """
         print("\n🔍 Running Import Linter")
         print("-" * 25)
 
@@ -261,7 +323,25 @@ class ArchitectureChecker:
             return True
 
     def generate_report(self) -> Dict[str, any]:
-        """Generate a detailed architecture report."""
+        """
+        Generate a structured architecture report for all configured contexts.
+        
+        Returns a dict with keys:
+        - "contexts": mapping of context name -> {
+            "exists": bool,
+            "layers": mapping of layer name -> {
+                "exists": bool,
+                "file_count": int,
+                "line_count": int
+            },
+            "files": {}  # reserved (currently unused)
+          }
+        - "violations": list (reserved, currently empty)
+        - "recommendations": list (reserved, currently empty)
+        
+        Only contexts whose directory exists under self.life_dashboard_path are included.
+        When counting lines, files that raise OSError or UnicodeDecodeError are skipped.
+        """
         report = {"contexts": {}, "violations": [], "recommendations": []}
 
         for context in self.contexts:
@@ -302,7 +382,13 @@ class ArchitectureChecker:
 
 
 def main():
-    """Main entry point."""
+    """
+    Entry point for the architecture checker CLI.
+    
+    With no arguments, instantiates ArchitectureChecker (root path = current directory), runs the full suite of architecture checks, and exits the process with status 0 on success or 1 on failure. If the first command-line argument is "--report", prints a human-readable architecture report summarizing each context's layers with file and line counts instead of running checks.
+    
+    This function calls sys.exit when running checks; it does not return a value.
+    """
     checker = ArchitectureChecker()
 
     if len(sys.argv) > 1 and sys.argv[1] == "--report":

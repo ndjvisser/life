@@ -40,7 +40,12 @@ class JournalEntry:
     updated_at: Optional[datetime] = None
 
     def __post_init__(self):
-        """Validate journal entry on creation."""
+        """
+        Perform post-initialization validation for a JournalEntry.
+        
+        Ensures the required `title` is present and, if `mood` is set, that it falls between 1 and 10 inclusive.
+        Raises ValueError when either validation fails.
+        """
         if not self.title:
             raise ValueError("Journal entry title is required")
 
@@ -48,25 +53,51 @@ class JournalEntry:
             raise ValueError("Mood rating must be between 1 and 10")
 
     def update_content(self, title: str, content: str) -> None:
-        """Update entry content."""
+        """
+        Update the entry's title and content and refresh its updated_at timestamp.
+        
+        Parameters:
+            title (str): New title for the entry.
+            content (str): New content/body for the entry.
+        
+        Side effects:
+            Sets `self.updated_at` to the current UTC time.
+        """
         self.title = title
         self.content = content
         self.updated_at = datetime.utcnow()
 
     def add_tag(self, tag: str) -> None:
-        """Add a tag to the entry."""
+        """
+        Add a non-empty, unique tag to the entry.
+        
+        If `tag` is empty or already present, the tags list is unchanged. When a tag is added, `updated_at` is set to the current UTC time.
+        """
         if tag and tag not in self.tags:
             self.tags.append(tag)
             self.updated_at = datetime.utcnow()
 
     def remove_tag(self, tag: str) -> None:
-        """Remove a tag from the entry."""
+        """
+        Remove a tag from the entry.
+        
+        If the tag is present in the entry's tags list it is removed and updated_at is set to the current UTC time.
+        If the tag is not present, the method is a no-op.
+        """
         if tag in self.tags:
             self.tags.remove(tag)
             self.updated_at = datetime.utcnow()
 
     def set_mood(self, mood: int) -> None:
-        """Set mood rating."""
+        """
+        Set the entry's mood rating and refresh the updated_at timestamp.
+        
+        Parameters:
+            mood (int): Mood rating from 1 (lowest) to 10 (highest).
+        
+        Raises:
+            ValueError: If `mood` is not between 1 and 10 (inclusive).
+        """
         if not 1 <= mood <= 10:
             raise ValueError("Mood rating must be between 1 and 10")
 
@@ -74,7 +105,15 @@ class JournalEntry:
         self.updated_at = datetime.utcnow()
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
+        """
+        Return a dictionary representation of the JournalEntry suitable for serialization.
+        
+        The returned mapping includes all primary fields. `entry_type` is returned as its string value.
+        `created_at` and `updated_at` are ISO 8601 strings when present, otherwise None. Lists and
+        primitive fields are returned as-is (e.g., `tags` is a list of strings).
+        Returns:
+            Dict[str, Any]: Dictionary containing the entry's data keyed by field name.
+        """
         return {
             "entry_id": self.entry_id,
             "user_id": self.user_id,

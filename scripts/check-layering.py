@@ -9,7 +9,17 @@ import sys
 
 
 def check_domain_layer_imports():
-    """Check that domain layers don't import from application or infrastructure."""
+    """
+    Scan all Python files under life_dashboard/*/domain/ and return import violations where domain code imports from application or infrastructure layers.
+    
+    Searches recursively for .py files (skipping paths containing "__pycache__") and matches lines with the pattern `from <module>.(application|infrastructure)`. Files that cannot be read are skipped and a warning is printed to stdout.
+    
+    Returns:
+        list: A list of violation dicts, each with keys:
+            - "file" (str): path to the offending file
+            - "line" (int): 1-based line number of the matching import
+            - "content" (str): stripped source line that matched
+    """
     violations = []
 
     # Pattern to match imports from application or infrastructure layers
@@ -39,7 +49,19 @@ def check_domain_layer_imports():
 
 
 def check_application_layer_imports():
-    """Check that application layers don't import from interfaces."""
+    """
+    Scan application-layer Python files under life_dashboard/*/application/ and report any import statements that reference an `interfaces` module.
+    
+    Searches recursively for .py files (skipping paths containing "__pycache__"), matches lines against the regex `from\s+.*\.interfaces`, and collects violations as dicts with keys:
+    - "file": path to the offending file
+    - "line": 1-based line number
+    - "content": the stripped source line
+    
+    If a file cannot be read it prints a warning and continues.
+    
+    Returns:
+        list: A list of violation dictionaries as described above. 
+    """
     violations = []
 
     # Pattern to match imports from interfaces layer
@@ -69,7 +91,15 @@ def check_application_layer_imports():
 
 
 def main():
-    """Main function to check layering violations."""
+    """
+    Run layering checks for the repository and return an exit code.
+    
+    Performs two checks:
+    - Ensures domain layer modules do not import from application or infrastructure layers.
+    - Ensures application layer modules do not import from the interfaces layer.
+    
+    Prints human-readable summaries and any detected violations to stdout. Returns 0 if no violations were found, or 1 if any violations exist.
+    """
     print("Checking for proper layering violations...")
 
     # Check domain layer violations

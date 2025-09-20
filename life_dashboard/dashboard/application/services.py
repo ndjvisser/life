@@ -14,6 +14,11 @@ class UserService:
     """Service for user profile management commands."""
 
     def __init__(self, user_repo: UserRepository, profile_repo: UserProfileRepository):
+        """
+        Initialize the service with a user repository and a user profile repository.
+        
+        These repositories are stored on the instance for use by service methods.
+        """
         self.user_repo = user_repo
         self.profile_repo = profile_repo
 
@@ -26,10 +31,20 @@ class UserService:
         last_name: str = "",
     ) -> Tuple[int, UserProfile]:
         """
-        Register a new user with profile.
-
+        Create a new user account and a corresponding user profile.
+        
+        This persists a user record via the user repository and a UserProfile via the profile repository.
+        The profile's created_at and updated_at timestamps are set to the current UTC time.
+        
+        Parameters:
+            username: Desired unique username.
+            email: User email address.
+            password: Plain-text password (repository is responsible for hashing).
+            first_name: Optional first name (defaults to empty string).
+            last_name: Optional last name (defaults to empty string).
+        
         Returns:
-            tuple: (user_id, user_profile)
+            Tuple[int, UserProfile]: The newly created user's id and the saved UserProfile instance.
         """
         # Create user account
         user_id = self.user_repo.create_user(
@@ -58,17 +73,24 @@ class UserService:
         self, user_id: int, update_data: ProfileUpdateData
     ) -> UserProfile:
         """
-        Update user profile with validation.
-
-        Args:
-            user_id: User ID
-            update_data: Profile update data
-
+        Update a user's profile and propagate certain changes to the underlying user record.
+        
+        Updates the persisted UserProfile identified by user_id using fields from update_data.
+        Fields on the profile are applied via update_data.to_dict(); the profile's updated_at
+        timestamp is set to the current UTC time. If update_data contains first_name,
+        last_name, or email (non-None), those values are also forwarded to the user repository
+        to update the related User record.
+        
+        Parameters:
+            user_id (int): Identifier of the user whose profile will be updated.
+            update_data (ProfileUpdateData): Data object containing profile fields to apply.
+                Fields set to None are treated as "no change" for propagation to the User model.
+        
         Returns:
-            Updated UserProfile
-
+            UserProfile: The saved, updated profile.
+        
         Raises:
-            ValueError: If user not found or validation fails
+            ValueError: If no profile exists for the given user_id.
         """
         profile = self.profile_repo.get_by_user_id(user_id)
         if not profile:
@@ -94,17 +116,19 @@ class UserService:
 
     def add_experience(self, user_id: int, points: int) -> Tuple[UserProfile, bool]:
         """
-        Add experience points to user profile.
-
-        Args:
-            user_id: User ID
-            points: Experience points to add
-
+        Add experience points to a user's profile and persist the updated profile.
+        
+        This updates the profile's experience and level via domain logic, refreshes the profile's updated_at timestamp, saves the profile, and returns the saved profile along with a flag indicating whether a level-up occurred.
+        
+        Parameters:
+            user_id (int): ID of the user whose profile will be updated.
+            points (int): Number of experience points to add.
+        
         Returns:
-            tuple: (updated_profile, level_up_occurred)
-
+            Tuple[UserProfile, bool]: (saved_profile, level_up_occurred)
+        
         Raises:
-            ValueError: If user not found or invalid points
+            ValueError: If no profile exists for the given user_id.
         """
         profile = self.profile_repo.get_by_user_id(user_id)
         if not profile:
@@ -124,7 +148,11 @@ class UserService:
         return self.profile_repo.get_by_user_id(user_id)
 
     def get_profile_by_username(self, username: str) -> Optional[UserProfile]:
-        """Get user profile by username."""
+        """
+        Return the user's profile for the given username.
+        
+        Returns None if no profile is found for the provided username.
+        """
         return self.profile_repo.get_by_username(username)
 
 
@@ -132,6 +160,11 @@ class AuthenticationService:
     """Service for user authentication workflows."""
 
     def __init__(self, user_repo: UserRepository, profile_repo: UserProfileRepository):
+        """
+        Initialize the service with a user repository and a user profile repository.
+        
+        These repositories are stored on the instance for use by service methods.
+        """
         self.user_repo = user_repo
         self.profile_repo = profile_repo
 
@@ -139,10 +172,9 @@ class AuthenticationService:
         self, username: str, password: str
     ) -> Optional[Tuple[int, UserProfile]]:
         """
-        Authenticate user credentials.
-
-        Returns:
-            tuple: (user_id, user_profile) if successful, None if failed
+        Authenticate the provided username and password and return the authenticated user's id and profile.
+        
+        Attempts authentication via the user repository; on success fetches the associated UserProfile from the profile repository and returns (user_id, profile). Returns None if credentials are invalid or if no profile is found for the authenticated user.
         """
         user_id = self.user_repo.authenticate_user(username, password)
         if not user_id:
@@ -156,7 +188,12 @@ class AuthenticationService:
         return user_id, profile
 
     def get_user_data(self, user_id: int) -> Optional[dict]:
-        """Get user data for session management."""
+        """
+        Return raw user record used for session management.
+        
+        Returns:
+            dict or None: The user data dictionary returned by the user repository, or None if no user exists with the given ID.
+        """
         return self.user_repo.get_user_by_id(user_id)
 
 
@@ -164,15 +201,25 @@ class OnboardingService:
     """Service for managing user onboarding workflow."""
 
     def __init__(self, user_repo: UserRepository, profile_repo: UserProfileRepository):
+        """
+        Initialize the service with a user repository and a user profile repository.
+        
+        These repositories are stored on the instance for use by service methods.
+        """
         self.user_repo = user_repo
         self.profile_repo = profile_repo
 
     def get_onboarding_state(self, user_id: int) -> OnboardingStateMachine:
         """
-        Get current onboarding state for user.
-
-        This is a simplified implementation - in a real system, you'd store
-        the onboarding state in the database.
+        Return the user's current onboarding state as an OnboardingStateMachine.
+        
+        Uses the user's profile as a heuristic (no persistent onboarding state stored):
+        - If no profile exists -> OnboardingState.REGISTRATION
+        - If profile exists but both first_name and last_name are empty -> OnboardingState.PROFILE_SETUP
+        - Otherwise -> OnboardingState.DASHBOARD
+        
+        Returns:
+            OnboardingStateMachine: state machine seeded with the determined onboarding state.
         """
         profile = self.profile_repo.get_by_user_id(user_id)
         if not profile:
@@ -190,17 +237,20 @@ class OnboardingService:
         self, user_id: int, target_state: OnboardingState
     ) -> OnboardingStateMachine:
         """
-        Advance user's onboarding to target state.
-
-        Args:
-            user_id: User ID
-            target_state: Target onboarding state
-
+        Advance the user's onboarding state to the given target and return the resulting state machine.
+        
+        Attempts to transition the user's current OnboardingStateMachine to `target_state` and returns the updated machine.
+        State changes are not persisted by this method (persistence is intentionally omitted).
+        
+        Parameters:
+            user_id: The user's numeric identifier.
+            target_state: The desired OnboardingState to transition to.
+        
         Returns:
-            Updated OnboardingStateMachine
-
+            The updated OnboardingStateMachine after the transition.
+        
         Raises:
-            OnboardingTransitionError: If transition is invalid
+            OnboardingTransitionError: If the transition from the current state to `target_state` is invalid.
         """
         current_state_machine = self.get_onboarding_state(user_id)
         current_state_machine.transition_to(target_state)
