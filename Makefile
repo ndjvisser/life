@@ -78,8 +78,12 @@ test-integration:
 	python -m pytest -m integration
 
 test-bdd:
-	behave features/ || echo "BDD tests not yet implemented"
-
+	@if command -v behave >/dev/null 2>&1; then \
+		behave features/; \
+	else \
+		echo "⚠️ behave not installed; skipping BDD tests"; \
+		if [ -n "$$CI" ]; then echo "❌ BDD tests required in CI"; exit 1; fi; \
+	fi
 # Domain-first testing targets
 test-domain:
 	python scripts/run-domain-tests.py --domain-only
