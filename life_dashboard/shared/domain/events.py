@@ -19,6 +19,9 @@ class BaseEvent:
 
     All events must inherit from this class and follow the canonical schema
     format with event_id, timestamp, and version fields.
+
+    Privacy-sensitive events should declare privacy_sensitive = True as a class
+    attribute to enable proper consent checking in the event dispatcher.
     """
 
     def __init__(
@@ -804,6 +807,8 @@ class JournalEntryUpdated(BaseEvent):
 class InsightGenerated(BaseEvent):
     """AI generates insight from journal data - v1.0.0"""
 
+    privacy_sensitive = True  # Marker for privacy-sensitive events
+
     user_id: int
     insight_id: int
     insight_type: str
@@ -835,6 +840,8 @@ class InsightGenerated(BaseEvent):
 @dataclass
 class PatternDetected(BaseEvent):
     """Behavioral pattern identified - v1.0.0"""
+
+    privacy_sensitive = True  # Marker for privacy-sensitive events
 
     user_id: int
     pattern_id: int
@@ -1150,6 +1157,8 @@ class BalanceShiftDetected(BaseEvent):
 class PredictionGenerated(BaseEvent):
     """Predictive model generates forecast - v1.0.0"""
 
+    privacy_sensitive = True  # Marker for privacy-sensitive events
+
     user_id: int
     prediction_id: int
     prediction_type: str
@@ -1181,6 +1190,8 @@ class PredictionGenerated(BaseEvent):
 @dataclass
 class RecommendationCreated(BaseEvent):
     """Personalized recommendation generated - v1.0.0"""
+
+    privacy_sensitive = True  # Marker for privacy-sensitive events
 
     user_id: int
     recommendation_id: int
@@ -1216,6 +1227,8 @@ class RecommendationCreated(BaseEvent):
 @dataclass
 class UserEngagementAnalyzed(BaseEvent):
     """User engagement patterns analyzed - v1.0.0"""
+
+    privacy_sensitive = True  # Marker for privacy-sensitive events
 
     user_id: int
     analysis_period_days: int

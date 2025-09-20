@@ -235,20 +235,15 @@ def is_consent_required(event: BaseEvent) -> bool:
     """
     Check if an event requires user consent for processing.
 
+    Uses a domain-type marker attribute to identify privacy-sensitive events
+    instead of relying on string name comparisons. Events that require consent
+    should have privacy_sensitive = True as a class attribute.
+
     This is a placeholder for privacy-aware event processing.
     In a full implementation, this would check against user
     consent preferences and data processing purposes.
     """
-    # Events that typically require consent for processing
-    consent_required_events = {
-        "PatternDetected",
-        "InsightGenerated",
-        "PredictionGenerated",
-        "UserEngagementAnalyzed",
-        "RecommendationCreated",
-    }
-
-    return type(event).__name__ in consent_required_events
+    return getattr(type(event), "privacy_sensitive", False)
 
 
 def validate_privacy_consent(event: BaseEvent, user_id: int) -> bool:

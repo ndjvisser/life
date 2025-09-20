@@ -8,6 +8,8 @@ import json
 from datetime import datetime, timezone
 from unittest.mock import Mock
 
+from freezegun import freeze_time
+
 from life_dashboard.achievements.domain.entities import (
     Achievement,
     AchievementCategory,
@@ -107,6 +109,7 @@ class TestAchievementAPISnapshots:
             "achievement_creation_response.json",
         )
 
+    @freeze_time("2024-01-15 14:30:00", tz_offset=0)
     def test_unlock_achievement_response_snapshot(self, snapshot):
         """Test unlock achievement API response structure"""
         # Mock achievement
@@ -122,12 +125,13 @@ class TestAchievementAPISnapshots:
             required_quest_completions=RequiredQuestCompletions(1),
         )
 
-        # Mock user achievement
+        # Mock user achievement with current time
+        current_time = datetime.now(timezone.utc)
         mock_user_achievement = UserAchievement(
             user_achievement_id=UserAchievementId(1),
             user_id=UserId(1),
             achievement_id=AchievementId(1),
-            unlocked_at=datetime(2024, 1, 15, 14, 30, 0, tzinfo=timezone.utc),
+            unlocked_at=current_time,
             notes="Congratulations on completing your first quest! This is just the beginning of your journey.",
             unlock_context={
                 "trigger_quest": "Learn Python Basics",
