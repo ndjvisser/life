@@ -3,7 +3,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("achievements", "0002_alter_achievement_tier"),
+        ("achievements", "0004_alter_achievement_experience_reward_and_more"),
     ]
 
     operations = [
