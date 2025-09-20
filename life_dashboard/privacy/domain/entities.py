@@ -3,7 +3,7 @@ Privacy domain entities - pure Python privacy and consent management logic.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from uuid import uuid4
 
@@ -82,10 +82,10 @@ class ConsentRecord:
         If the record is initialized with status GRANTED and no `granted_at` is provided, set `granted_at` to the current UTC time. If initialized with status WITHDRAWN and no `withdrawn_at` is provided, set `withdrawn_at` to the current UTC time.
         """
         if self.status == ConsentStatus.GRANTED and not self.granted_at:
-            self.granted_at = datetime.utcnow()
+            self.granted_at = datetime.now(timezone.utc)
 
         if self.status == ConsentStatus.WITHDRAWN and not self.withdrawn_at:
-            self.withdrawn_at = datetime.utcnow()
+            self.withdrawn_at = datetime.now(timezone.utc)
 
     def grant_consent(
         self, ip_address: str | None = None, user_agent: str | None = None
@@ -104,7 +104,7 @@ class ConsentRecord:
             user_agent (Optional[str]): User agent string to record for the grant event (audit).
         """
         self.status = ConsentStatus.GRANTED
-        self.granted_at = datetime.utcnow()
+        self.granted_at = datetime.now(timezone.utc)
         self.withdrawn_at = None
 
         if ip_address:
@@ -117,7 +117,7 @@ class ConsentRecord:
             DataProcessingPurpose.MARKETING,
             DataProcessingPurpose.RESEARCH,
         ]:
-            self.expires_at = datetime.utcnow() + timedelta(days=365)  # 1 year
+            self.expires_at = datetime.now(timezone.utc) + timedelta(days=365)  # 1 year
 
     def withdraw_consent(self) -> None:
         """
@@ -129,7 +129,7 @@ class ConsentRecord:
         """
         if self.status == ConsentStatus.GRANTED:
             self.status = ConsentStatus.WITHDRAWN
-            self.withdrawn_at = datetime.utcnow()
+            self.withdrawn_at = datetime.now(timezone.utc)
 
     def is_valid(self) -> bool:
         """
@@ -141,7 +141,7 @@ class ConsentRecord:
         if self.status != ConsentStatus.GRANTED:
             return False
 
-        if self.expires_at and datetime.utcnow() > self.expires_at:
+        if self.expires_at and datetime.now(timezone.utc) > self.expires_at:
             self.status = ConsentStatus.EXPIRED
             return False
 
@@ -155,7 +155,7 @@ class ConsentRecord:
         - Returns True only when `expires_at` is set and the current UTC time is later than `expires_at`.
         - Does not modify the consent's status or other fields; it only performs a read check.
         """
-        if self.expires_at and datetime.utcnow() > self.expires_at:
+        if self.expires_at and datetime.now(timezone.utc) > self.expires_at:
             return True
         return False
 
@@ -217,7 +217,7 @@ class DataProcessingActivity:
     purpose: DataProcessingPurpose = DataProcessingPurpose.CORE_FUNCTIONALITY
     data_categories: set[DataCategory] = field(default_factory=set)
     processing_type: str = "read"  # read, write, update, delete, analyze, share
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Context information
     context: str = ""  # Which part of the system
@@ -300,8 +300,8 @@ class PrivacySettings:
     data_minimization: bool = True
     pseudonymization: bool = True
 
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def update_setting(self, setting_name: str, value) -> None:
         """
@@ -316,7 +316,7 @@ class PrivacySettings:
         """
         if hasattr(self, setting_name):
             setattr(self, setting_name, value)
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(timezone.utc)
         else:
             raise ValueError(f"Unknown privacy setting: {setting_name}")
 
@@ -406,7 +406,7 @@ class DataSubjectRequest:
     status: str = "pending"  # pending, processing, completed, rejected
 
     # Request details
-    requested_at: datetime = field(default_factory=datetime.utcnow)
+    requested_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime | None = None
     data_categories: set[DataCategory] = field(default_factory=set)
 
@@ -458,7 +458,7 @@ class DataSubjectRequest:
             None
         """
         self.status = "completed"
-        self.completed_at = datetime.utcnow()
+        self.completed_at = datetime.now(timezone.utc)
         self.processing_notes = notes
 
     def reject_request(self, reason: str) -> None:
@@ -472,7 +472,7 @@ class DataSubjectRequest:
         """
         self.status = "rejected"
         self.rejection_reason = reason
-        self.completed_at = datetime.utcnow()
+        self.completed_at = datetime.now(timezone.utc)
 
     def is_overdue(self, days_limit: int = 30) -> bool:
         """
@@ -490,7 +490,7 @@ class DataSubjectRequest:
             return False
 
         deadline = self.requested_at + timedelta(days=days_limit)
-        return datetime.utcnow() > deadline
+        return datetime.now(timezone.utc) > deadline
 
     def to_dict(self) -> dict:
         """

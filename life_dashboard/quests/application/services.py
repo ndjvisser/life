@@ -20,6 +20,14 @@ from ..domain.repositories import (
     HabitRepository,
     QuestRepository,
 )
+from ..domain.value_objects import (
+    CompletionCount,
+    ExperienceReward,
+    HabitId,
+    HabitName,
+    StreakCount,
+    UserId,
+)
 
 
 class QuestService:
