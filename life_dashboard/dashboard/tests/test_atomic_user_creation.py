@@ -5,7 +5,7 @@ Tests for atomic user creation functionality.
 from unittest.mock import patch
 
 import pytest
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
 from life_dashboard.dashboard.application.services import UserService
@@ -52,12 +52,14 @@ class TestAtomicUserCreation:
         assert profile.location == "Test location"
 
         # Verify both records exist in database
+        User = get_user_model()
         assert User.objects.filter(id=user_id).exists()
         assert UserProfile.objects.filter(user_id=user_id).exists()
 
     def test_rollback_on_profile_failure(self):
         """Test that user creation is rolled back when profile update fails."""
         # Arrange
+        User = get_user_model()
         initial_user_count = User.objects.count()
         initial_profile_count = UserProfile.objects.count()
 
@@ -90,6 +92,7 @@ class TestAtomicUserCreation:
             )
 
         # Verify only one user exists
+        User = get_user_model()
         assert User.objects.filter(username="duplicate").count() == 1
 
     def test_backward_compatibility(self):
@@ -125,6 +128,7 @@ class TestAtomicUserCreation:
         assert profile.location == "Repo location"
 
         # Verify database state
+        User = get_user_model()
         user = User.objects.get(id=user_id)
         assert user.username == "repotest"
         assert user.first_name == "Repo"

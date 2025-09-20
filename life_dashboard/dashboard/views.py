@@ -72,8 +72,9 @@ def register(request):
                 logger.debug("User created via service: %s", profile.username)
 
                 # Get Django user for login
-                from django.contrib.auth.models import User
+                from django.contrib.auth import get_user_model
 
+                User = get_user_model()
                 user = User.objects.get(id=user_id)
                 login(request, user)
 

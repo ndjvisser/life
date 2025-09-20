@@ -1,6 +1,6 @@
 import os
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 
 
@@ -45,6 +45,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Attempting to create default admin user '{username}'...")
 
+        User = get_user_model()
         if not User.objects.filter(username=username).exists():
             try:
                 User.objects.create_superuser(username, email, password)

@@ -4,8 +4,7 @@ Dashboard infrastructure repositories - Django ORM implementations.
 
 from datetime import datetime
 
-from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, get_user_model
 from django.db import transaction
 
 from ..domain.entities import UserProfile as DomainUserProfile
@@ -32,6 +31,7 @@ class DjangoUserRepository(UserRepository):
         Returns:
             int: ID of the newly created user.
         """
+        User = get_user_model()
         with transaction.atomic():
             user = User.objects.create_user(
                 username=username,
@@ -53,6 +53,7 @@ class DjangoUserRepository(UserRepository):
             Optional[dict]: Dictionary with keys 'id', 'username', 'email', 'first_name', 'last_name',
             'is_active', and 'date_joined' when found; otherwise None.
         """
+        User = get_user_model()
         try:
             user = User.objects.get(id=user_id)
             return {
@@ -73,6 +74,7 @@ class DjangoUserRepository(UserRepository):
 
         Returns a dictionary with keys `id`, `username`, `email`, `first_name`, `last_name`, `is_active`, and `date_joined` if a user with the given username exists; otherwise returns None.
         """
+        User = get_user_model()
         try:
             user = User.objects.get(username=username)
             return {
@@ -100,6 +102,7 @@ class DjangoUserRepository(UserRepository):
         Returns:
             bool: True if the user was found and saved; False if the user does not exist.
         """
+        User = get_user_model()
         try:
             user = User.objects.get(id=user_id)
             for field, value in kwargs.items():
@@ -155,6 +158,7 @@ class DjangoUserRepository(UserRepository):
         Raises:
             Exception: If either user or profile creation fails.
         """
+        User = get_user_model()
         with transaction.atomic():
             # Create the user first - this will trigger the signal to create a basic profile
             user = User.objects.create_user(
@@ -246,11 +250,12 @@ class DjangoUserProfileRepository(UserProfileRepository):
             The returned instance is not saved to the database.
 
         Raises:
-            django.contrib.auth.models.User.DoesNotExist: If creating a new profile and the
+            User.DoesNotExist: If creating a new profile and the
                 referenced User (domain_profile.user_id) does not exist.
         """
         if django_profile is None:
             # Create new Django profile
+            User = get_user_model()
             user = User.objects.get(id=domain_profile.user_id)
             django_profile = DjangoUserProfile(user=user)
 

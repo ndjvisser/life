@@ -2,9 +2,9 @@
 Dashboard profile queries - read-only data access for views.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 
 from ..models import UserProfile
@@ -14,7 +14,7 @@ class ProfileQueries:
     """Read-only queries for user profile data."""
 
     @staticmethod
-    def get_profile_summary(user_id: int) -> Optional[Dict[str, Any]]:
+    def get_profile_summary(user_id: int) -> dict[str, Any] | None:
         """
         Return a dictionary with a dashboard-ready summary for the given user's profile or None if no profile exists.
 
@@ -56,7 +56,7 @@ class ProfileQueries:
             return None
 
     @staticmethod
-    def get_user_basic_info(user_id: int) -> Optional[Dict[str, Any]]:
+    def get_user_basic_info(user_id: int) -> dict[str, Any] | None:
         """
         Return a dictionary of basic public fields for the given user or None if the user does not exist.
 
@@ -69,6 +69,7 @@ class ProfileQueries:
             Optional[Dict[str, Any]]: User info dict or None when no User with the given id exists.
         """
         try:
+            User = get_user_model()
             user = User.objects.get(id=user_id)
             return {
                 "id": user.id,
@@ -80,7 +81,7 @@ class ProfileQueries:
                 "is_active": user.is_active,
                 "date_joined": user.date_joined,
             }
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             return None
 
     @staticmethod
