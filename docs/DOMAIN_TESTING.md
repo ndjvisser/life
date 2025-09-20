@@ -120,32 +120,36 @@ def test_core_stat_response_snapshot(snapshot):
 
 ## Running Tests
 
-### Quick Commands
+### Quick Commands (Used in CI)
 
 ```bash
-# Fastest - Domain tests only (pure Python)
+# Fastest - Domain tests only (pure Python) - Used in CI matrix
 make test-domain
 
-# Fast development cycle
+# Fast development cycle - Used in CI for quick feedback
 make test-domain-fast
 
-# Property-based testing
+# Property-based testing - Used in CI with HYPOTHESIS_PROFILE=ci
 make test-properties
 
-# Contract validation
+# Contract validation - Used in CI matrix
 make test-contracts
 
-# API snapshot testing
+# API snapshot testing - Used in CI matrix
 make test-snapshots
 
+# Comprehensive testing - Used in CI for main branch
+make test-thorough
+```
+
+### Development Commands (Manual/Local Use)
+
+```bash
 # All unit tests
 make test-all-unit
 
 # With coverage
 make test-domain-coverage
-
-# Comprehensive testing
-make test-thorough
 
 # Parallel execution
 make test-parallel
@@ -154,11 +158,25 @@ make test-parallel
 ### Advanced Usage
 
 ```bash
-# Custom test runner with options
+# Custom test runner with options (used by make targets)
 python scripts/run-domain-tests.py --domain-only --verbose
 python scripts/run-domain-tests.py --with-properties --profile thorough
 python scripts/run-domain-tests.py --all-unit --coverage --parallel
 ```
+
+### CI Integration
+
+The following test targets are automatically executed in GitHub Actions:
+
+**`.github/workflows/ci.yml`:**
+- **Domain-First Testing Job**: Runs `test-domain`, `test-properties`, `test-contracts`, `test-snapshots` in parallel matrix
+- **Main CI Job**: Runs `test-domain-fast` for quick feedback, plus individual test types
+- **Comprehensive Testing**: Runs `test-thorough` on main branch pushes with coverage reporting
+
+**`.github/workflows/architecture-check.yml`:**
+- **Architecture Validation**: Runs domain tests to ensure architecture changes don't break functionality
+
+All CI jobs use the documented make targets and `scripts/run-domain-tests.py` for consistent testing across environments.
 
 ### Hypothesis Profiles
 
