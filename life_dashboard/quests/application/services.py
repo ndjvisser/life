@@ -20,6 +20,24 @@ from ..domain.repositories import (
     HabitRepository,
     QuestRepository,
 )
+from ..domain.value_objects import (
+    CompletionCount,
+    ExperienceReward,
+    HabitId,
+    HabitName,
+    QuestDescription,
+    QuestId,
+    QuestTitle,
+    StreakCount,
+    UserId,
+)
+
+
+def _generate_positive_identifier(modulus: int = 1_000_000_000_000) -> int:
+    """Generate a positive integer identifier derived from a UUID."""
+
+    raw_value = uuid4().int % modulus
+    return raw_value if raw_value > 0 else 1
 
 
 class QuestService:
@@ -62,15 +80,32 @@ class QuestService:
                 difficulty_enum = QuestDifficulty.MEDIUM
         else:
             difficulty_enum = difficulty
+        quest_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
+        quest_title = title if isinstance(title, QuestTitle) else QuestTitle(title)
+        quest_description = (
+            description
+            if isinstance(description, QuestDescription)
+            else QuestDescription(description)
+        )
+        quest_experience = (
+            experience_reward
+            if isinstance(experience_reward, ExperienceReward)
+            else ExperienceReward(experience_reward)
+        )
+
+        quest_type_enum = (
+            quest_type if isinstance(quest_type, QuestType) else QuestType(quest_type)
+        )
+
         quest = Quest(
-            quest_id=str(uuid4()),  # Generate a unique quest ID
-            user_id=user_id,
-            title=title,
-            description=description,
-            quest_type=quest_type,
+            quest_id=QuestId(_generate_positive_identifier()),
+            user_id=quest_user_id,
+            title=quest_title,
+            description=quest_description,
+            quest_type=quest_type_enum,
             difficulty=difficulty_enum,
             status=QuestStatus.DRAFT,  # New quests start as draft
-            experience_reward=experience_reward,
+            experience_reward=quest_experience,
             due_date=due_date,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
@@ -357,20 +392,40 @@ class HabitService:
         Returns:
             Habit: The persisted Habit instance with any repository-assigned identifiers or metadata.
         """
+        habit_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
+        habit_name = name if isinstance(name, HabitName) else HabitName(name)
+        frequency_enum = (
+            frequency
+            if isinstance(frequency, HabitFrequency)
+            else HabitFrequency(frequency)
+        )
+        habit_target = (
+            target_count
+            if isinstance(target_count, CompletionCount)
+            else CompletionCount(target_count)
+        )
+        habit_experience = (
+            experience_reward
+            if isinstance(experience_reward, ExperienceReward)
+            else ExperienceReward(experience_reward)
+        )
+
         habit = Habit(
-            user_id=UserId(user_id),
-            name=HabitName(name),
+            habit_id=HabitId(_generate_positive_identifier()),
+            user_id=habit_user_id,
+            name=habit_name,
             description=description,
-            frequency=frequency,
-            target_count=CompletionCount(target_count),
+            frequency=frequency_enum,
+            target_count=habit_target,
             current_streak=StreakCount(0),
             longest_streak=StreakCount(0),
-            experience_reward=ExperienceReward(experience_reward),
+            experience_reward=habit_experience,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
         )
 
         return self.habit_repo.create(habit)
+
     def complete_habit(
         self,
         habit_id: int | HabitId,
@@ -392,24 +447,27 @@ class HabitService:
         Returns:
             tuple(Habit, HabitCompletion, int): A 3-tuple containing the updated Habit entity, the persisted HabitCompletion record, and the experience points gained from this completion.
         """
-        hid = habit_id if isinstance(habit_id, HabitId) else HabitId(int(habit_id))
-        habit = self.habit_repo.get_by_id(hid)
+        habit_lookup_id = habit_id.value if isinstance(habit_id, HabitId) else habit_id
+
+        habit = self.habit_repo.get_by_id(habit_lookup_id)
         if not habit:
-            raise ValueError(f"Habit {hid} not found")
+            raise ValueError(f"Habit {habit_lookup_id} not found")
 
         if not completion_date:
             completion_date = date.today()
 
         # Check if already completed today
         existing_completion = self.completion_repo.get_completion_for_date(
-            hid, completion_date
+            habit_lookup_id, completion_date
         )
         if existing_completion:
             raise ValueError(f"Habit already completed on {completion_date}")
 
         # Determine previous completion to maintain streak calculations
         previous_completion_date = None
-        recent_completions = self.completion_repo.get_by_habit_id(hid, limit=1)
+        recent_completions = self.completion_repo.get_by_habit_id(
+            habit_lookup_id, limit=1
+        )
         if recent_completions:
             candidate_date = recent_completions[0].completion_date
             if candidate_date < completion_date:
@@ -426,20 +484,48 @@ class HabitService:
         updated_habit = self.habit_repo.save(habit)
 
         # Create completion record
+        if isinstance(habit_id, HabitId):
+            habit_identifier = habit_id
+        else:
+            try:
+                habit_identifier = HabitId(int(habit_id))
+            except (TypeError, ValueError) as err:
+                raise ValueError(f"Invalid habit_id: {habit_id}") from err
+        user_identifier = (
+            habit.user_id
+            if isinstance(habit.user_id, UserId)
+            else UserId(habit.user_id)
+        )
+        completion_count = (
+            count if isinstance(count, CompletionCount) else CompletionCount(count)
+        )
+        completion_experience = (
+            experience_gained
+            if isinstance(experience_gained, ExperienceReward)
+            else ExperienceReward(experience_gained)
+        )
+        streak_value = (
+            new_streak
+            if isinstance(new_streak, StreakCount)
+            else StreakCount(new_streak)
+        )
+
         completion = HabitCompletion(
-            habit_id=hid,
-            user_id=habit.user_id,
+            completion_id="",
+            habit_id=habit_identifier,
+            user_id=user_identifier,
             completion_date=completion_date,
-            count=CompletionCount(count),
+            count=completion_count,
             notes=notes,
-            experience_gained=ExperienceReward(experience_gained),
-            streak_at_completion=new_streak,
+            experience_gained=completion_experience,
+            streak_at_completion=streak_value,
             created_at=datetime.utcnow(),
         )
 
         saved_completion = self.completion_repo.create(completion)
 
         return updated_habit, saved_completion, experience_gained
+
     def break_habit_streak(self, habit_id: str) -> Habit:
         """
         Break the active streak for the specified habit and persist the change.
@@ -580,11 +666,14 @@ class HabitService:
             "longest_streak": max((h.longest_streak.value for h in habits), default=0),
             "daily_average": completion_stats.get("daily_average", 0.0),
             "current_streak": completion_stats.get("current_streak", 0),
-            "streak_milestones": len([h for h in habits if h.current_streak.value >= 7]),
+            "streak_milestones": len(
+                [h for h in habits if h.current_streak.value >= 7]
+            ),
             "habits_due_today": len(self.get_habits_due_today(user_id)),
         }
 
         return stats
+
 
 class QuestChainService:
     """Service for managing quest chains and dependencies."""
@@ -617,15 +706,90 @@ class QuestChainService:
         created_quests = []
 
         for quest_data in child_quests:
-            sanitized_quest_data = self._sanitize_child_quest_data(quest_data)
-            timestamp = datetime.utcnow()
-            quest = Quest(
-                user_id=user_id,
-                parent_quest_id=parent_quest_id,
-                created_at=timestamp,
-                updated_at=timestamp,
-                **sanitized_quest_data,
+            quest_payload = quest_data.copy()
+
+            quest_identifier = quest_payload.get("quest_id")
+            if quest_identifier is None:
+                quest_identifier = QuestId(_generate_positive_identifier())
+            elif not isinstance(quest_identifier, QuestId):
+                try:
+                    quest_identifier = QuestId(int(quest_identifier))
+                except (TypeError, ValueError) as err:
+                    raise ValueError(
+                        f"Invalid quest_id value in quest chain payload: {quest_identifier}"
+                    ) from err
+
+            quest_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
+
+            title_value = quest_payload.get("title", "")
+            quest_title = (
+                title_value
+                if isinstance(title_value, QuestTitle)
+                else QuestTitle(title_value)
             )
+
+            description_value = quest_payload.get("description", "")
+            quest_description = (
+                description_value
+                if isinstance(description_value, QuestDescription)
+                else QuestDescription(description_value)
+            )
+
+            difficulty_value = quest_payload.get("difficulty", QuestDifficulty.MEDIUM)
+            if isinstance(difficulty_value, str):
+                difficulty_key = difficulty_value.upper()
+                difficulty_value = (
+                    QuestDifficulty[difficulty_key]
+                    if difficulty_key in QuestDifficulty.__members__
+                    else QuestDifficulty.MEDIUM
+                )
+
+            quest_type_value = quest_payload.get("quest_type", QuestType.SIDE)
+            if isinstance(quest_type_value, str):
+                quest_type_key = quest_type_value.upper()
+                quest_type_value = (
+                    QuestType[quest_type_key]
+                    if quest_type_key in QuestType.__members__
+                    else QuestType.SIDE
+                )
+
+            status_value = quest_payload.get("status", QuestStatus.DRAFT)
+            if isinstance(status_value, str):
+                status_key = status_value.upper()
+                status_value = (
+                    QuestStatus[status_key]
+                    if status_key in QuestStatus.__members__
+                    else QuestStatus.DRAFT
+                )
+
+            experience_value = quest_payload.get("experience_reward", 0)
+            quest_experience = (
+                experience_value
+                if isinstance(experience_value, ExperienceReward)
+                else ExperienceReward(experience_value)
+            )
+
+            quest = Quest(
+                quest_id=quest_identifier,
+                user_id=quest_user_id,
+                title=quest_title,
+                description=quest_description,
+                quest_type=quest_type_value,
+                difficulty=difficulty_value,
+                status=status_value,
+                experience_reward=quest_experience,
+                start_date=quest_payload.get("start_date"),
+                due_date=quest_payload.get("due_date"),
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow(),
+            )
+
+            if "progress" in quest_payload:
+                quest.progress = quest_payload["progress"]
+            if parent_quest_id is not None:
+                quest.parent_quest_id = parent_quest_id
+            if "prerequisite_quest_ids" in quest_payload:
+                quest.prerequisite_quest_ids = quest_payload["prerequisite_quest_ids"]
             created_quest = self.quest_repo.create(quest)
             created_quests.append(created_quest)
 
@@ -779,9 +943,7 @@ class QuestChainService:
         )
 
         status_value = filtered_data.pop("status", QuestStatus.DRAFT)
-        sanitized["status"] = self._normalize_enum(
-            status_value, QuestStatus, "status"
-        )
+        sanitized["status"] = self._normalize_enum(status_value, QuestStatus, "status")
 
         experience_reward = filtered_data.pop("experience_reward", None)
         if experience_reward is None:
@@ -797,9 +959,7 @@ class QuestChainService:
         progress_value = filtered_data.pop("progress", None)
         completion_percentage = filtered_data.pop("completion_percentage", None)
         progress_source = (
-            progress_value
-            if progress_value is not None
-            else completion_percentage
+            progress_value if progress_value is not None else completion_percentage
         )
         if progress_source is not None:
             sanitized["progress"] = self._normalize_progress(progress_source)
