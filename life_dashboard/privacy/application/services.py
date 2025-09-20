@@ -412,6 +412,8 @@ class DataSubjectService:
         if verification_method is not None:
             request.verify_identity(verification_method)
 
+        if not request.identity_verified:
+            request.verify_identity(method="internal_process")
         request.start_processing(processor_id)
         self.request_repo.save(request)
 
@@ -420,7 +422,6 @@ class DataSubjectService:
 
         request.complete_request("Data export completed")
         self.request_repo.save(request)
-
         return user_data
 
     def process_deletion_request(
