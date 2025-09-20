@@ -8,7 +8,7 @@ versioning requirements specified in the catalog.
 
 import json
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
@@ -31,7 +31,7 @@ class BaseEvent:
         version: str = "1.0.0",
     ):
         self.event_id = event_id or str(uuid4())
-        self.timestamp = timestamp or datetime.utcnow()
+        self.timestamp = timestamp or datetime.now(timezone.utc)
         self.version = version
 
     def to_dict(self) -> dict[str, Any]:

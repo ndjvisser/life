@@ -3,7 +3,7 @@ Stats domain entities - pure Python business logic without Django dependencies.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -101,7 +101,7 @@ class CoreStat:
             raise ValueError("Stat value must be an integer between 1 and 100")
 
         setattr(self, stat_name, value)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
         return value
 
@@ -133,7 +133,7 @@ class CoreStat:
             self.experience_points += points
 
         self._calculate_level()
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
         level_up_occurred = self.level > old_level
         return self.level, level_up_occurred
@@ -272,7 +272,7 @@ class LifeStat:
         self.value = new_value
         if notes:
             self.notes = notes
-        self.last_updated = datetime.utcnow()
+        self.last_updated = datetime.now(timezone.utc)
 
         return self.value
 
@@ -287,7 +287,7 @@ class LifeStat:
                 target_value = Decimal(str(target_value))
 
         self.target = target_value
-        self.last_updated = datetime.utcnow()
+        self.last_updated = datetime.now(timezone.utc)
 
     def progress_percentage(self) -> float:
         """
@@ -371,7 +371,7 @@ class StatHistory:
         If `timestamp` is None, set it to the current UTC time. Convert `old_value` and `new_value` from int/float to Decimal (preserving numeric representation) and then set `change_amount` to `new_value - old_value`. This mutates the instance fields.
         """
         if self.timestamp is None:
-            self.timestamp = datetime.utcnow()
+            self.timestamp = datetime.now(timezone.utc)
 
         # Ensure values are Decimal
         if isinstance(self.old_value, (int, float)):
