@@ -295,10 +295,14 @@ class LifeStat:
 
         Returns 0.0 if no target is set or the target is zero. Otherwise returns (value / target) * 100 capped at 100.0 and rounded to 2 decimal places.
         """
-        if self.target is None or self.target == 0:
+        if self.target is None:
             return 0.0
 
-        progress = min(100.0, float((self.value / self.target) * 100))
+        if self.target <= 0:
+            return 0.0
+
+        progress = float((self.value / self.target) * 100)
+        progress = max(0.0, min(100.0, progress))
         return round(progress, 2)
 
     def is_target_achieved(self) -> bool:

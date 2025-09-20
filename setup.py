@@ -12,7 +12,7 @@ setup(
     license="MIT",
     packages=find_packages(),
     install_requires=[
-        "Django==5.0.2",
+        "Django==5.1.1",
         "python-dotenv==1.0.1",
         "django-crispy-forms==2.1",
         "crispy-bootstrap5==2024.2",
@@ -37,7 +37,7 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Framework :: Django",
-        "Framework :: Django :: 5.0",
+        "Framework :: Django :: 5.1",
     ],
     python_requires=">=3.8",
 )

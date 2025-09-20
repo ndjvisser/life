@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -14,12 +15,20 @@ class Achievement(models.Model):
     description = models.TextField()
     tier = models.CharField(max_length=10, choices=TIER_CHOICES)
     icon = models.CharField(max_length=50, blank=True)  # For UI icons
-    experience_reward = models.IntegerField(default=0)
+    experience_reward = models.IntegerField(
+        default=0, validators=[MinValueValidator(0)]
+    )
 
     # Requirements
-    required_level = models.IntegerField(default=1)
-    required_skill_level = models.IntegerField(null=True, blank=True)
-    required_quest_completions = models.IntegerField(default=1)
+    required_level = models.IntegerField(
+        default=1, validators=[MinValueValidator(1)]
+    )
+    required_skill_level = models.IntegerField(
+        null=True, blank=True, validators=[MinValueValidator(1)]
+    )
+    required_quest_completions = models.IntegerField(
+        default=1, validators=[MinValueValidator(1)]
+    )
 
     class Meta:
         verbose_name = "Achievement"

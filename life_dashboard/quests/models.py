@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -96,7 +97,7 @@ class HabitCompletion(models.Model):
     habit = models.ForeignKey(
         Habit, on_delete=models.CASCADE, related_name="completions"
     )
-    count = models.IntegerField(default=1)
+    count = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     date = models.DateField(default=date.today)
     notes = models.TextField(blank=True)
     experience_gained = models.IntegerField(default=0)

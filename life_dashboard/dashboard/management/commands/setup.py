@@ -19,7 +19,6 @@ class Command(BaseCommand):
         # Run migrations
         self.stdout.write("Running migrations...")
         try:
-            call_command("makemigrations")
             call_command("migrate")
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error running migrations: {e}"))
