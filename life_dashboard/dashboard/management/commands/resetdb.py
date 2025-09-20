@@ -34,9 +34,7 @@ class Command(BaseCommand):
 
         if not settings.DEBUG:
             self.stderr.write(
-                self.style.ERROR(
-                    "resetdb can only run when DEBUG is enabled."
-                )
+                self.style.ERROR("resetdb can only run when DEBUG is enabled.")
             )
             return
 
@@ -75,6 +73,4 @@ class Command(BaseCommand):
         except (OperationalError, IntegrityError) as exc:
             self.stderr.write(self.style.ERROR(f"Error resetting database: {exc}"))
         except Exception as exc:
-            self.stderr.write(
-                self.style.ERROR(f"An unexpected error occurred: {exc}")
-            )
+            self.stderr.write(self.style.ERROR(f"An unexpected error occurred: {exc}"))

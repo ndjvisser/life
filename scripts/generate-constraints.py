@@ -50,7 +50,9 @@ def main():
         )
         if returncode != 0:
             if "No such file" in (stderr or ""):
-                print("❌ requirements.in not found. Add it or switch to compiling from pyproject.toml.")
+                print(
+                    "❌ requirements.in not found. Add it or switch to compiling from pyproject.toml."
+                )
             else:
                 print("❌ Production constraints are out of date")
             sys.exit(1)
@@ -62,7 +64,9 @@ def main():
         )
         if returncode != 0:
             if "No such file" in (stderr or ""):
-                print("❌ requirements-dev.in not found. Add it or switch to compiling from pyproject.toml.")
+                print(
+                    "❌ requirements-dev.in not found. Add it or switch to compiling from pyproject.toml."
+                )
             else:
                 print("❌ Development constraints are out of date")
             sys.exit(1)

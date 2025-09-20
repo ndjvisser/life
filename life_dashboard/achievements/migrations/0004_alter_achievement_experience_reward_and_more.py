@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("achievements", "0003_alter_achievement_required_quest_completions_default"),
     ]

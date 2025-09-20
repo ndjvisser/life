@@ -20,9 +20,7 @@ class Achievement(models.Model):
     )
 
     # Requirements
-    required_level = models.IntegerField(
-        default=1, validators=[MinValueValidator(1)]
-    )
+    required_level = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     required_skill_level = models.IntegerField(
         null=True, blank=True, validators=[MinValueValidator(1)]
     )

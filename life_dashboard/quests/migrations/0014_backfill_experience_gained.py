@@ -7,9 +7,7 @@ def backfill_experience(apps, schema_editor):
     HabitCompletion = apps.get_model("quests", "HabitCompletion")
     Habit = apps.get_model("quests", "Habit")
 
-    habit_rewards = {
-        habit.pk: habit.experience_reward for habit in Habit.objects.all()
-    }
+    habit_rewards = {habit.pk: habit.experience_reward for habit in Habit.objects.all()}
 
     for completion in HabitCompletion.objects.all():
         reward = habit_rewards.get(completion.habit_id, 0)
@@ -26,7 +24,6 @@ def noop_reverse(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("quests", "0013_alter_habitcompletion_count"),
     ]

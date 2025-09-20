@@ -61,6 +61,7 @@ class TestVerificationMethodFix:
         # Assert
         mock_request.verify_identity.assert_not_called()
         mock_request.start_processing.assert_called_once_with(456)
+
     def test_process_deletion_request_with_verification_method(self):
         """Test that process_deletion_request accepts and uses verification_method parameter."""
         # Arrange

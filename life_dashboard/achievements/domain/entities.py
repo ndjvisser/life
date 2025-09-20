@@ -203,6 +203,7 @@ class Achievement:
             if total_requirements > 0
             else 100.0
         )
+
     def get_missing_requirements(self, user_stats: dict[str, Any]) -> list[str]:
         """Get list of missing requirements for this achievement"""
         missing = []

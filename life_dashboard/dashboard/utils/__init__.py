@@ -34,9 +34,7 @@ def reset_database(*, database: str = DEFAULT_DB_ALIAS) -> None:
 
     environment = os.getenv("DJANGO_ENV", "").lower()
     if environment in {"production", "prod", "staging"}:
-        raise RuntimeError(
-            "Database reset is blocked in production-like environments."
-        )
+        raise RuntimeError("Database reset is blocked in production-like environments.")
 
     connection = connections[database]
     flush_kwargs = {"database": database, "interactive": False, "verbosity": 0}
