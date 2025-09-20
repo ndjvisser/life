@@ -5,7 +5,7 @@ Quests domain entities - pure Python business logic without Django dependencies.
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 from uuid import uuid4
 
 
@@ -52,7 +52,7 @@ class HabitFrequency(Enum):
 class Quest:
     """Pure domain entity for quest management."""
 
-    quest_id: Optional[str] = field(default_factory=lambda: str(uuid4()))
+    quest_id: str | None = field(default_factory=lambda: str(uuid4()))
     user_id: int = 0
     title: str = ""
     description: str = ""
@@ -65,17 +65,17 @@ class Quest:
     completion_percentage: float = 0.0
 
     # Dates
-    start_date: Optional[date] = None
-    due_date: Optional[date] = None
-    completed_at: Optional[datetime] = None
+    start_date: date | None = None
+    due_date: date | None = None
+    completed_at: datetime | None = None
 
     # Quest chain relationships
-    parent_quest_id: Optional[str] = None
-    prerequisite_quest_ids: List[str] = field(default_factory=list)
+    parent_quest_id: str | None = None
+    prerequisite_quest_ids: list[str] = field(default_factory=list)
 
     # Metadata
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     def __post_init__(self):
         """
@@ -122,7 +122,7 @@ class Quest:
             self.start_date = date.today()
         self.updated_at = datetime.utcnow()
 
-    def complete_quest(self) -> Tuple[int, datetime]:
+    def complete_quest(self) -> tuple[int, datetime]:
         """
         Mark the quest as completed and record completion time.
 
@@ -230,7 +230,7 @@ class Quest:
 
         return date.today() > self.due_date
 
-    def days_until_due(self) -> Optional[int]:
+    def days_until_due(self) -> int | None:
         """
         Return the number of days from today until the quest's due date.
 
@@ -285,7 +285,7 @@ class Quest:
         multiplier = self.get_difficulty_multiplier()
         return int(base_reward * multiplier)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a serializable dictionary representation of the Quest.
 
@@ -320,7 +320,7 @@ class Quest:
 class Habit:
     """Pure domain entity for habit tracking."""
 
-    habit_id: Optional[str] = field(default_factory=lambda: str(uuid4()))
+    habit_id: str | None = field(default_factory=lambda: str(uuid4()))
     user_id: int = 0
     name: str = ""
     description: str = ""
@@ -335,9 +335,9 @@ class Habit:
     experience_reward: int = 5
 
     # Metadata
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    last_completed: Optional[date] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    last_completed: date | None = None
 
     def __post_init__(self):
         """
@@ -361,8 +361,8 @@ class Habit:
             raise ValueError("Experience reward cannot be negative")
 
     def complete_habit(
-        self, completion_date: Optional[date] = None
-    ) -> Tuple[int, int, bool]:
+        self, completion_date: date | None = None
+    ) -> tuple[int, int, bool]:
         """
         Mark the habit as completed for a given date, update streak counters, and compute experience and milestone status.
 
@@ -398,7 +398,7 @@ class Habit:
 
         return experience_gained, self.current_streak, streak_milestone
 
-    def break_streak(self, break_date: Optional[date] = None) -> int:
+    def break_streak(self, break_date: date | None = None) -> int:
         """
         Reset the habit's current streak to zero and return the streak length that was broken.
 
@@ -532,7 +532,7 @@ class Habit:
 
         return False
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a dictionary representation of the Habit suitable for serialization.
 
@@ -572,7 +572,7 @@ class Habit:
 class HabitCompletion:
     """Domain entity for individual habit completions."""
 
-    completion_id: Optional[str] = field(default_factory=lambda: str(uuid4()))
+    completion_id: str | None = field(default_factory=lambda: str(uuid4()))
     habit_id: str = ""
     user_id: int = 0
     completion_date: date = field(default_factory=date.today)
@@ -582,7 +582,7 @@ class HabitCompletion:
     streak_at_completion: int = 0
 
     # Metadata
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
     def __post_init__(self):
         """
@@ -605,7 +605,7 @@ class HabitCompletion:
         if self.experience_gained < 0:
             raise ValueError("Experience gained cannot be negative")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a serializable dictionary representation of this HabitCompletion.
 

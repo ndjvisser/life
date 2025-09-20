@@ -3,7 +3,6 @@ Quests API contracts - Pydantic models for request/response validation.
 """
 
 from datetime import date, datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, Field, validator
 
@@ -18,8 +17,8 @@ class QuestCreateRequest(BaseModel):
     )
     difficulty: str = Field("medium", regex="^(easy|medium|hard|legendary)$")
     experience_reward: int = Field(10, ge=1, le=10000)
-    start_date: Optional[date] = None
-    due_date: Optional[date] = None
+    start_date: date | None = None
+    due_date: date | None = None
 
     @validator("due_date")
     def validate_due_date(cls, v, values):
@@ -53,16 +52,16 @@ class QuestCreateRequest(BaseModel):
 class QuestUpdateRequest(BaseModel):
     """Request model for updating a quest."""
 
-    title: Optional[str] = Field(None, min_length=1, max_length=200)
-    description: Optional[str] = Field(None, max_length=1000)
-    quest_type: Optional[str] = Field(
+    title: str | None = Field(None, min_length=1, max_length=200)
+    description: str | None = Field(None, max_length=1000)
+    quest_type: str | None = Field(
         None, regex="^(life_goal|annual_goal|main|side|weekly|daily)$"
     )
-    difficulty: Optional[str] = Field(None, regex="^(easy|medium|hard|legendary)$")
-    experience_reward: Optional[int] = Field(None, ge=1, le=10000)
-    start_date: Optional[date] = None
-    due_date: Optional[date] = None
-    completion_percentage: Optional[float] = Field(None, ge=0, le=100)
+    difficulty: str | None = Field(None, regex="^(easy|medium|hard|legendary)$")
+    experience_reward: int | None = Field(None, ge=1, le=10000)
+    start_date: date | None = None
+    due_date: date | None = None
+    completion_percentage: float | None = Field(None, ge=0, le=100)
 
 
 class QuestResponse(BaseModel):
@@ -76,20 +75,20 @@ class QuestResponse(BaseModel):
     status: str
     experience_reward: int
     completion_percentage: float
-    start_date: Optional[date]
-    due_date: Optional[date]
-    completed_at: Optional[datetime]
+    start_date: date | None
+    due_date: date | None
+    completed_at: datetime | None
     is_overdue: bool
-    days_until_due: Optional[int]
+    days_until_due: int | None
     final_experience_reward: int
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class QuestListResponse(BaseModel):
     """Response model for quest lists."""
 
-    quests: List[QuestResponse]
+    quests: list[QuestResponse]
     total_count: int
     active_count: int
     completed_count: int
@@ -100,15 +99,15 @@ class QuestActionRequest(BaseModel):
     """Request model for quest actions."""
 
     action: str = Field(..., regex="^(start|complete|pause|resume|fail)$")
-    reason: Optional[str] = Field(None, max_length=500)
-    completion_percentage: Optional[float] = Field(None, ge=0, le=100)
+    reason: str | None = Field(None, max_length=500)
+    completion_percentage: float | None = Field(None, ge=0, le=100)
 
 
 class QuestActionResponse(BaseModel):
     """Response model for quest actions."""
 
     quest: QuestResponse
-    experience_awarded: Optional[int] = None
+    experience_awarded: int | None = None
     level_up_occurred: bool = False
     message: str
     success: bool = True
@@ -127,11 +126,11 @@ class HabitCreateRequest(BaseModel):
 class HabitUpdateRequest(BaseModel):
     """Request model for updating a habit."""
 
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    description: Optional[str] = Field(None, max_length=500)
-    frequency: Optional[str] = Field(None, regex="^(daily|weekly|monthly|custom)$")
-    target_count: Optional[int] = Field(None, ge=1, le=100)
-    experience_reward: Optional[int] = Field(None, ge=1, le=1000)
+    name: str | None = Field(None, min_length=1, max_length=100)
+    description: str | None = Field(None, max_length=500)
+    frequency: str | None = Field(None, regex="^(daily|weekly|monthly|custom)$")
+    target_count: int | None = Field(None, ge=1, le=100)
+    experience_reward: int | None = Field(None, ge=1, le=1000)
 
 
 class HabitResponse(BaseModel):
@@ -145,17 +144,17 @@ class HabitResponse(BaseModel):
     current_streak: int
     longest_streak: int
     experience_reward: int
-    last_completed: Optional[date]
+    last_completed: date | None
     is_due_today: bool
     completion_rate_30d: float
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
 
 class HabitListResponse(BaseModel):
     """Response model for habit lists."""
 
-    habits: List[HabitResponse]
+    habits: list[HabitResponse]
     total_count: int
     due_today_count: int
     active_streaks_count: int
@@ -165,7 +164,7 @@ class HabitListResponse(BaseModel):
 class HabitCompletionRequest(BaseModel):
     """Request model for completing a habit."""
 
-    completion_date: Optional[date] = None
+    completion_date: date | None = None
     count: int = Field(1, ge=1, le=100)
     notes: str = Field("", max_length=500)
 
@@ -180,7 +179,7 @@ class HabitCompletionResponse(BaseModel):
     notes: str
     experience_gained: int
     streak_at_completion: int
-    created_at: datetime
+    created_at: datetime | None = None
 
 
 class HabitCompletionActionResponse(BaseModel):
@@ -224,10 +223,8 @@ class QuestSearchRequest(BaseModel):
     """Request model for searching quests."""
 
     query: str = Field(..., min_length=1, max_length=100)
-    status: Optional[str] = Field(
-        None, regex="^(draft|active|completed|failed|paused)$"
-    )
-    quest_type: Optional[str] = Field(
+    status: str | None = Field(None, regex="^(draft|active|completed|failed|paused)$")
+    quest_type: str | None = Field(
         None, regex="^(life_goal|annual_goal|main|side|weekly|daily)$"
     )
     limit: int = Field(20, ge=1, le=100)
@@ -237,7 +234,7 @@ class HabitSearchRequest(BaseModel):
     """Request model for searching habits."""
 
     query: str = Field(..., min_length=1, max_length=100)
-    frequency: Optional[str] = Field(None, regex="^(daily|weekly|monthly|custom)$")
+    frequency: str | None = Field(None, regex="^(daily|weekly|monthly|custom)$")
     limit: int = Field(20, ge=1, le=100)
 
 
@@ -246,5 +243,5 @@ class ErrorResponse(BaseModel):
 
     success: bool = False
     message: str
-    error_code: Optional[str] = None
-    details: Optional[dict] = None
+    error_code: str | None = None
+    details: dict | None = None

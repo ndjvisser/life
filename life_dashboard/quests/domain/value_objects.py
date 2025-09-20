@@ -5,7 +5,6 @@ Quests domain value objects - immutable objects that represent concepts.
 from dataclasses import dataclass
 from datetime import date, timedelta
 from enum import Enum
-from typing import List, Optional
 
 
 class QuestPriority(Enum):
@@ -99,7 +98,7 @@ class QuestDeadline:
         """
         return self.due_date - timedelta(days=self.buffer_days)
 
-    def is_overdue(self, current_date: Optional[date] = None) -> bool:
+    def is_overdue(self, current_date: date | None = None) -> bool:
         """
         Return True if the deadline's due_date is strictly before the given current_date.
 
@@ -116,7 +115,7 @@ class QuestDeadline:
         return current_date > self.due_date
 
     def is_approaching(
-        self, warning_days: int = 3, current_date: Optional[date] = None
+        self, warning_days: int = 3, current_date: date | None = None
     ) -> bool:
         """
         Return True if the deadline is within the given warning period and not yet overdue.
@@ -139,7 +138,7 @@ class QuestDeadline:
         warning_date = self.effective_deadline - timedelta(days=warning_days)
         return current_date >= warning_date and not self.is_overdue(current_date)
 
-    def days_remaining(self, current_date: Optional[date] = None) -> int:
+    def days_remaining(self, current_date: date | None = None) -> int:
         """
         Return the number of whole days from `current_date` (default: today) until the deadline.
 
@@ -165,7 +164,7 @@ class HabitStreak:
     current_count: int
     longest_count: int
     streak_type: StreakType
-    last_completion_date: Optional[date] = None
+    last_completion_date: date | None = None
 
     def __post_init__(self):
         """
@@ -181,7 +180,7 @@ class HabitStreak:
         if self.current_count > self.longest_count:
             raise ValueError("Current streak cannot be longer than longest streak")
 
-    def is_active(self, current_date: Optional[date] = None) -> bool:
+    def is_active(self, current_date: date | None = None) -> bool:
         """
         Return True if the habit streak is currently considered active.
 
@@ -260,7 +259,7 @@ class HabitStreak:
             last_completion_date=self.last_completion_date,
         )
 
-    def get_milestone_level(self) -> Optional[str]:
+    def get_milestone_level(self) -> str | None:
         """
         Return the milestone level name corresponding to the current streak length.
 
@@ -288,7 +287,7 @@ class QuestProgress:
     """Value object for quest progress tracking."""
 
     completion_percentage: float
-    milestones_completed: List[str]
+    milestones_completed: list[str]
 
     def __post_init__(self):
         """
@@ -386,7 +385,7 @@ class HabitSchedule:
             raise ValueError("Target count must be positive")
 
     def is_due(
-        self, last_completion: Optional[date], current_date: Optional[date] = None
+        self, last_completion: date | None, current_date: date | None = None
     ) -> bool:
         """
         Return True when the habit is due to be completed according to this schedule.
@@ -418,7 +417,7 @@ class HabitSchedule:
             # Strict scheduling
             return days_since_last >= self.frequency_days
 
-    def next_due_date(self, last_completion: Optional[date]) -> date:
+    def next_due_date(self, last_completion: date | None) -> date:
         """
         Return the next due date for the habit.
 

@@ -9,10 +9,14 @@ class Quest(models.Model):
         ("easy", "Easy"),
         ("medium", "Medium"),
         ("hard", "Hard"),
+        ("legendary", "Legendary"),
     )
     QUEST_TYPES = [
+        ("life_goal", "Life Goal"),
+        ("annual_goal", "Annual Goal"),
         ("main", "Main Quest"),
         ("side", "Side Quest"),
+        ("weekly", "Weekly Quest"),
         ("daily", "Daily Quest"),
     ]
     STATUS_CHOICES = [
@@ -29,7 +33,7 @@ class Quest(models.Model):
     difficulty = models.CharField(
         max_length=10, choices=DIFFICULTY_CHOICES, default="medium"
     )
-    quest_type = models.CharField(max_length=10, choices=QUEST_TYPES, default="main")
+    quest_type = models.CharField(max_length=15, choices=QUEST_TYPES, default="main")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="draft")
     experience_reward = models.PositiveIntegerField(default=10)
     start_date = models.DateField(null=True, blank=True)
@@ -57,6 +61,7 @@ class Habit(models.Model):
         ("daily", "Daily"),
         ("weekly", "Weekly"),
         ("monthly", "Monthly"),
+        ("custom", "Custom"),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

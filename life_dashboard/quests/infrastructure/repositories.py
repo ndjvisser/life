@@ -3,7 +3,7 @@ Quests infrastructure repositories - Django ORM implementations.
 """
 
 from datetime import date, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from django.contrib.auth.models import User
 from django.db.models import Count, Q, Sum
@@ -47,16 +47,14 @@ class DjangoQuestRepository(QuestRepository):
             start_date=django_quest.start_date,
             due_date=django_quest.due_date,
             completed_at=django_quest.completed_at,
-            parent_quest_id=str(django_quest.parent_quest.id)
-            if django_quest.parent_quest
-            else None,
+            parent_quest_id=getattr(django_quest, "parent_quest_id", None),
             prerequisite_quest_ids=[],  # Not in current model
             created_at=django_quest.created_at,
             updated_at=django_quest.updated_at,
         )
 
     def _from_domain(
-        self, domain_quest: DomainQuest, django_quest: Optional[DjangoQuest] = None
+        self, domain_quest: DomainQuest, django_quest: DjangoQuest | None = None
     ) -> DjangoQuest:
         """
         Create or update a DjangoQuest model instance from a DomainQuest.
@@ -92,7 +90,7 @@ class DjangoQuestRepository(QuestRepository):
 
         return django_quest
 
-    def get_by_id(self, quest_id: str) -> Optional[DomainQuest]:
+    def get_by_id(self, quest_id: str) -> DomainQuest | None:
         """
         Retrieve a DomainQuest by its string ID.
 
@@ -106,7 +104,7 @@ class DjangoQuestRepository(QuestRepository):
         except (DjangoQuest.DoesNotExist, ValueError):
             return None
 
-    def get_by_user_id(self, user_id: int) -> List[DomainQuest]:
+    def get_by_user_id(self, user_id: int) -> list[DomainQuest]:
         """
         Return all quests belonging to the given user as DomainQuest objects.
 
@@ -119,7 +117,7 @@ class DjangoQuestRepository(QuestRepository):
         )
         return [self._to_domain(q) for q in django_quests]
 
-    def get_by_status(self, user_id: int, status: QuestStatus) -> List[DomainQuest]:
+    def get_by_status(self, user_id: int, status: QuestStatus) -> list[DomainQuest]:
         """
         Return a list of DomainQuest objects for a user filtered by quest status.
 
@@ -138,7 +136,7 @@ class DjangoQuestRepository(QuestRepository):
         )
         return [self._to_domain(q) for q in django_quests]
 
-    def get_by_type(self, user_id: int, quest_type: QuestType) -> List[DomainQuest]:
+    def get_by_type(self, user_id: int, quest_type: QuestType) -> list[DomainQuest]:
         """Get quests by type for a user."""
         django_quests = (
             DjangoQuest.objects.select_related("user")
@@ -207,7 +205,7 @@ class DjangoQuestRepository(QuestRepository):
         except (DjangoQuest.DoesNotExist, ValueError):
             return False
 
-    def get_overdue_quests(self, user_id: int) -> List[DomainQuest]:
+    def get_overdue_quests(self, user_id: int) -> list[DomainQuest]:
         """
         Return the user's quests that are past their due date.
 
@@ -223,7 +221,7 @@ class DjangoQuestRepository(QuestRepository):
         )
         return [self._to_domain(q) for q in django_quests]
 
-    def get_due_soon(self, user_id: int, days: int = 7) -> List[DomainQuest]:
+    def get_due_soon(self, user_id: int, days: int = 7) -> list[DomainQuest]:
         """
         Return active quests for a user with due dates from today up to (and including) today + days.
 
@@ -248,7 +246,7 @@ class DjangoQuestRepository(QuestRepository):
         )
         return [self._to_domain(q) for q in django_quests]
 
-    def get_by_parent_quest(self, parent_quest_id: str) -> List[DomainQuest]:
+    def get_by_parent_quest(self, parent_quest_id: str) -> list[DomainQuest]:
         """
         Return child DomainQuest objects for a given parent quest ID.
 
@@ -272,7 +270,7 @@ class DjangoQuestRepository(QuestRepository):
 
     def search_quests(
         self, user_id: int, query: str, limit: int = 20
-    ) -> List[DomainQuest]:
+    ) -> list[DomainQuest]:
         """
         Search quests for a user by title or description (case-insensitive).
 
@@ -327,11 +325,11 @@ class DjangoHabitRepository(HabitRepository):
             experience_reward=django_habit.experience_reward,
             created_at=django_habit.created_at,
             updated_at=django_habit.updated_at,
-            last_completed=django_habit.last_practiced,  # Map to last_practiced
+            last_completed=None,  # Field removed from model
         )
 
     def _from_domain(
-        self, domain_habit: DomainHabit, django_habit: Optional[DjangoHabit] = None
+        self, domain_habit: DomainHabit, django_habit: DjangoHabit | None = None
     ) -> DjangoHabit:
         """
         Builds or updates a DjangoHabit model from a DomainHabit entity.
@@ -363,7 +361,7 @@ class DjangoHabitRepository(HabitRepository):
 
         return django_habit
 
-    def get_by_id(self, habit_id: str) -> Optional[DomainHabit]:
+    def get_by_id(self, habit_id: str) -> DomainHabit | None:
         """
         Retrieve a DomainHabit by its ID.
 
@@ -383,7 +381,7 @@ class DjangoHabitRepository(HabitRepository):
         except (DjangoHabit.DoesNotExist, ValueError):
             return None
 
-    def get_by_user_id(self, user_id: int) -> List[DomainHabit]:
+    def get_by_user_id(self, user_id: int) -> list[DomainHabit]:
         """Get all habits for a user."""
         django_habits = (
             DjangoHabit.objects.select_related("user")
@@ -394,7 +392,7 @@ class DjangoHabitRepository(HabitRepository):
 
     def get_by_frequency(
         self, user_id: int, frequency: HabitFrequency
-    ) -> List[DomainHabit]:
+    ) -> list[DomainHabit]:
         """
         Return the user's habits that match a given frequency.
 
@@ -473,7 +471,7 @@ class DjangoHabitRepository(HabitRepository):
         except (DjangoHabit.DoesNotExist, ValueError):
             return False
 
-    def get_due_today(self, user_id: int) -> List[DomainHabit]:
+    def get_due_today(self, user_id: int) -> list[DomainHabit]:
         """
         Return the list of DomainHabit objects for habits considered "due" today for the given user.
 
@@ -514,7 +512,7 @@ class DjangoHabitRepository(HabitRepository):
 
     def get_active_streaks(
         self, user_id: int, min_streak: int = 7
-    ) -> List[DomainHabit]:
+    ) -> list[DomainHabit]:
         """
         Return the user's habits whose current streak is at least `min_streak`, ordered by streak length descending.
 
@@ -534,7 +532,7 @@ class DjangoHabitRepository(HabitRepository):
 
     def search_habits(
         self, user_id: int, query: str, limit: int = 20
-    ) -> List[DomainHabit]:
+    ) -> list[DomainHabit]:
         """
         Search a user's habits by name or description (case-insensitive) and return matching domain objects.
 
@@ -628,7 +626,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
 
     def get_by_habit_id(
         self, habit_id: str, limit: int = 100
-    ) -> List[DomainHabitCompletion]:
+    ) -> list[DomainHabitCompletion]:
         """
         Return completions for a habit ordered by date (newest first).
 
@@ -654,7 +652,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
 
     def get_by_user_id(
         self, user_id: int, limit: int = 100
-    ) -> List[DomainHabitCompletion]:
+    ) -> list[DomainHabitCompletion]:
         """
         Retrieve habit completion records for a specific user, ordered by completion date (newest first).
 
@@ -674,7 +672,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
 
     def get_by_date_range(
         self, habit_id: str, start_date: date, end_date: date
-    ) -> List[DomainHabitCompletion]:
+    ) -> list[DomainHabitCompletion]:
         """
         Return habit completions for a habit within an inclusive date range.
 
@@ -695,7 +693,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
 
     def get_completion_for_date(
         self, habit_id: str, completion_date: date
-    ) -> Optional[DomainHabitCompletion]:
+    ) -> DomainHabitCompletion | None:
         """
         Return the DomainHabitCompletion for a given habit and date, or None if not found.
 
@@ -736,7 +734,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
 
     def get_streak_data(
         self, habit_id: str, days: int = 365
-    ) -> List[DomainHabitCompletion]:
+    ) -> list[DomainHabitCompletion]:
         """
         Return completions for a habit over a past window suitable for streak calculations.
 
@@ -754,7 +752,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
         start_date = end_date - timedelta(days=days)
         return self.get_by_date_range(habit_id, start_date, end_date)
 
-    def get_completion_stats(self, user_id: int, days: int = 30) -> Dict[str, Any]:
+    def get_completion_stats(self, user_id: int, days: int = 30) -> dict[str, Any]:
         """
         Return aggregate habit completion statistics for a user over a recent date window.
 

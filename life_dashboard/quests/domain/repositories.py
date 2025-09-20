@@ -4,7 +4,7 @@ Quests domain repository interfaces - abstract data access contracts.
 
 from abc import ABC, abstractmethod
 from datetime import date
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .entities import (
     Habit,
@@ -20,7 +20,7 @@ class QuestRepository(ABC):
     """Abstract repository for Quest persistence."""
 
     @abstractmethod
-    def get_by_id(self, quest_id: str) -> Optional[Quest]:
+    def get_by_id(self, quest_id: str) -> Quest | None:
         """
         Retrieve a Quest by its unique identifier.
 
@@ -33,7 +33,7 @@ class QuestRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_user_id(self, user_id: int) -> List[Quest]:
+    def get_by_user_id(self, user_id: int) -> list[Quest]:
         """
         Return all Quest entities belonging to the given user.
 
@@ -46,7 +46,7 @@ class QuestRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_status(self, user_id: int, status: QuestStatus) -> List[Quest]:
+    def get_by_status(self, user_id: int, status: QuestStatus) -> list[Quest]:
         """
         Retrieve all quests for a user filtered by the given status.
 
@@ -60,7 +60,7 @@ class QuestRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_type(self, user_id: int, quest_type: QuestType) -> List[Quest]:
+    def get_by_type(self, user_id: int, quest_type: QuestType) -> list[Quest]:
         """
         Return all quests of a specific type for a given user.
 
@@ -114,7 +114,7 @@ class QuestRepository(ABC):
         pass
 
     @abstractmethod
-    def get_overdue_quests(self, user_id: int) -> List[Quest]:
+    def get_overdue_quests(self, user_id: int) -> list[Quest]:
         """
         Return quests for a user that are currently overdue.
 
@@ -129,7 +129,7 @@ class QuestRepository(ABC):
         pass
 
     @abstractmethod
-    def get_due_soon(self, user_id: int, days: int = 7) -> List[Quest]:
+    def get_due_soon(self, user_id: int, days: int = 7) -> list[Quest]:
         """
         Return quests for a user that are due within the next `days` days.
 
@@ -144,7 +144,7 @@ class QuestRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_parent_quest(self, parent_quest_id: str) -> List[Quest]:
+    def get_by_parent_quest(self, parent_quest_id: str) -> list[Quest]:
         """
         Return all child Quest entities whose parent is the given quest ID.
 
@@ -157,7 +157,7 @@ class QuestRepository(ABC):
         pass
 
     @abstractmethod
-    def search_quests(self, user_id: int, query: str, limit: int = 20) -> List[Quest]:
+    def search_quests(self, user_id: int, query: str, limit: int = 20) -> list[Quest]:
         """
         Search quests for a specific user by matching the query against quest title or description.
 
@@ -177,7 +177,7 @@ class HabitRepository(ABC):
     """Abstract repository for Habit persistence."""
 
     @abstractmethod
-    def get_by_id(self, habit_id: str) -> Optional[Habit]:
+    def get_by_id(self, habit_id: str) -> Habit | None:
         """
         Retrieve a Habit by its identifier.
 
@@ -190,7 +190,7 @@ class HabitRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_user_id(self, user_id: int) -> List[Habit]:
+    def get_by_user_id(self, user_id: int) -> list[Habit]:
         """
         Return all Habit entities belonging to the specified user.
 
@@ -203,7 +203,7 @@ class HabitRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_frequency(self, user_id: int, frequency: HabitFrequency) -> List[Habit]:
+    def get_by_frequency(self, user_id: int, frequency: HabitFrequency) -> list[Habit]:
         """
         Return habits for a user filtered by frequency.
 
@@ -258,7 +258,7 @@ class HabitRepository(ABC):
         pass
 
     @abstractmethod
-    def get_due_today(self, user_id: int) -> List[Habit]:
+    def get_due_today(self, user_id: int) -> list[Habit]:
         """
         Return habits that are due today for the specified user.
 
@@ -267,7 +267,7 @@ class HabitRepository(ABC):
         pass
 
     @abstractmethod
-    def get_active_streaks(self, user_id: int, min_streak: int = 7) -> List[Habit]:
+    def get_active_streaks(self, user_id: int, min_streak: int = 7) -> list[Habit]:
         """
         Return the user's habits that currently have an active completion streak at or above `min_streak`.
 
@@ -283,7 +283,7 @@ class HabitRepository(ABC):
         pass
 
     @abstractmethod
-    def search_habits(self, user_id: int, query: str, limit: int = 20) -> List[Habit]:
+    def search_habits(self, user_id: int, query: str, limit: int = 20) -> list[Habit]:
         """
         Search habits for a user by matching the provided query against habit name or description.
 
@@ -316,7 +316,7 @@ class HabitCompletionRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_habit_id(self, habit_id: str, limit: int = 100) -> List[HabitCompletion]:
+    def get_by_habit_id(self, habit_id: str, limit: int = 100) -> list[HabitCompletion]:
         """
         Return up to `limit` HabitCompletion records for the given habit ID.
 
@@ -330,7 +330,7 @@ class HabitCompletionRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_user_id(self, user_id: int, limit: int = 100) -> List[HabitCompletion]:
+    def get_by_user_id(self, user_id: int, limit: int = 100) -> list[HabitCompletion]:
         """
         Retrieve habit completion records for a specific user.
 
@@ -346,7 +346,7 @@ class HabitCompletionRepository(ABC):
     @abstractmethod
     def get_by_date_range(
         self, habit_id: str, start_date: date, end_date: date
-    ) -> List[HabitCompletion]:
+    ) -> list[HabitCompletion]:
         """
         Return habit completions for a habit within a date range (inclusive).
 
@@ -363,7 +363,7 @@ class HabitCompletionRepository(ABC):
     @abstractmethod
     def get_completion_for_date(
         self, habit_id: str, completion_date: date
-    ) -> Optional[HabitCompletion]:
+    ) -> HabitCompletion | None:
         """
         Return the HabitCompletion for a given habit on a specific date, or None if no completion exists.
 
@@ -390,7 +390,7 @@ class HabitCompletionRepository(ABC):
         pass
 
     @abstractmethod
-    def get_streak_data(self, habit_id: str, days: int = 365) -> List[HabitCompletion]:
+    def get_streak_data(self, habit_id: str, days: int = 365) -> list[HabitCompletion]:
         """
         Return habit completions for streak calculations.
 
@@ -399,7 +399,7 @@ class HabitCompletionRepository(ABC):
         pass
 
     @abstractmethod
-    def get_completion_stats(self, user_id: int, days: int = 30) -> Dict[str, Any]:
+    def get_completion_stats(self, user_id: int, days: int = 30) -> dict[str, Any]:
         """
         Return completion statistics for a user's habit completions over a recent period.
 
