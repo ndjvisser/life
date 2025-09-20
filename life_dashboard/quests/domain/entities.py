@@ -363,4 +363,6 @@ class HabitCompletion:
             if isinstance(self.streak_at_completion, int):
                 self.streak_at_completion = StreakCount(self.streak_at_completion)
             else:
-                raise ValueError(f"Invalid streak_at_completion type: {type(self.streak_at_completion)}")
+                raise ValueError(
+                    f"Invalid streak_at_completion type: {type(self.streak_at_completion)}"
+                )

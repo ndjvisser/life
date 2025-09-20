@@ -171,36 +171,36 @@ class Stats(models.Model):
         verbose_name_plural = "Stats (Legacy)"
         constraints = [
             models.CheckConstraint(
-                check=models.Q(level__gte=1), name="stats_level_gte_1"
+                condition=models.Q(level__gte=1), name="stats_level_gte_1"
             ),
             models.CheckConstraint(
-                check=models.Q(experience__gte=0),
+                condition=models.Q(experience__gte=0),
                 name="stats_experience_gte_0",
             ),
             models.CheckConstraint(
-                check=models.Q(health__gte=0), name="stats_health_gte_0"
+                condition=models.Q(health__gte=0), name="stats_health_gte_0"
             ),
             models.CheckConstraint(
-                check=models.Q(energy__gte=0), name="stats_energy_gte_0"
+                condition=models.Q(energy__gte=0), name="stats_energy_gte_0"
             ),
             models.CheckConstraint(
-                check=models.Q(strength__gte=0), name="stats_strength_gte_0"
+                condition=models.Q(strength__gte=0), name="stats_strength_gte_0"
             ),
             models.CheckConstraint(
-                check=models.Q(agility__gte=0), name="stats_agility_gte_0"
+                condition=models.Q(agility__gte=0), name="stats_agility_gte_0"
             ),
             models.CheckConstraint(
-                check=models.Q(endurance__gte=0), name="stats_endurance_gte_0"
+                condition=models.Q(endurance__gte=0), name="stats_endurance_gte_0"
             ),
             models.CheckConstraint(
-                check=models.Q(intelligence__gte=0),
+                condition=models.Q(intelligence__gte=0),
                 name="stats_intelligence_gte_0",
             ),
             models.CheckConstraint(
-                check=models.Q(charisma__gte=0), name="stats_charisma_gte_0"
+                condition=models.Q(charisma__gte=0), name="stats_charisma_gte_0"
             ),
             models.CheckConstraint(
-                check=models.Q(wisdom__gte=0), name="stats_wisdom_gte_0"
+                condition=models.Q(wisdom__gte=0), name="stats_wisdom_gte_0"
             ),
         ]
 
