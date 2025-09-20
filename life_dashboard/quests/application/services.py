@@ -76,9 +76,10 @@ class QuestService:
 
     def start_quest(self, quest_id: str) -> Quest:
         """
-        Start the quest identified by `quest_id` and persist the updated quest.
+        Activate the quest identified by `quest_id` and persist the updated quest.
 
-        Retrieves the quest from the repository, transitions it to its started state, saves the change, and returns the updated Quest.
+        Retrieves the quest from the repository, transitions it to its active state using the
+        domain entity, saves the change, and returns the updated Quest.
 
         Raises:
             ValueError: If no quest with the given `quest_id` exists.
@@ -90,7 +91,7 @@ class QuestService:
         if not quest:
             raise ValueError(f"Quest {quest_id} not found")
 
-        quest.start_quest()
+        quest.activate()
         return self.quest_repo.save(quest)
 
     def complete_quest(self, quest_id: str) -> tuple[Quest, int]:
@@ -112,7 +113,7 @@ class QuestService:
         if not quest:
             raise ValueError(f"Quest {quest_id} not found")
 
-        experience_reward, completion_time = quest.complete_quest()
+        quest.complete()
         updated_quest = self.quest_repo.save(quest)
 
         # Calculate final experience with difficulty bonus
@@ -138,14 +139,22 @@ class QuestService:
         if not quest:
             raise ValueError(f"Quest {quest_id} not found")
 
-        quest.update_progress(percentage)
+        if not 0.0 <= percentage <= 100.0:
+            raise ValueError("Quest progress must be between 0 and 100 percent")
+
+        # The domain entity does not currently expose an explicit progress API. Persist the
+        # provided value directly and update the timestamp so repositories can store the
+        # change if they support a progress attribute.
+        quest.progress = percentage
+        quest.updated_at = datetime.utcnow()
         return self.quest_repo.save(quest)
 
     def pause_quest(self, quest_id: str) -> Quest:
         """
         Pause an active quest and persist the updated state.
 
-        Pauses the quest identified by `quest_id` by delegating to the domain entity's `pause_quest()` and saves the updated quest.
+        Pauses the quest identified by `quest_id` by delegating to the domain entity's `pause()`
+        method and saves the updated quest.
 
         Parameters:
             quest_id (str): Identifier of the quest to pause.
@@ -160,12 +169,15 @@ class QuestService:
         if not quest:
             raise ValueError(f"Quest {quest_id} not found")
 
-        quest.pause_quest()
+        quest.pause()
         return self.quest_repo.save(quest)
 
     def resume_quest(self, quest_id: str) -> Quest:
         """
         Resume a paused quest and persist the change.
+
+        Delegates to the domain entity's `activate()` method, which enforces valid status
+        transitions.
 
         Returns:
             Quest: The updated quest after resuming.
@@ -177,7 +189,7 @@ class QuestService:
         if not quest:
             raise ValueError(f"Quest {quest_id} not found")
 
-        quest.resume_quest()
+        quest.activate()
         return self.quest_repo.save(quest)
 
     def fail_quest(self, quest_id: str, reason: str = "") -> Quest:
@@ -185,6 +197,9 @@ class QuestService:
         Mark the specified quest as failed and persist the change.
 
         Raises a ValueError if no quest with the given ID exists.
+
+        The optional `reason` parameter is currently informational only; the domain entity
+        does not persist failure reasons.
 
         Parameters:
             quest_id (str): ID of the quest to mark failed.
@@ -197,7 +212,7 @@ class QuestService:
         if not quest:
             raise ValueError(f"Quest {quest_id} not found")
 
-        quest.fail_quest(reason)
+        quest.fail()
         return self.quest_repo.save(quest)
 
     def get_user_quests(
