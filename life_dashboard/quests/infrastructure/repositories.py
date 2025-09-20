@@ -6,7 +6,7 @@ from datetime import date, timedelta
 from typing import Any
 
 from django.contrib.auth.models import User
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Q
 
 from ..domain.entities import Habit as DomainHabit
 from ..domain.entities import HabitCompletion as DomainHabitCompletion
@@ -89,7 +89,9 @@ class DjangoQuestRepository(QuestRepository):
             django_quest.updated_at = domain_quest.updated_at
         if hasattr(django_quest, "parent_quest_id"):
             django_quest.parent_quest_id = (
-                int(domain_quest.parent_quest_id) if domain_quest.parent_quest_id else None
+                int(domain_quest.parent_quest_id)
+                if domain_quest.parent_quest_id
+                else None
             )
 
         return django_quest
@@ -330,15 +332,11 @@ class DjangoHabitRepository(HabitRepository):
             created_at=django_habit.created_at,
             updated_at=django_habit.updated_at,
             last_completed=getattr(
-                django_habit, "last_completed", getattr(django_habit, "last_practiced", None)
+                django_habit,
+                "last_completed",
+                getattr(django_habit, "last_practiced", None),
             ),
         )
-
-        # ... (other assignments) ...
-        if hasattr(django_habit, "last_completed"):
-            django_habit.last_completed = domain_habit.last_completed
-        elif hasattr(django_habit, "last_practiced"):
-            django_habit.last_practiced = domain_habit.last_completed
 
     def _from_domain(
         self, domain_habit: DomainHabit, django_habit: DjangoHabit | None = None
@@ -768,9 +766,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
         """
         Return aggregate habit completion statistics for a user over a recent date window.
 
-        Calculates totals for completions and experience gained between today - days and today (inclusive)
-        and computes a simplified completion rate as:
-            (total_completions) / (total_habits * days) * 100
+        Calculates completion statistics including daily averages and streak information.
 
         Parameters:
             user_id (int): ID of the user to compute statistics for.
@@ -778,29 +774,32 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
 
         Returns:
             Dict[str, Any]: A dictionary with keys:
-                - total_completions (int): Count of habit completions in the window.
-                - total_experience (int | None): Sum of experience_gained (None if no rows).
-                - completion_rate (float): Percentage as described above (0.0 if user has no habits).
+                - daily_average (float): Average completions per day over the period.
+                - current_streak (int): Longest current streak across all habits.
+                - longest_streak (int): Longest recorded streak across all habits.
         """
         end_date = date.today()
         start_date = end_date - timedelta(days=days)
 
+        # Get completion counts and experience
         completions = DjangoHabitCompletion.objects.filter(
             habit__user_id=user_id, date__gte=start_date, date__lte=end_date
         )
 
         stats = completions.aggregate(
             total_completions=Count("id"),
-            total_experience=Sum("experience_gained"),
         )
 
-        # Calculate completion rate (simplified)
-        total_habits = DjangoHabit.objects.filter(user_id=user_id).count()
-        if total_habits > 0:
-            stats["completion_rate"] = (
-                (stats["total_completions"] or 0) / (total_habits * days) * 100
-            )
-        else:
-            stats["completion_rate"] = 0.0
+        # Get streak information from habits
+        habits = DjangoHabit.objects.filter(user_id=user_id)
+        current_streaks = [h.current_streak for h in habits if h.current_streak > 0]
+        longest_streaks = [h.longest_streak for h in habits if h.longest_streak > 0]
 
-        return stats
+        # Calculate daily average (completions per day)
+        daily_avg = stats["total_completions"] / days if days > 0 else 0.0
+
+        return {
+            "daily_average": round(daily_avg, 2),
+            "current_streak": max(current_streaks, default=0),
+            "longest_streak": max(longest_streaks, default=0),
+        }

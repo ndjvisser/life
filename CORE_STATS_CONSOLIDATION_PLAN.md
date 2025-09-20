@@ -19,13 +19,25 @@ We will consolidate to the new `stats.CoreStatModel` and remove the old `core_st
    - Creates new models: `CoreStatModel`, `LifeStatModel`, `LifeStatCategoryModel`, `StatHistoryModel`
    - **Includes comprehensive data migration**:
      - Migrates `core_stats.CoreStat` → `stats.CoreStatModel`
-     - Migrates `life_stats.LifeStat` → `stats.LifeStatModel` (converts FK to CharField for category)
+     - Migrates `life_stats.LifeStat` → `stats.LifeStatModel` (temporarily uses CharField for category)
      - Migrates `life_stats.LifeStatCategory` → `stats.LifeStatCategoryModel`
-     - Handles schema differences (Float→Decimal, FK→CharField)
+     - Handles schema differences (Float→Decimal)
      - Preserves all user relationships and timestamps
      - Avoids duplicates with existence checks
    - **Fully Reversible**: Includes backward migration functions
    - Status: ✅ Enhanced with data migration
+
+2. **Run category normalization**: `stats.0003_normalize_lifestat_category`
+   - **Normalizes category field**: Converts CharField to ForeignKey relationship
+   - **Data integrity steps**:
+     - Adds nullable ForeignKey to LifeStatCategoryModel
+     - Creates/upserts category records for existing data
+     - Backfills ForeignKey for all existing LifeStat records
+     - Makes ForeignKey non-nullable
+     - Removes old CharField and updates unique constraints
+   - **Atomic operation**: All steps in single migration for data consistency
+   - **Fully Reversible**: Can restore CharField if needed
+   - Status: ✅ Created
 
 3. **Update code references**:
    - ✅ Updated `dashboard/views.py` to use `CoreStatModel` with `core_stats` relation
@@ -35,28 +47,28 @@ We will consolidate to the new `stats.CoreStatModel` and remove the old `core_st
 
 ### Phase 2: Reference Updates (SAFE - Reversible)
 
-4. **Run FK migration**: `stats.0004_remove_old_core_stats_references`
+3. **Run FK migration**: `stats.0004_remove_old_core_stats_references`
    - Updates any foreign key references (none found in current codebase)
    - **Reversible**: Can restore old FK references
    - Status: ✅ Created
 
 ### Phase 3: Cleanup (DESTRUCTIVE - Plan carefully)
 
-5. **Run deprecation migrations**:
+4. **Run deprecation migrations**:
    - `core_stats.0002_deprecate_core_stats`: Drops old `CoreStat` model
    - `life_stats.0002_deprecate_life_stats`: Drops old `LifeStat` and `LifeStatCategory` models
    - Both verify data migration completion before dropping tables
    - **⚠️ DESTRUCTIVE**: Cannot be easily reversed
    - Status: ✅ Created for both apps
 
-6. **Remove deprecated apps from INSTALLED_APPS**:
+5. **Remove deprecated apps from INSTALLED_APPS**:
    ```python
    # In settings.py, remove these lines:
    "life_dashboard.core_stats",
    "life_dashboard.life_stats",
    ```
 
-7. **Delete deprecated app directories**:
+6. **Delete deprecated app directories**:
    ```bash
    rm -rf life_dashboard/core_stats/
    rm -rf life_dashboard/life_stats/
@@ -67,6 +79,9 @@ We will consolidate to the new `stats.CoreStatModel` and remove the old `core_st
 ```bash
 # Phase 1: Comprehensive Data Migration
 python manage.py migrate stats 0002_consolidate_stats_models
+
+# Phase 1.5: Category Normalization
+python manage.py migrate stats 0003_normalize_lifestat_category
 
 # Verify data migration
 python manage.py shell -c "
@@ -79,6 +94,9 @@ print(f'Old life stats: {LifeStat.objects.count()}')
 print(f'New life stats: {LifeStatModel.objects.count()}')
 print(f'Old categories: {LifeStatCategory.objects.count()}')
 print(f'New categories: {LifeStatCategoryModel.objects.count()}')
+print('Category normalization check:')
+for stat in LifeStatModel.objects.all()[:3]:
+    print(f'  {stat.name}: category={stat.category.name if stat.category else None}')
 "
 
 # Phase 2: Reference Updates
@@ -160,7 +178,8 @@ After each phase:
 
 - ✅ `life_dashboard/dashboard/views.py` - Updated to use new model with core_stats relation
 - ✅ `life_dashboard/shared/queries.py` - Updated to use core_stats relation
-- ✅ `life_dashboard/stats/infrastructure/models.py` - Fixed related_name for backward compatibility
+- ✅ `life_dashboard/stats/infrastructure/models.py` - Fixed related_name and normalized category FK
+- ✅ `life_dashboard/stats/migrations/0003_normalize_lifestat_category.py` - Category normalization migration
 - ✅ Created migration files for safe data transfer
 - 🔄 `life_dashboard/life_dashboard/settings.py` - Remove core_stats app (manual step)
 

@@ -10,6 +10,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 
 class ArchitectureChecker:
@@ -334,7 +335,7 @@ class ArchitectureChecker:
             print("⚠️  import-linter not found, skipping")
             return True
 
-    def generate_report(self) -> dict[str, any]:
+    def generate_report(self) -> dict[str, Any]:
         """
         Generate a structured architecture report for all configured contexts.
 

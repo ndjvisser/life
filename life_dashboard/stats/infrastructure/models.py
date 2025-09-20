@@ -77,7 +77,9 @@ class LifeStatModel(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="consolidated_life_stats"
     )
-    category = models.CharField(max_length=50)  # health, wealth, relationships
+    category = models.ForeignKey(
+        LifeStatCategoryModel, on_delete=models.CASCADE, verbose_name="Category"
+    )
     name = models.CharField(max_length=100)
     value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     target = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

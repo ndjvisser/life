@@ -53,23 +53,7 @@ class QuestService:
             description (str): Optional quest description.
             quest_type (QuestType): Type/category of the quest.
             difficulty (str): Difficulty name (e.g., "easy", "medium", "hard"); mapped to QuestDifficulty.
-from ..domain.entities import (
-    Habit,
-    HabitCompletion,
-    HabitFrequency,
-    Quest,
-    QuestStatus,
-    QuestType,
-    QuestDifficulty,
-)
-
-        quest_type: QuestType = QuestType.MAIN,
-        difficulty: str = "medium",
-        experience_reward: int = 10,
-        due_date: Optional[date] = None,
-    ) -> Quest:
-        """Create a new quest."""
-        # Normalize difficulty
+        """
         if isinstance(difficulty, str):
             try:
                 difficulty_enum = QuestDifficulty[difficulty.upper()]
@@ -88,7 +72,6 @@ from ..domain.entities import (
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
         )
-
         return self.quest_repo.create(quest)
 
     def start_quest(self, quest_id: str) -> Quest:
@@ -543,22 +526,19 @@ class HabitService:
 
     def get_habit_statistics(self, user_id: int, days: int = 30) -> dict[str, Any]:
         """
-        Return aggregated habit statistics for a user.
-
         Retrieve the user's habits and recent completion metrics (last `days` days) and return a summary dictionary containing counts and aggregated values.
 
         Parameters:
-            user_id (int): ID of the user to compute statistics for.
-            days (int): Lookback window in days used when computing completion-related metrics (default 30).
+            user_id (int): The ID of the user whose statistics to retrieve.
+            days (int, optional): Number of days to look back for completion statistics. Defaults to 30.
 
         Returns:
-            Dict[str, Any]: A stats dictionary with these keys:
+            dict: A dictionary containing the following keys:
                 - total_habits (int): Total number of habits for the user.
-                - active_streaks (int): Number of habits with a current streak greater than zero.
-                - longest_streak (int): The longest streak among the user's habits.
-                - total_completions (int): Total completions in the given lookback window.
-                - completion_rate (float): Completion rate (percentage or fraction as provided by the completion repository).
-                - total_experience_earned (int): Total experience gained from completions in the lookback window.
+                - active_streaks (int): Number of habits with a current streak > 0.
+                - longest_streak (int): Longest streak among all habits.
+                - daily_average (float): Average number of habit completions per day.
+                - current_streak (int): Longest current streak across all habits.
                 - streak_milestones (int): Number of habits whose current streak is at or above the 7-day milestone.
                 - habits_due_today (int): Count of habits due today.
         """
@@ -569,9 +549,8 @@ class HabitService:
             "total_habits": len(habits),
             "active_streaks": len([h for h in habits if h.current_streak > 0]),
             "longest_streak": max([h.longest_streak for h in habits], default=0),
-            "total_completions": completion_stats.get("total_completions", 0),
-            "completion_rate": completion_stats.get("completion_rate", 0.0),
-            "total_experience_earned": completion_stats.get("total_experience", 0),
+            "daily_average": completion_stats.get("daily_average", 0.0),
+            "current_streak": completion_stats.get("current_streak", 0),
             "streak_milestones": len([h for h in habits if h.current_streak >= 7]),
             "habits_due_today": len(self.get_habits_due_today(user_id)),
         }

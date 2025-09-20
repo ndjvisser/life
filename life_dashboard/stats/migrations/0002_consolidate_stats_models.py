@@ -54,11 +54,13 @@ def migrate_data_forward(apps, schema_editor):
 
         # Check for duplicates (same user, category, name)
         if not NewLifeStat.objects.filter(
-            user=old_life_stat.user, category=category_name, name=old_life_stat.name
+            user=old_life_stat.user,
+            category_temp=category_name,
+            name=old_life_stat.name,
         ).exists():
             NewLifeStat.objects.create(
                 user=old_life_stat.user,
-                category=category_name,
+                category_temp=category_name,
                 name=old_life_stat.name,
                 value=old_life_stat.value,  # Convert float to decimal
                 target=old_life_stat.target,
@@ -110,7 +112,7 @@ def migrate_data_backward(apps, schema_editor):
 
     # 3. Restore LifeStat data
     for new_life_stat in NewLifeStat.objects.all():
-        category_obj = category_mapping.get(new_life_stat.category)
+        category_obj = category_mapping.get(new_life_stat.category_temp)
         if (
             category_obj
             and not OldLifeStat.objects.filter(
@@ -217,7 +219,10 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("category", models.CharField(max_length=50)),
+                (
+                    "category_temp",
+                    models.CharField(max_length=50),
+                ),  # Temporary field for migration
                 ("name", models.CharField(max_length=100)),
                 (
                     "value",
@@ -246,7 +251,7 @@ class Migration(migrations.Migration):
                 "verbose_name": "Life Stat",
                 "verbose_name_plural": "Life Stats",
                 "db_table": "stats_lifestat",
-                "unique_together": {("user", "category", "name")},
+                "unique_together": {("user", "category_temp", "name")},
             },
         ),
         migrations.CreateModel(
