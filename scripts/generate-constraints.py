@@ -23,7 +23,7 @@ def run_command(cmd, cwd=None):
 
 
 def main():
-    """Generate constraints files from requirements.in files."""
+    """Generate constraints files from pyproject.toml."""
     import argparse
 
     parser = argparse.ArgumentParser(description="Generate or check constraints files")
@@ -43,42 +43,25 @@ def main():
     if args.check:
         print("Checking if constraints files are up to date...")
 
-        # Check production constraints
+        # Check production constraints from pyproject.toml
         returncode, stdout, stderr = run_command(
-            "pip-compile requirements.in --dry-run --quiet --resolver=backtracking",
+            "pip-compile pyproject.toml --dry-run --quiet --resolver=backtracking --output-file constraints.txt",
             cwd=project_root,
         )
         if returncode != 0:
-            if "No such file" in (stderr or ""):
-                print(
-                    "❌ requirements.in not found. Add it or switch to compiling from pyproject.toml."
-                )
-            else:
-                print("❌ Production constraints are out of date")
-            sys.exit(1)
-
-        # Check development constraints
-        returncode, stdout, stderr = run_command(
-            "pip-compile requirements-dev.in --dry-run --quiet --resolver=backtracking",
-            cwd=project_root,
-        )
-        if returncode != 0:
-            if "No such file" in (stderr or ""):
-                print(
-                    "❌ requirements-dev.in not found. Add it or switch to compiling from pyproject.toml."
-                )
-            else:
-                print("❌ Development constraints are out of date")
+            print("❌ Production constraints are out of date")
+            print(f"Error: {stderr}")
             sys.exit(1)
 
         print("✅ All constraints files are up to date")
         return
+
     print("Generating constraints files...")
 
-    # Generate production constraints
+    # Generate production constraints from pyproject.toml
     print("Generating production constraints...")
     returncode, stdout, stderr = run_command(
-        "pip-compile requirements.in --output-file constraints.txt --resolver=backtracking",
+        "pip-compile pyproject.toml --output-file constraints.txt --resolver=backtracking",
         cwd=project_root,
     )
     if returncode != 0:
@@ -86,19 +69,8 @@ def main():
         sys.exit(1)
     print("✅ Generated constraints.txt")
 
-    # Generate development constraints
-    print("Generating development constraints...")
-    returncode, stdout, stderr = run_command(
-        "pip-compile requirements-dev.in --output-file constraints-dev.txt --resolver=backtracking",
-        cwd=project_root,
-    )
-    if returncode != 0:
-        print(f"ERROR generating development constraints: {stderr}")
-        sys.exit(1)
-    print("✅ Generated constraints-dev.txt")
-
-    print("\n🎉 All constraints files generated successfully!")
-    print("Commit these files to ensure reproducible builds.")
+    print("\n🎉 Constraints file generated successfully!")
+    print("Commit this file to ensure reproducible builds.")
 
 
 if __name__ == "__main__":
