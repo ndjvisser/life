@@ -202,7 +202,11 @@ def validate_redis_connection(url: str, *, strict: bool) -> None:
 
     client = None
     try:
-        client = redis.from_url(url)
+        client = redis.from_url(
+            url,
+            socket_connect_timeout=1,
+            socket_timeout=1,
+        )
         client.ping()
     except redis.RedisError as exc:
         message = f"Redis connection failed for {url}: {exc}"

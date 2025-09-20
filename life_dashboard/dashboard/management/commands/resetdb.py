@@ -2,7 +2,8 @@ import os
 import sys
 
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management import CommandError
+from django.core.management.base import BaseCommand
 from django.db import DEFAULT_DB_ALIAS, IntegrityError, OperationalError
 
 from life_dashboard.dashboard.utils import reset_database
@@ -36,12 +37,9 @@ class Command(BaseCommand):
             raise CommandError("resetdb can only run when DEBUG is enabled.")
         environment = os.getenv("DJANGO_ENV", "").lower()
         if environment in {"production", "prod", "staging"}:
-            self.stderr.write(
-                self.style.ERROR(
-                    "This command is disabled in production-like environments."
-                )
+            raise CommandError(
+                "This command is disabled in production-like environments."
             )
-            return
 
         if not auto_confirm:
             confirmation = input(
@@ -50,8 +48,7 @@ class Command(BaseCommand):
             )
 
             if confirmation.lower() != "yes":
-                self.stdout.write(self.style.ERROR("Database reset aborted."))
-                return
+                raise CommandError("Database reset aborted by user.")
         elif not noinput:
             self.stdout.write(
                 self.style.WARNING(
@@ -65,8 +62,14 @@ class Command(BaseCommand):
             reset_database(database=database)
             self.stdout.write(self.style.SUCCESS("Database reset successfully!"))
         except RuntimeError as exc:
-            self.stderr.write(self.style.ERROR(str(exc)))
+            message = str(exc)
+            self.stderr.write(self.style.ERROR(message))
+            raise CommandError(message) from exc
         except (OperationalError, IntegrityError) as exc:
-            self.stderr.write(self.style.ERROR(f"Error resetting database: {exc}"))
+            message = f"Error resetting database: {exc}"
+            self.stderr.write(self.style.ERROR(message))
+            raise CommandError(message) from exc
         except Exception as exc:
-            self.stderr.write(self.style.ERROR(f"An unexpected error occurred: {exc}"))
+            message = f"An unexpected error occurred: {exc}"
+            self.stderr.write(self.style.ERROR(message))
+            raise CommandError(message) from exc
