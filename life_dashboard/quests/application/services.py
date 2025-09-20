@@ -3,13 +3,14 @@ Quests application services - use case orchestration and business workflows.
 """
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from ..domain.entities import (
     Habit,
     HabitCompletion,
     HabitFrequency,
     Quest,
+    QuestDifficulty,
     QuestStatus,
     QuestType,
 )
@@ -37,13 +38,13 @@ class QuestService:
         quest_type: QuestType = QuestType.MAIN,
         difficulty: str = "medium",
         experience_reward: int = 10,
-        due_date: Optional[date] = None,
+        due_date: date | None = None,
     ) -> Quest:
         """
         Create and persist a new Quest for a user.
 
         Constructs a Quest entity from the provided fields, normalizes the `difficulty` string to
-        the corresponding Quest.QuestDifficulty (falls back to MEDIUM), sets `created_at` and
+        the corresponding QuestDifficulty (falls back to MEDIUM), sets `created_at` and
         `updated_at` to the current UTC time, persists it via the repository, and returns the saved Quest.
 
         Parameters:
@@ -51,7 +52,7 @@ class QuestService:
             title (str): Quest title.
             description (str): Optional quest description.
             quest_type (QuestType): Type/category of the quest.
-            difficulty (str): Difficulty name (e.g., "easy", "medium", "hard"); mapped to Quest.QuestDifficulty.
+            difficulty (str): Difficulty name (e.g., "easy", "medium", "hard"); mapped to QuestDifficulty.
             experience_reward (int): Experience awarded on completion.
             due_date (Optional[date]): Optional due date for the quest.
 
@@ -64,7 +65,7 @@ class QuestService:
             description=description,
             quest_type=quest_type,
             difficulty=getattr(
-                Quest.QuestDifficulty, difficulty.upper(), Quest.QuestDifficulty.MEDIUM
+                QuestDifficulty, difficulty.upper(), QuestDifficulty.MEDIUM
             ),
             experience_reward=experience_reward,
             due_date=due_date,
@@ -93,7 +94,7 @@ class QuestService:
         quest.start_quest()
         return self.quest_repo.save(quest)
 
-    def complete_quest(self, quest_id: str) -> Tuple[Quest, int]:
+    def complete_quest(self, quest_id: str) -> tuple[Quest, int]:
         """
         Mark a quest as completed, persist the change, and return the updated quest plus the final experience awarded.
 
@@ -203,9 +204,9 @@ class QuestService:
     def get_user_quests(
         self,
         user_id: int,
-        status: Optional[QuestStatus] = None,
-        quest_type: Optional[QuestType] = None,
-    ) -> List[Quest]:
+        status: QuestStatus | None = None,
+        quest_type: QuestType | None = None,
+    ) -> list[Quest]:
         """Get quests for a user with optional filtering."""
         if status:
             return self.quest_repo.get_by_status(user_id, status)
@@ -214,7 +215,7 @@ class QuestService:
         else:
             return self.quest_repo.get_by_user_id(user_id)
 
-    def get_overdue_quests(self, user_id: int) -> List[Quest]:
+    def get_overdue_quests(self, user_id: int) -> list[Quest]:
         """
         Return the list of overdue quests for the given user.
 
@@ -223,7 +224,7 @@ class QuestService:
         """
         return self.quest_repo.get_overdue_quests(user_id)
 
-    def get_upcoming_quests(self, user_id: int, days: int = 7) -> List[Quest]:
+    def get_upcoming_quests(self, user_id: int, days: int = 7) -> list[Quest]:
         """
         Return quests for the user that are due within the next `days` days (from today, inclusive).
 
@@ -248,7 +249,7 @@ class QuestService:
         """
         return self.quest_repo.delete(quest_id)
 
-    def search_quests(self, user_id: int, query: str, limit: int = 20) -> List[Quest]:
+    def search_quests(self, user_id: int, query: str, limit: int = 20) -> list[Quest]:
         """
         Search quests belonging to a user that match a text query.
 
@@ -262,7 +263,7 @@ class QuestService:
         """
         return self.quest_repo.search_quests(user_id, query, limit)
 
-    def get_quest_statistics(self, user_id: int) -> Dict[str, Any]:
+    def get_quest_statistics(self, user_id: int) -> dict[str, Any]:
         """
         Return aggregated quest statistics for a user.
 
@@ -355,10 +356,10 @@ class HabitService:
     def complete_habit(
         self,
         habit_id: str,
-        completion_date: Optional[date] = None,
+        completion_date: date | None = None,
         count: int = 1,
         notes: str = "",
-    ) -> Tuple[Habit, HabitCompletion, int]:
+    ) -> tuple[Habit, HabitCompletion, int]:
         """
         Record a completion for a habit, update its streak, and persist both the habit and a HabitCompletion record.
 
@@ -431,19 +432,19 @@ class HabitService:
         return self.habit_repo.save(habit)
 
     def get_user_habits(
-        self, user_id: int, frequency: Optional[HabitFrequency] = None
-    ) -> List[Habit]:
+        self, user_id: int, frequency: HabitFrequency | None = None
+    ) -> list[Habit]:
         """Get habits for a user with optional frequency filter."""
         if frequency:
             return self.habit_repo.get_by_frequency(user_id, frequency)
         else:
             return self.habit_repo.get_by_user_id(user_id)
 
-    def get_habits_due_today(self, user_id: int) -> List[Habit]:
+    def get_habits_due_today(self, user_id: int) -> list[Habit]:
         """Get habits due today for a user."""
         return self.habit_repo.get_due_today(user_id)
 
-    def get_active_streaks(self, user_id: int, min_streak: int = 7) -> List[Habit]:
+    def get_active_streaks(self, user_id: int, min_streak: int = 7) -> list[Habit]:
         """
         Return the user's habits that currently have an active streak of at least `min_streak` days.
 
@@ -458,7 +459,7 @@ class HabitService:
 
     def get_habit_completions(
         self, habit_id: str, limit: int = 30
-    ) -> List[HabitCompletion]:
+    ) -> list[HabitCompletion]:
         """
         Return the most recent completions for a habit.
 
@@ -468,7 +469,7 @@ class HabitService:
 
     def get_completion_history(
         self, habit_id: str, start_date: date, end_date: date
-    ) -> List[HabitCompletion]:
+    ) -> list[HabitCompletion]:
         """
         Return habit completions for the given habit between start_date and end_date.
 
@@ -508,7 +509,7 @@ class HabitService:
         """
         return self.completion_repo.delete_completion(completion_id)
 
-    def search_habits(self, user_id: int, query: str, limit: int = 20) -> List[Habit]:
+    def search_habits(self, user_id: int, query: str, limit: int = 20) -> list[Habit]:
         """
         Search a user's habits by text query.
 
@@ -524,7 +525,7 @@ class HabitService:
         """
         return self.habit_repo.search_habits(user_id, query, limit)
 
-    def get_habit_statistics(self, user_id: int, days: int = 30) -> Dict[str, Any]:
+    def get_habit_statistics(self, user_id: int, days: int = 30) -> dict[str, Any]:
         """
         Return aggregated habit statistics for a user.
 
@@ -572,8 +573,8 @@ class QuestChainService:
         self.quest_repo = quest_repo
 
     def create_quest_chain(
-        self, user_id: int, parent_quest_id: str, child_quests: List[Dict[str, Any]]
-    ) -> List[Quest]:
+        self, user_id: int, parent_quest_id: str, child_quests: list[dict[str, Any]]
+    ) -> list[Quest]:
         """
         Create and persist a sequence of child quests linked to a parent quest.
 
@@ -605,7 +606,7 @@ class QuestChainService:
 
         return created_quests
 
-    def get_quest_chain(self, parent_quest_id: str) -> List[Quest]:
+    def get_quest_chain(self, parent_quest_id: str) -> list[Quest]:
         """
         Return all child quests that belong to the chain of the given parent quest.
 
@@ -626,25 +627,33 @@ class QuestChainService:
 
         return True
 
-    def unlock_next_quests(self, completed_quest_id: str) -> List[Quest]:
+    def unlock_next_quests(self, completed_quest_id: str) -> list[Quest]:
         """
         Unlock quests that list the given quest as a prerequisite.
 
-        Searches all quests (currently fetched with a placeholder user_id=0), and for each quest that:
+        First fetches the completed quest to obtain its user_id, then searches that user's quests for any that:
         - includes completed_quest_id in its prerequisite_quest_ids,
         - is in QuestStatus.DRAFT, and
         - passes check_prerequisites(quest_id),
 
         the method sets the quest's status to QuestStatus.ACTIVE, persists the change via the repository, and collects the updated quest.
 
+        Parameters:
+            completed_quest_id (str): ID of the quest that was completed.
+
         Returns:
             List[Quest]: the quests that were transitioned to ACTIVE and saved.
 
-        Note:
-            The current implementation fetches quests using user_id=0 as a placeholder; in production this should query the real user scope.
+        Raises:
+            ValueError: If the completed quest is not found.
         """
-        # Find quests that have this quest as a prerequisite
-        all_quests = self.quest_repo.get_by_user_id(0)  # This would need user_id
+        # First, fetch the completed quest to get the user_id
+        completed_quest = self.quest_repo.get_by_id(completed_quest_id)
+        if not completed_quest:
+            raise ValueError(f"Completed quest {completed_quest_id} not found")
+
+        # Find quests for this user that have this quest as a prerequisite
+        all_quests = self.quest_repo.get_by_user_id(completed_quest.user_id)
         unlocked_quests = []
 
         for quest in all_quests:

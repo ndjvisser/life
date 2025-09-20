@@ -16,9 +16,11 @@ class Quest(models.Model):
         ("daily", "Daily Quest"),
     ]
     STATUS_CHOICES = [
+        ("draft", "Draft"),
         ("active", "Active"),
         ("completed", "Completed"),
         ("failed", "Failed"),
+        ("paused", "Paused"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -28,7 +30,7 @@ class Quest(models.Model):
         max_length=10, choices=DIFFICULTY_CHOICES, default="medium"
     )
     quest_type = models.CharField(max_length=10, choices=QUEST_TYPES, default="main")
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="draft")
     experience_reward = models.PositiveIntegerField(default=10)
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)

@@ -8,11 +8,6 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 
-from life_dashboard.quests.models import Habit, Quest
-from life_dashboard.stats.models import Stats
-
-User = get_user_model()
-
 
 @pytest.fixture
 def client():
@@ -21,6 +16,9 @@ def client():
 
 @pytest.fixture
 def test_user():
+    from life_dashboard.stats.models import Stats
+
+    User = get_user_model()
     user = User.objects.create_user(
         username="testuser", email="test@example.com", password="testpass123"
     )
@@ -37,6 +35,8 @@ def authenticated_client(client, test_user):
 
 @pytest.fixture
 def test_quest(test_user):
+    from life_dashboard.quests.models import Quest
+
     return Quest.objects.create(
         title="Test Quest",
         description="Test Description",
@@ -52,6 +52,8 @@ def test_quest(test_user):
 
 @pytest.fixture
 def test_habit(test_user):
+    from life_dashboard.quests.models import Habit
+
     return Habit.objects.create(
         name="Test Habit",
         description="Test Description",
@@ -90,7 +92,10 @@ class SeleniumTestCase(StaticLiveServerTestCase):
     def setUp(self):
         """Set up test environment with a fresh database and authenticated user."""
         super().setUp()
+        from life_dashboard.stats.models import Stats
+
         # Create test user
+        User = get_user_model()
         self.user = User.objects.create_user(
             username="testuser", email="test@example.com", password="testpass123"
         )
@@ -121,6 +126,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
     def create_test_quest(self):
         """Helper method to create a test quest."""
+        from life_dashboard.quests.models import Quest
+
         return Quest.objects.create(
             title="Test Quest",
             description="Test Description",
@@ -135,6 +142,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
 
     def create_test_habit(self):
         """Helper method to create a test habit."""
+        from life_dashboard.quests.models import Habit
+
         return Habit.objects.create(
             name="Test Habit",
             description="Test Description",
