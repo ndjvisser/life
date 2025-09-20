@@ -4,7 +4,6 @@ Dashboard domain value objects - immutable objects that represent concepts.
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class OnboardingState(Enum):
@@ -130,12 +129,12 @@ class UserLevel:
 class ProfileUpdateData:
     """Value object for profile update data with validation."""
 
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    email: Optional[str] = None
-    bio: Optional[str] = None
-    location: Optional[str] = None
-    birth_date: Optional[str] = None  # ISO date string
+    first_name: str | None = None
+    last_name: str | None = None
+    email: str | None = None
+    bio: str | None = None
+    location: str | None = None
+    birth_date: str | None = None  # ISO date string
 
     def __post_init__(self):
         # Validate string lengths

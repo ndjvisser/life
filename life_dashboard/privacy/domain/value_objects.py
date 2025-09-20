@@ -5,7 +5,6 @@ Privacy domain value objects - immutable privacy-related concepts.
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Optional, Set
 
 
 class PrivacyLevel(Enum):
@@ -33,8 +32,8 @@ class ConsentDecision:
     granted: bool
     scope: ConsentScope
     timestamp: datetime
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
+    ip_address: str | None = None
+    user_agent: str | None = None
 
     def is_valid_for_purpose(self, required_scope: ConsentScope) -> bool:
         """
@@ -119,7 +118,7 @@ class PrivacyImpactLevel:
 
     level: str  # low, medium, high, critical
     score: int  # 1-10
-    factors: Set[str]
+    factors: set[str]
 
     def __post_init__(self):
         """

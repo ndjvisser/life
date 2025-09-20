@@ -5,7 +5,7 @@ Journals domain entities - pure Python business logic without Django dependencie
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 from uuid import uuid4
 
 
@@ -22,23 +22,23 @@ class EntryType(Enum):
 class JournalEntry:
     """Pure domain entity for journal entries."""
 
-    entry_id: Optional[str] = field(default_factory=lambda: str(uuid4()))
+    entry_id: str | None = field(default_factory=lambda: str(uuid4()))
     user_id: int = 0
     title: str = ""
     content: str = ""
     entry_type: EntryType = EntryType.DAILY
 
     # Related items
-    related_quest_id: Optional[str] = None
-    related_achievement_id: Optional[str] = None
+    related_quest_id: str | None = None
+    related_achievement_id: str | None = None
 
     # Mood and tags
-    mood: Optional[int] = None
-    tags: List[str] = field(default_factory=list)
+    mood: int | None = None
+    tags: list[str] = field(default_factory=list)
 
     # Metadata
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     def __post_init__(self):
         """
@@ -105,7 +105,7 @@ class JournalEntry:
         self.mood = mood
         self.updated_at = datetime.utcnow()
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a dictionary representation of the JournalEntry suitable for serialization.
 

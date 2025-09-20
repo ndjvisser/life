@@ -5,7 +5,7 @@ Achievements domain entities - pure Python business logic without Django depende
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 from uuid import uuid4
 
 
@@ -22,7 +22,7 @@ class AchievementTier(Enum):
 class Achievement:
     """Pure domain entity for achievements."""
 
-    achievement_id: Optional[str] = field(default_factory=lambda: str(uuid4()))
+    achievement_id: str | None = field(default_factory=lambda: str(uuid4()))
     name: str = ""
     description: str = ""
     tier: AchievementTier = AchievementTier.BRONZE
@@ -31,7 +31,7 @@ class Achievement:
 
     # Requirements
     required_level: int = 1
-    required_skill_level: Optional[int] = None
+    required_skill_level: int | None = None
     required_quest_completions: int = 0
 
     def __post_init__(self):
@@ -47,7 +47,7 @@ class Achievement:
         if self.experience_reward < 0:
             raise ValueError("Experience reward cannot be negative")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a dictionary representation of the Achievement suitable for serialization.
 
@@ -77,10 +77,10 @@ class Achievement:
 class UserAchievement:
     """Pure domain entity for user achievements."""
 
-    user_achievement_id: Optional[str] = field(default_factory=lambda: str(uuid4()))
+    user_achievement_id: str | None = field(default_factory=lambda: str(uuid4()))
     user_id: int = 0
     achievement_id: str = ""
-    unlocked_at: Optional[datetime] = None
+    unlocked_at: datetime | None = None
     notes: str = ""
 
     def __post_init__(self):
@@ -105,7 +105,7 @@ class UserAchievement:
         self.unlocked_at = datetime.utcnow()
         self.notes = notes
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a dictionary representation of the UserAchievement suitable for serialization.
 

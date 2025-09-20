@@ -77,11 +77,34 @@ type-check:
 	mypy life_dashboard/dashboard/domain/ --config-file pyproject.toml || true
 	mypy life_dashboard/stats/domain/ --config-file pyproject.toml || true
 
+type-check-strict:
+	mypy life_dashboard/dashboard/domain/ --config-file pyproject.toml
+	mypy life_dashboard/stats/domain/ --config-file pyproject.toml
+	mypy life_dashboard/quests/domain/ --config-file pyproject.toml
+	mypy life_dashboard/skills/domain/ --config-file pyproject.toml
+	mypy life_dashboard/achievements/domain/ --config-file pyproject.toml
+	mypy life_dashboard/journals/domain/ --config-file pyproject.toml
+
 check-architecture:
 	python scripts/check-architecture.py
 
 pre-commit:
 	pre-commit run --all-files
+
+# Dependency Management
+compile-deps:
+	python scripts/generate-constraints.py
+
+sync-deps:
+	pip-sync constraints.txt constraints-dev.txt
+
+update-deps:
+	pip-compile --upgrade requirements.in --output-file constraints.txt --resolver=backtracking
+	pip-compile --upgrade requirements-dev.in --output-file constraints-dev.txt --resolver=backtracking
+
+check-deps:
+	@echo "Checking if constraints are up to date..."
+	@python scripts/generate-constraints.py --check || (echo "❌ Constraints are out of date. Run 'make compile-deps' to update." && exit 1)
 
 # Database
 migrate:
@@ -129,7 +152,7 @@ ci-install:
 	pip install import-linter mypy django-stubs ruff
 	pip install django pydantic
 
-ci-check: lint type-check check-architecture
+ci-check: lint type-check-strict check-architecture
 	@echo "✅ CI checks passed"
 
 # Docker helpers (for future use)

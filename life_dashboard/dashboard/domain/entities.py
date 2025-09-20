@@ -4,7 +4,6 @@ Dashboard domain entities - pure Python business logic without Django dependenci
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Optional, Tuple
 
 
 @dataclass
@@ -18,13 +17,13 @@ class UserProfile:
     email: str = ""
     bio: str = ""
     location: str = ""
-    birth_date: Optional[date] = None
+    birth_date: date | None = None
     experience_points: int = 0
     level: int = 1
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
-    def add_experience(self, points: int) -> Tuple[int, bool]:
+    def add_experience(self, points: int) -> tuple[int, bool]:
         """
         Add positive experience points to the profile, update the level, and indicate if a level-up occurred.
 

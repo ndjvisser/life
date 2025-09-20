@@ -51,7 +51,8 @@ jobs:
           DJANGO_SETTINGS_MODULE: life_dashboard.life_dashboard.settings
 
       - name: Run tests
-        run: pytest || echo "Tests not yet implemented"
+        run: pytest
+        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
         env:
           DJANGO_SETTINGS_MODULE: life_dashboard.life_dashboard.test_settings
 
@@ -59,3 +60,14 @@ jobs:
         run: |
           ruff check .
           ruff format . --check
+
+      - name: Run Type Checking
+        run: make type-check-strict
+
+      - name: Check Dependencies
+        run: make check-deps
+
+      - name: Run Architecture Checks
+        run: make check-architecture
+        env:
+          IMPORT_LINTER_STRICT: "1"

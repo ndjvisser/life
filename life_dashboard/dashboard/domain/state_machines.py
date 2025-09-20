@@ -3,7 +3,6 @@ Dashboard domain state machines - pure Python state management.
 """
 
 from dataclasses import dataclass
-from typing import Dict, Optional, Set
 
 from .value_objects import OnboardingState
 
@@ -33,7 +32,7 @@ class OnboardingStateMachine:
         with DASHBOARD as a terminal state (no outgoing transitions).
         """
         # Define valid transitions
-        self._VALID_TRANSITIONS: Dict[OnboardingState, Set[OnboardingState]] = {
+        self._VALID_TRANSITIONS: dict[OnboardingState, set[OnboardingState]] = {
             OnboardingState.REGISTRATION: {OnboardingState.PROFILE_SETUP},
             OnboardingState.PROFILE_SETUP: {
                 OnboardingState.INITIAL_GOALS,
@@ -131,7 +130,7 @@ class OnboardingStateMachine:
         return self.current_state == OnboardingState.DASHBOARD
 
     @property
-    def next_step(self) -> Optional[OnboardingState]:
+    def next_step(self) -> OnboardingState | None:
         """
         Return the next logical onboarding state from the current state.
 

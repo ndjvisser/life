@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
 """
 Simple script to run import-linter for pre-commit hooks.
+
+Supports strict mode via environment variables:
+- IMPORT_LINTER_STRICT: Set to "1", "true", or "yes" to fail if import-linter is missing
+- CI: Automatically enables strict mode in CI environments
+
+In strict mode, the script exits with code 1 if import-linter is not available.
+Otherwise, it prints a warning and exits with code 0 to not block commits.
 """
 
 import os
@@ -110,11 +117,19 @@ def main():
     if result is not None:
         sys.exit(result)
 
-    # Strategy 3: Graceful fallback - warn but don't fail
-    print("WARNING: import-linter not available, skipping import boundary checks")
-    print("To enable import boundary validation, install import-linter:")
-    print("  pip install import-linter")
-    sys.exit(0)  # Exit with success to not block commits
+    # Strategy 3: Graceful fallback - warn but don't fail (unless in strict mode)
+    # Check for strict mode via environment variables
+    strict_mode = os.environ.get("IMPORT_LINTER_STRICT") or os.environ.get("CI")
+    if strict_mode and strict_mode.lower() in ("1", "true", "yes"):
+        print("ERROR: import-linter not available but IMPORT_LINTER_STRICT is enabled")
+        print("To enable import boundary validation, install import-linter:")
+        print("  pip install import-linter")
+        sys.exit(1)  # Exit with failure in strict mode
+    else:
+        print("WARNING: import-linter not available, skipping import boundary checks")
+        print("To enable import boundary validation, install import-linter:")
+        print("  pip install import-linter")
+        sys.exit(0)  # Exit with success to not block commits
 
 
 if __name__ == "__main__":

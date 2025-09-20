@@ -4,7 +4,7 @@ Privacy domain repository interfaces - abstract data access contracts.
 
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .entities import (
     ConsentRecord,
@@ -21,7 +21,7 @@ class ConsentRepository(ABC):
     @abstractmethod
     def get_by_user_and_purpose(
         self, user_id: int, purpose: DataProcessingPurpose
-    ) -> Optional[ConsentRecord]:
+    ) -> ConsentRecord | None:
         """
         Retrieve the consent record for a specific user and data-processing purpose.
 
@@ -30,7 +30,7 @@ class ConsentRepository(ABC):
         pass
 
     @abstractmethod
-    def get_all_for_user(self, user_id: int) -> List[ConsentRecord]:
+    def get_all_for_user(self, user_id: int) -> list[ConsentRecord]:
         """Get all consent records for a user."""
         pass
 
@@ -63,7 +63,7 @@ class ConsentRepository(ABC):
         pass
 
     @abstractmethod
-    def get_expired_consents(self) -> List[ConsentRecord]:
+    def get_expired_consents(self) -> list[ConsentRecord]:
         """
         Return all consent records that are expired.
 
@@ -103,7 +103,7 @@ class ProcessingActivityRepository(ABC):
     @abstractmethod
     def get_activities_for_user(
         self, user_id: int, limit: int = 100
-    ) -> List[DataProcessingActivity]:
+    ) -> list[DataProcessingActivity]:
         """
         Retrieve processing activities associated with a user.
 
@@ -122,7 +122,7 @@ class ProcessingActivityRepository(ABC):
     @abstractmethod
     def get_activities_by_purpose(
         self, purpose: DataProcessingPurpose, start_date: datetime, end_date: datetime
-    ) -> List[DataProcessingActivity]:
+    ) -> list[DataProcessingActivity]:
         """
         Return processing activities matching a specific data processing purpose within a date range.
 
@@ -141,7 +141,7 @@ class ProcessingActivityRepository(ABC):
     @abstractmethod
     def get_activities_by_context(
         self, context: str, start_date: datetime, end_date: datetime
-    ) -> List[DataProcessingActivity]:
+    ) -> list[DataProcessingActivity]:
         """
         Return all data processing activities that were recorded for a given context within a date range.
 
@@ -175,7 +175,7 @@ class ProcessingActivityRepository(ABC):
         pass
 
     @abstractmethod
-    def get_activity_summary(self, user_id: int, days: int = 30) -> Dict[str, Any]:
+    def get_activity_summary(self, user_id: int, days: int = 30) -> dict[str, Any]:
         """
         Return aggregated processing-activity metrics for a user over a recent time window.
 
@@ -202,7 +202,7 @@ class PrivacySettingsRepository(ABC):
     """Abstract repository for privacy settings."""
 
     @abstractmethod
-    def get_by_user_id(self, user_id: int) -> Optional[PrivacySettings]:
+    def get_by_user_id(self, user_id: int) -> PrivacySettings | None:
         """
         Retrieve the privacy settings for the given user.
 
@@ -266,7 +266,7 @@ class DataSubjectRequestRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_id(self, request_id: str) -> Optional[DataSubjectRequest]:
+    def get_by_id(self, request_id: str) -> DataSubjectRequest | None:
         """
         Retrieve a DataSubjectRequest by its identifier.
 
@@ -279,7 +279,7 @@ class DataSubjectRequestRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_user_id(self, user_id: int) -> List[DataSubjectRequest]:
+    def get_by_user_id(self, user_id: int) -> list[DataSubjectRequest]:
         """
         Return all data subject requests associated with the given user.
 
@@ -303,12 +303,12 @@ class DataSubjectRequestRepository(ABC):
         pass
 
     @abstractmethod
-    def get_pending_requests(self) -> List[DataSubjectRequest]:
+    def get_pending_requests(self) -> list[DataSubjectRequest]:
         """Get all pending requests."""
         pass
 
     @abstractmethod
-    def get_overdue_requests(self, days_limit: int = 30) -> List[DataSubjectRequest]:
+    def get_overdue_requests(self, days_limit: int = 30) -> list[DataSubjectRequest]:
         """
         Retrieve data subject requests that are overdue.
 

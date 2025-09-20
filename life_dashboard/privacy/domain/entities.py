@@ -5,7 +5,6 @@ Privacy domain entities - pure Python privacy and consent management logic.
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, Optional, Set
 from uuid import uuid4
 
 
@@ -64,16 +63,16 @@ class ConsentRecord:
     consent_id: str = field(default_factory=lambda: str(uuid4()))
     user_id: int = 0
     purpose: DataProcessingPurpose = DataProcessingPurpose.CORE_FUNCTIONALITY
-    data_categories: Set[DataCategory] = field(default_factory=set)
+    data_categories: set[DataCategory] = field(default_factory=set)
     status: ConsentStatus = ConsentStatus.PENDING
-    granted_at: Optional[datetime] = None
-    withdrawn_at: Optional[datetime] = None
-    expires_at: Optional[datetime] = None
+    granted_at: datetime | None = None
+    withdrawn_at: datetime | None = None
+    expires_at: datetime | None = None
     version: str = "1.0"
 
     # Metadata
-    ip_address: Optional[str] = None
-    user_agent: Optional[str] = None
+    ip_address: str | None = None
+    user_agent: str | None = None
     consent_method: str = "web_form"  # web_form, api, import, etc.
 
     def __post_init__(self):
@@ -89,7 +88,7 @@ class ConsentRecord:
             self.withdrawn_at = datetime.utcnow()
 
     def grant_consent(
-        self, ip_address: Optional[str] = None, user_agent: Optional[str] = None
+        self, ip_address: str | None = None, user_agent: str | None = None
     ) -> None:
         """
         Mark this consent record as granted and record audit metadata.
@@ -172,7 +171,7 @@ class ConsentRecord:
         """
         return category in self.data_categories
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """
         Return a JSON-serializable dictionary representation of this ConsentRecord.
 
@@ -216,18 +215,18 @@ class DataProcessingActivity:
     activity_id: str = field(default_factory=lambda: str(uuid4()))
     user_id: int = 0
     purpose: DataProcessingPurpose = DataProcessingPurpose.CORE_FUNCTIONALITY
-    data_categories: Set[DataCategory] = field(default_factory=set)
+    data_categories: set[DataCategory] = field(default_factory=set)
     processing_type: str = "read"  # read, write, update, delete, analyze, share
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
     # Context information
     context: str = ""  # Which part of the system
-    request_id: Optional[str] = None
-    session_id: Optional[str] = None
+    request_id: str | None = None
+    session_id: str | None = None
 
     # Legal basis
     legal_basis: str = "consent"  # consent, legitimate_interest, contract, etc.
-    consent_id: Optional[str] = None
+    consent_id: str | None = None
 
     def __post_init__(self):
         """
@@ -239,7 +238,7 @@ class DataProcessingActivity:
         if not self.context:
             raise ValueError("Processing context is required")
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """
         Return a serializable dictionary representation of the activity for audit logging.
 
@@ -272,7 +271,7 @@ class PrivacySettings:
     user_id: int = 0
 
     # Data retention preferences
-    retention_preferences: Dict[DataCategory, RetentionPeriod] = field(
+    retention_preferences: dict[DataCategory, RetentionPeriod] = field(
         default_factory=dict
     )
 
@@ -362,7 +361,7 @@ class PrivacySettings:
         }
         return sharing_map.get(content_type, "private")
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """
         Serialize PrivacySettings to a dictionary suitable for storage or JSON encoding.
 
@@ -408,17 +407,17 @@ class DataSubjectRequest:
 
     # Request details
     requested_at: datetime = field(default_factory=datetime.utcnow)
-    completed_at: Optional[datetime] = None
-    data_categories: Set[DataCategory] = field(default_factory=set)
+    completed_at: datetime | None = None
+    data_categories: set[DataCategory] = field(default_factory=set)
 
     # Processing information
-    processor_id: Optional[int] = None
+    processor_id: int | None = None
     processing_notes: str = ""
-    rejection_reason: Optional[str] = None
+    rejection_reason: str | None = None
 
     # Verification
     identity_verified: bool = False
-    verification_method: Optional[str] = None
+    verification_method: str | None = None
 
     def verify_identity(self, method: str) -> None:
         """
@@ -493,7 +492,7 @@ class DataSubjectRequest:
         deadline = self.requested_at + timedelta(days=days_limit)
         return datetime.utcnow() > deadline
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         """
         Return a serializable dictionary representation of the DataSubjectRequest.
 
