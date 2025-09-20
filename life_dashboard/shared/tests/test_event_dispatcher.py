@@ -5,6 +5,7 @@ Tests event handler registration, version compatibility checking,
 event publishing, and privacy-aware processing.
 """
 
+import logging
 from datetime import datetime, timezone
 from unittest.mock import Mock, patch
 
@@ -473,3 +474,21 @@ class TestPrivacyAwareDispatcher:
 
         # Consent validation should have been called
         mock_validate_consent.assert_called_once_with(event, 123)
+
+    def test_privacy_aware_dispatcher_missing_user_id(self, caplog):
+        """Test that events missing user_id are skipped with clear logging."""
+
+        class MissingUserEvent(BaseEvent):
+            privacy_sensitive = True
+
+        dispatcher = PrivacyAwareEventDispatcher()
+        mock_handler = Mock()
+        dispatcher.register_handler(MissingUserEvent, mock_handler)
+
+        event = MissingUserEvent()
+
+        with caplog.at_level(logging.ERROR):
+            dispatcher.publish(event)
+
+        mock_handler.assert_not_called()
+        assert "missing user_id" in caplog.text

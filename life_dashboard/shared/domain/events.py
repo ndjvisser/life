@@ -7,6 +7,7 @@ versioning requirements specified in the catalog.
 """
 
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
@@ -1163,7 +1164,7 @@ class PredictionGenerated(BaseEvent):
     prediction_id: int
     prediction_type: str
     forecast_data: dict[str, Any]
-    confidence_interval: tuple[float, float]
+    confidence_interval: list[float]
     prediction_horizon_days: int
 
     def __init__(
@@ -1172,7 +1173,7 @@ class PredictionGenerated(BaseEvent):
         prediction_id: int,
         prediction_type: str,
         forecast_data: dict[str, Any],
-        confidence_interval: tuple[float, float],
+        confidence_interval: Sequence[float],
         prediction_horizon_days: int,
         event_id: str | None = None,
         timestamp: datetime | None = None,
@@ -1183,7 +1184,7 @@ class PredictionGenerated(BaseEvent):
         self.prediction_id = prediction_id
         self.prediction_type = prediction_type
         self.forecast_data = forecast_data
-        self.confidence_interval = confidence_interval
+        self.confidence_interval = list(confidence_interval)
         self.prediction_horizon_days = prediction_horizon_days
 
 
