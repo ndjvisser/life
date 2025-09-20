@@ -360,7 +360,7 @@ class StatHistory:
     stat_name: str
     old_value: Decimal
     new_value: Decimal
-    change_amount: Decimal = field(default=Decimal("0"))
+    change_amount: Decimal = field(init=False)
     change_reason: str = ""
     timestamp: datetime | None = None
 

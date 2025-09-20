@@ -189,9 +189,9 @@ class CrossContextQueries:
             User = get_user_model()
             user = User.objects.get(id=user_id)
 
-            # Recent quest completions
-            if hasattr(user, "quest_set"):
-                recent_quests = user.quest_set.filter(
+            # Recent quest completions (use explicit related_name="quests")
+            if hasattr(user, "quests"):
+                recent_quests = user.quests.filter(
                     status="completed", completed_at__isnull=False
                 ).order_by("-completed_at")[:5]
 
@@ -206,8 +206,8 @@ class CrossContextQueries:
                         }
                     )
 
-            # Recent habit completions
-            if hasattr(user, "habit_set"):
+            # Recent habit completions (use explicit related_name="habits")
+            if hasattr(user, "habits"):
                 from life_dashboard.quests.models import HabitCompletion
 
                 recent_habits = HabitCompletion.objects.filter(
