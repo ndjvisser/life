@@ -14,19 +14,19 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.12'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install import-linter mypy django-stubs
-        pip install -r requirements.txt || pip install django pydantic
+        pip install django>=5.1.1 django-crispy-forms crispy-bootstrap5 pydantic python-dotenv
 
     - name: Check import boundaries
       run: |
-        import-linter --config pyproject.toml
+        python scripts/run-import-linter.py
 
     - name: Type check domain layers
       run: |
@@ -149,9 +149,9 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.12'
 
     - name: Install pydeps
       run: |
@@ -164,7 +164,7 @@ jobs:
         pydeps life_dashboard --max-bacon=2 --cluster --rankdir=TB -o architecture-docs/dependency-graph.svg || true
 
     - name: Upload dependency graph
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dependency-graph
         path: architecture-docs/dependency-graph.svg
