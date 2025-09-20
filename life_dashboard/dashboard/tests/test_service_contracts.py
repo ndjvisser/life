@@ -5,6 +5,8 @@ Contract tests for dashboard services - validating service layer APIs with Pydan
 from datetime import datetime, timezone
 
 import pytest
+
+pytest.importorskip("pydantic")
 from pydantic import BaseModel, ConfigDict, Field
 
 from life_dashboard.dashboard.domain.entities import UserProfile

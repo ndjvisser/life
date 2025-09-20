@@ -6,6 +6,8 @@ import json
 
 import pytest
 
+pytest.importorskip("pytest_snapshot")
+
 from life_dashboard.journals.domain.entities import EntryType
 from life_dashboard.journals.domain.services import JournalService
 from life_dashboard.journals.tests.test_service_contracts import (

@@ -10,3 +10,11 @@ if project_root not in sys.path:
 os.environ.setdefault(
     "DJANGO_SETTINGS_MODULE", "life_dashboard.life_dashboard.test_settings"
 )
+
+# Ensure Django apps are ready for tests that import models during collection.
+try:
+    import django
+except ImportError:  # pragma: no cover - Django is an installed dependency in tests.
+    pass
+else:
+    django.setup()

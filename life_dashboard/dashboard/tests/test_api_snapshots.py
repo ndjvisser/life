@@ -7,6 +7,8 @@ from datetime import date, datetime
 
 import pytest
 
+pytest.importorskip("pytest_snapshot")
+
 from life_dashboard.dashboard.domain.entities import UserProfile
 from life_dashboard.dashboard.domain.state_machines import OnboardingStateMachine
 from life_dashboard.dashboard.domain.value_objects import OnboardingState

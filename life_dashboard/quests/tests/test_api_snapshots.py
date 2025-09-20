@@ -8,6 +8,10 @@ import json
 from datetime import date, datetime
 from unittest.mock import Mock
 
+import pytest
+
+pytest.importorskip("pytest_snapshot")
+
 from life_dashboard.quests.domain.entities import (
     Habit,
     HabitCompletion,

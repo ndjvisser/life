@@ -5,6 +5,8 @@ Contract tests for journals services - validating service layer APIs with Pydant
 from datetime import datetime
 
 import pytest
+
+pytest.importorskip("pydantic")
 from pydantic import BaseModel, ConfigDict, Field
 
 from life_dashboard.journals.domain.entities import EntryType, JournalEntry

@@ -5,6 +5,8 @@ These tests generate random inputs to validate domain invariants and edge cases.
 """
 
 import pytest
+
+pytest.importorskip("hypothesis")
 from hypothesis import given
 from hypothesis import strategies as st
 from hypothesis.strategies import composite

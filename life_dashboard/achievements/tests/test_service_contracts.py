@@ -8,6 +8,9 @@ from datetime import datetime, timezone
 from typing import Any
 from unittest.mock import Mock
 
+import pytest
+
+pytest.importorskip("pydantic")
 from pydantic import BaseModel
 
 from life_dashboard.achievements.domain.entities import (
