@@ -78,6 +78,7 @@ class Quest:
     quest_type: QuestType
     status: QuestStatus
     experience_reward: ExperienceReward
+    progress: float = 0.0
     start_date: date | None = None
     due_date: date | None = None
     completed_at: datetime | None = None
@@ -88,6 +89,7 @@ class Quest:
         """Validate quest data after initialization"""
         self._validate_dates()
         self._validate_status_transitions()
+        self._validate_progress()
 
     def _validate_dates(self):
         """Validate date constraints"""
@@ -103,6 +105,11 @@ class Quest:
         if self.quest_type in [QuestType.DAILY, QuestType.WEEKLY]:
             if self.status == QuestStatus.PAUSED:
                 raise ValueError("Daily/Weekly quests cannot be paused")
+
+    def _validate_progress(self):
+        """Validate that quest progress is within the expected range"""
+        if not 0.0 <= self.progress <= 100.0:
+            raise ValueError("Quest progress must be between 0 and 100 percent")
 
     def can_transition_to(self, new_status: QuestStatus) -> bool:
         """Check if quest can transition to new status"""
@@ -295,13 +302,21 @@ class HabitCompletion:
 
     completion_id: str
     habit_id: HabitId
+    user_id: UserId | None = None
     count: CompletionCount
     completion_date: date
     notes: str
     experience_gained: ExperienceReward
+    streak_at_completion: StreakCount | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
 
     def __post_init__(self):
         """Generate completion ID if not provided"""
         if not hasattr(self, "completion_id") or not self.completion_id:
             self.completion_id = str(uuid4())
+        if self.user_id is not None and not isinstance(self.user_id, UserId):
+            self.user_id = UserId(self.user_id)
+        if self.streak_at_completion is None:
+            self.streak_at_completion = StreakCount(0)
+        elif not isinstance(self.streak_at_completion, StreakCount):
+            self.streak_at_completion = StreakCount(self.streak_at_completion)
