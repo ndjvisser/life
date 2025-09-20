@@ -113,8 +113,8 @@ format:
 	ruff format .
 
 type-check:
-	mypy life_dashboard/dashboard/domain/ --config-file pyproject.toml || true
-	mypy life_dashboard/stats/domain/ --config-file pyproject.toml || true
+	mypy life_dashboard/dashboard/domain/ --config-file pyproject.toml
+	mypy life_dashboard/stats/domain/ --config-file pyproject.toml
 
 type-check-strict:
 	mypy life_dashboard/dashboard/domain/ --config-file pyproject.toml

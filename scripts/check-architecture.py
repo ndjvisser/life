@@ -193,11 +193,23 @@ class ArchitectureChecker:
 
                 # Check for imports from other contexts
                 for other_context in other_contexts:
-                    pattern = rf"^from life_dashboard\.{other_context}.*"
-                    cross_imports = re.findall(pattern, content, re.MULTILINE)
+                    patterns = [
+                        # 1) Absolute from-imports: from life_dashboard.<ctx> ...
+                        rf"^from\s+life_dashboard\.{other_context}\b.*",
+                        # 2) Absolute imports: import life_dashboard.<ctx> ...
+                        rf"^import\s+life_dashboard\.{other_context}\b.*",
+                        # 3) Relative from-imports referencing other contexts: from .<ctx> or from ..<ctx>
+                        rf"^from\s+\.+\s*{other_context}\b.*",
+                    ]
 
-                    if cross_imports:
-                        violations.append((py_file, cross_imports))
+                    matches: list[str] = []
+                    for pat in patterns:
+                        found = re.findall(pat, content, re.MULTILINE)
+                        if found:
+                            matches.extend(found)
+
+                    if matches:
+                        violations.append((py_file, matches))
 
         if violations:
             print("❌ Found cross-context imports in domain layers:")
