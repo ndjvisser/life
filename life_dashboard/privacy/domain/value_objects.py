@@ -118,9 +118,13 @@ class PrivacyImpactLevel:
 
     level: str  # low, medium, high, critical
     score: int  # 1-10
-    factors: set[str]
+    factors: frozenset[str]
 
     def __post_init__(self):
+        if not 1 <= self.score <= 10:
+            raise ValueError("Privacy impact score must be between 1 and 10")
+        # Enforce immutability of factors
+        object.__setattr__(self, "factors", frozenset(self.factors))
         """
         Validate the PrivacyImpactLevel fields after initialization.
 
