@@ -11,7 +11,6 @@ class QuestForm(forms.ModelForm):
             "description",
             "difficulty",
             "quest_type",
-            "status",
             "experience_reward",
             "start_date",
             "due_date",
@@ -31,6 +30,9 @@ class HabitForm(forms.ModelForm):
     experience_reward = forms.IntegerField(
         min_value=0, widget=forms.NumberInput(attrs={"class": "validate"})
     )
+    target_count = forms.IntegerField(
+        min_value=1, widget=forms.NumberInput(attrs={"class": "validate"})
+    )
 
     class Meta:
         model = Habit
@@ -45,7 +47,6 @@ class HabitForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"class": "validate"}),
             "description": forms.Textarea(attrs={"class": "materialize-textarea"}),
             "frequency": forms.Select(attrs={"class": "browser-default"}),
-            "target_count": forms.NumberInput(attrs={"class": "validate"}),
         }
 
 

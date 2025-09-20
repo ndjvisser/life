@@ -28,7 +28,6 @@ class QuestTests:
             "description": "Test Description",
             "difficulty": "medium",
             "quest_type": "main",
-            "status": "active",
             "experience_reward": 50,
             "start_date": date.today(),
             "due_date": date.today(),
@@ -51,7 +50,6 @@ class QuestTests:
             "description": "Updated Description",
             "difficulty": "hard",
             "quest_type": "side",
-            "status": "completed",
             "experience_reward": 100,
             "start_date": date.today(),
             "due_date": date.today(),
@@ -63,7 +61,7 @@ class QuestTests:
         assert test_quest.description == "Updated Description"
         assert test_quest.difficulty == "hard"
         assert test_quest.quest_type == "side"
-        assert test_quest.status == "completed"
+        assert test_quest.status == "active"
         assert test_quest.experience_reward == 100
         assert test_quest.start_date == date.today()
         assert test_quest.due_date == date.today()
@@ -90,7 +88,6 @@ class QuestSeleniumTests(SeleniumTestCase):
         self.driver.find_element(By.NAME, "description").send_keys("Test Description")
         self.driver.find_element(By.NAME, "difficulty").send_keys("medium")
         self.driver.find_element(By.NAME, "quest_type").send_keys("main")
-        self.driver.find_element(By.NAME, "status").send_keys("active")
         self.driver.find_element(By.NAME, "experience_reward").clear()
         self.driver.find_element(By.NAME, "experience_reward").send_keys("50")
 
@@ -145,7 +142,6 @@ class QuestSeleniumTests(SeleniumTestCase):
         )
         self.driver.find_element(By.NAME, "difficulty").send_keys("hard")
         self.driver.find_element(By.NAME, "quest_type").send_keys("side")
-        self.driver.find_element(By.NAME, "status").send_keys("completed")
         self.driver.find_element(By.NAME, "experience_reward").clear()
         self.driver.find_element(By.NAME, "experience_reward").send_keys("100")
 

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import logging
 import os
 import sys
 from datetime import timedelta
@@ -21,6 +22,8 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,6 +57,8 @@ INSTALLED_APPS = [
     "life_dashboard.journals",
     "life_dashboard.achievements",
     "life_dashboard.skills",
+    "life_dashboard.core_stats",
+    "life_dashboard.life_stats",
     # Stats-related apps (consolidated)
     "life_dashboard.stats",  # Consolidated stats app with all models
 ]
@@ -192,22 +197,31 @@ REDIS_DB = int(os.getenv("REDIS_DB", 0))
 REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
 
 
-def validate_redis_connection():
-    """Validate Redis connection and print warning if connection fails."""
+def validate_redis_connection(url: str, *, strict: bool) -> None:
+    """Validate a Redis connection and optionally raise in strict mode."""
+
+    client = None
     try:
-        redis_client = redis.from_url(CELERY_BROKER_URL)
-        redis_client.ping()
-    except redis.ConnectionError as e:
-        if DEBUG:
-            print(f"Warning: Redis connection failed: {e}")
-            print("Running without Redis. Some features may be limited.")
-        else:
-            raise ImproperlyConfigured(f"Redis connection failed: {e}") from e
+        client = redis.from_url(url)
+        client.ping()
+    except redis.RedisError as exc:
+        message = f"Redis connection failed for {url}: {exc}"
+        if strict:
+            raise ImproperlyConfigured(message) from exc
+        logger.warning("%s", message)
+    finally:
+        if client is not None:
+            try:
+                client.close()
+            except AttributeError:
+                pass
 
 
-# Validate Redis connection
-if DEBUG:
-    validate_redis_connection()
+# Validate Redis connectivity only in production environments
+if not DEBUG:
+    validate_redis_connection(CELERY_BROKER_URL, strict=True)
+    if CELERY_RESULT_BACKEND.startswith("redis"):
+        validate_redis_connection(CELERY_RESULT_BACKEND, strict=True)
 
 # Celery Beat Schedule
 CELERY_BEAT_SCHEDULE = {

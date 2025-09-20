@@ -75,6 +75,8 @@ class SeleniumTestCase(StaticLiveServerTestCase):
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--window-size=1920,1080")
 
+        cls.driver = None
+        cls.wait = None
         try:
             # Prefer Selenium Manager (Selenium 4.6+) to resolve drivers cross-platform
             cls.driver = webdriver.Chrome(options=chrome_options)

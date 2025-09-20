@@ -3,6 +3,7 @@ Stats infrastructure models - Django ORM models for persistence.
 """
 
 from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -26,8 +27,10 @@ class CoreStatModel(models.Model):
     charisma = models.IntegerField(default=10)
 
     # Experience and level
-    experience_points = models.IntegerField(default=0)
-    level = models.IntegerField(default=1)
+    experience_points = models.IntegerField(
+        default=0, validators=[MinValueValidator(0)]
+    )
+    level = models.IntegerField(default=1, validators=[MinValueValidator(1)])
 
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
@@ -166,6 +169,40 @@ class Stats(models.Model):
         app_label = "stats"
         verbose_name = "Stats (Legacy)"
         verbose_name_plural = "Stats (Legacy)"
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(level__gte=1), name="stats_level_gte_1"
+            ),
+            models.CheckConstraint(
+                check=models.Q(experience__gte=0),
+                name="stats_experience_gte_0",
+            ),
+            models.CheckConstraint(
+                check=models.Q(health__gte=0), name="stats_health_gte_0"
+            ),
+            models.CheckConstraint(
+                check=models.Q(energy__gte=0), name="stats_energy_gte_0"
+            ),
+            models.CheckConstraint(
+                check=models.Q(strength__gte=0), name="stats_strength_gte_0"
+            ),
+            models.CheckConstraint(
+                check=models.Q(agility__gte=0), name="stats_agility_gte_0"
+            ),
+            models.CheckConstraint(
+                check=models.Q(endurance__gte=0), name="stats_endurance_gte_0"
+            ),
+            models.CheckConstraint(
+                check=models.Q(intelligence__gte=0),
+                name="stats_intelligence_gte_0",
+            ),
+            models.CheckConstraint(
+                check=models.Q(charisma__gte=0), name="stats_charisma_gte_0"
+            ),
+            models.CheckConstraint(
+                check=models.Q(wisdom__gte=0), name="stats_wisdom_gte_0"
+            ),
+        ]
 
     def __str__(self):
         """

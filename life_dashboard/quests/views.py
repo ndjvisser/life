@@ -32,6 +32,7 @@ def quest_create(request):
         if form.is_valid():
             quest = form.save(commit=False)
             quest.user = request.user
+            quest.status = "active"
             quest.save()
             messages.success(request, "Quest created successfully!", extra_tags="quest")
             return redirect("quests:quest_list")
