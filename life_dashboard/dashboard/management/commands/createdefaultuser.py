@@ -13,8 +13,7 @@ class Command(BaseCommand):
             dest="username",
             default=os.getenv("DJANGO_SUPERUSER_USERNAME"),
             help=(
-                "Default superuser username (or set DJANGO_SUPERUSER_USERNAME "
-                "env var)"
+                "Default superuser username (or set DJANGO_SUPERUSER_USERNAME env var)"
             ),
         )
         parser.add_argument(
@@ -28,8 +27,7 @@ class Command(BaseCommand):
             dest="password",
             default=os.getenv("DJANGO_SUPERUSER_PASSWORD"),
             help=(
-                "Default superuser password (or set DJANGO_SUPERUSER_PASSWORD "
-                "env var)"
+                "Default superuser password (or set DJANGO_SUPERUSER_PASSWORD env var)"
             ),
         )
 

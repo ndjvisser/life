@@ -25,18 +25,18 @@ class QuestCreateRequest(BaseModel):
     def validate_due_date(cls, v, values):
         """
         Validator to ensure a provided due date is not earlier than the start date.
-        
+
         Checks that when both `start_date` (in the passed-in `values`) and the candidate `v`
         (due date) are present and non-null, `v` is greater than or equal to `start_date`.
-        
+
         Parameters:
             cls: The validator's owner class (unused).
             v: The candidate due date value to validate.
             values: Previously-validated field values in the model (expected to contain `start_date`).
-        
+
         Returns:
             The validated due date (`v`) unchanged.
-        
+
         Raises:
             ValueError: If `v` is before `start_date`.
         """

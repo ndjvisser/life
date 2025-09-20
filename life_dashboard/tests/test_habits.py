@@ -68,7 +68,7 @@ class TestHabits:
 @pytest.mark.django_db
 class HabitTests(SeleniumTestCase):
     def test_habit_creation_flow(self):
-        self.driver.get(f'{self.live_server_url}{reverse("quests:habit_create")}')
+        self.driver.get(f"{self.live_server_url}{reverse('quests:habit_create')}")
         self.driver.find_element(By.NAME, "name").send_keys("New Habit")
         self.driver.find_element(By.NAME, "description").send_keys("Test Description")
         self.driver.find_element(By.NAME, "frequency").send_keys("daily")
@@ -90,7 +90,7 @@ class HabitTests(SeleniumTestCase):
             user=self.user,
         )
         self.driver.get(
-            f'{self.live_server_url}{reverse("quests:habit_detail", args=[habit.pk])}'
+            f"{self.live_server_url}{reverse('quests:habit_detail', args=[habit.pk])}"
         )
         self.driver.find_element(By.CSS_SELECTOR, "button.complete-habit").click()
 

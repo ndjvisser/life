@@ -21,10 +21,10 @@ class StatsServiceFactory:
     def get_core_stat_repository(cls):
         """
         Return the cached DjangoCoreStatRepository instance, creating and caching it on first access.
-        
+
         This performs lazy initialization: if the class-level cache `_core_stat_repo` is None, a new
         DjangoCoreStatRepository is instantiated and stored on the class before being returned.
-        
+
         Returns:
             DjangoCoreStatRepository: The singleton repository instance for core stats associated with this factory class.
         """
@@ -36,7 +36,7 @@ class StatsServiceFactory:
     def get_life_stat_repository(cls):
         """
         Return a lazily-instantiated singleton DjangoLifeStatRepository.
-        
+
         On first call this creates and caches a DjangoLifeStatRepository instance on the class;
         subsequent calls return the cached repository.
         """
@@ -48,9 +48,9 @@ class StatsServiceFactory:
     def get_history_repository(cls):
         """
         Return the lazily initialized, shared DjangoStatHistoryRepository for the class.
-        
+
         Creates and caches a new DjangoStatHistoryRepository on first call and returns the cached instance on subsequent calls.
-        
+
         Returns:
             DjangoStatHistoryRepository: The class-cached history repository instance.
         """
@@ -62,10 +62,10 @@ class StatsServiceFactory:
     def get_stat_service(cls):
         """
         Return a configured StatService wired with the factory's repositories.
-        
+
         The returned StatService is constructed with the factory's cached core stat repository
         (from get_core_stat_repository()) and history repository (from get_history_repository()).
-        
+
         Returns:
             StatService: a ready-to-use StatService instance.
         """
@@ -78,11 +78,11 @@ class StatsServiceFactory:
     def get_life_stat_service(cls):
         """
         Return a configured LifeStatService with the factory's repository dependencies.
-        
+
         Creates and returns a LifeStatService instance wired with the factory's cached
         DjangoLifeStatRepository (life_stat_repo) and DjangoStatHistoryRepository
         (history_repo). Repositories are lazily instantiated and cached by the factory.
-        
+
         Returns:
             LifeStatService: A LifeStatService configured with the appropriate repositories.
         """
@@ -95,10 +95,10 @@ class StatsServiceFactory:
     def get_analytics_service(cls):
         """
         Return a configured StatAnalyticsService wired with the factory's cached history repository.
-        
+
         This classmethod constructs and returns a StatAnalyticsService using the
         factory's cached DjangoStatHistoryRepository as the `history_repo` dependency.
-        
+
         Returns:
             StatAnalyticsService: A ready-to-use analytics service instance.
         """
@@ -114,10 +114,10 @@ def get_stat_service() -> StatService:
 def get_life_stat_service() -> LifeStatService:
     """
     Return a pre-configured LifeStatService instance wired with the module's repositories.
-    
+
     This is a convenience wrapper around StatsServiceFactory.get_life_stat_service()
     that provides a lazily-instantiated, dependency-injected LifeStatService ready for use.
-    
+
     Returns:
         LifeStatService: A LifeStatService configured with the module's LifeStatRepository and StatHistoryRepository.
     """

@@ -17,7 +17,7 @@ class BasicSetupTest(TestCase):
     def test_database_connection(self):
         """
         Verify the Django database connection can execute a simple query.
-        
+
         Runs a raw SQL query (`SELECT 1`) using Django's default DB connection and asserts the fetched value is 1.
         """
         from django.db import connection

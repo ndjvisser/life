@@ -11,12 +11,12 @@ import sys
 def try_import_linter_direct():
     """
     Attempt to run import-linter in-process by importing and invoking its CLI.
-    
+
     Tries to import `lint_imports` from `importlinter.cli` and, if available,
     changes the current working directory to the repository root (derived from
     this script's `__file__` when present) before calling `lint_imports` with
     `config_filename="pyproject.toml"`.
-    
+
     Returns:
         int | None: The exit code returned by `lint_imports` on success, or
         `None` if the import of `importlinter.cli` fails (import-linter not
@@ -44,15 +44,15 @@ def try_import_linter_direct():
 def try_import_linter_subprocess():
     """
     Attempt to run import-linter as an external subprocess.
-    
+
     Tries candidate executables ["lint-imports", "lint-imports.exe"] in the repository root (derived from this script's location; falls back to the current working directory if __file__ is unavailable). For each executable it runs:
         [exe, "--config", "pyproject.toml"]
-    
+
     - If a subprocess returns exit code 0, prints its stdout and returns 0.
     - If a subprocess returns a non-zero exit code, prints stdout and stderr and returns that exit code.
     - If an executable is not found, it continues to the next candidate.
     - If no executable is found or an unexpected error occurs, returns None.
-    
+
     Returns:
         int | None: The subprocess exit code (0 for success, non-zero for failure), or None if no suitable executable was run.
     """
@@ -92,9 +92,9 @@ def try_import_linter_subprocess():
 def main():
     """
     Orchestrate running import-linter with two fallback strategies and exit with the chosen result.
-    
+
     Attempts to run import-linter in-process via try_import_linter_direct(); if that returns a non-None exit code, calls sys.exit with that code. If not available, attempts try_import_linter_subprocess() and exits with its non-None result. If neither strategy is available, prints a warning with installation instructions and exits with code 0 (graceful success so commits are not blocked).
-    
+
     Side effects:
     - May call sys.exit with the selected exit code.
     - Prints warning and guidance when import-linter is unavailable.

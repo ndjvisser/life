@@ -79,7 +79,7 @@ class ConsentRecord:
     def __post_init__(self):
         """
         Ensure timestamps match initial consent status.
-        
+
         If the record is initialized with status GRANTED and no `granted_at` is provided, set `granted_at` to the current UTC time. If initialized with status WITHDRAWN and no `withdrawn_at` is provided, set `withdrawn_at` to the current UTC time.
         """
         if self.status == ConsentStatus.GRANTED and not self.granted_at:
@@ -93,13 +93,13 @@ class ConsentRecord:
     ) -> None:
         """
         Mark this consent record as granted and record audit metadata.
-        
+
         Updates:
         - Sets status to ConsentStatus.GRANTED.
         - Sets granted_at to current UTC time and clears withdrawn_at.
         - Optionally records ip_address and user_agent for audit purposes.
         - For MARKETING and RESEARCH purposes, sets expires_at to one year from now.
-        
+
         Parameters:
             ip_address (Optional[str]): Source IP to record for the grant event (audit).
             user_agent (Optional[str]): User agent string to record for the grant event (audit).
@@ -123,7 +123,7 @@ class ConsentRecord:
     def withdraw_consent(self) -> None:
         """
         Withdraw previously granted consent.
-        
+
         If the current status is ConsentStatus.GRANTED, sets status to ConsentStatus.WITHDRAWN
         and records the withdrawal time (UTC) in `withdrawn_at`. No action is taken if the
         consent is not currently granted.
@@ -135,7 +135,7 @@ class ConsentRecord:
     def is_valid(self) -> bool:
         """
         Return True if the consent is currently valid (GRANTED and not expired), otherwise False.
-        
+
         If the consent status is not GRANTED this returns False. If an expiration time exists and is past
         the current UTC time, the method updates the record's status to ConsentStatus.EXPIRED and returns False.
         """
@@ -151,7 +151,7 @@ class ConsentRecord:
     def is_expired(self) -> bool:
         """
         Return True if the consent has a configured expiration time that is in the past.
-        
+
         Detailed:
         - Returns True only when `expires_at` is set and the current UTC time is later than `expires_at`.
         - Does not modify the consent's status or other fields; it only performs a read check.
@@ -163,10 +163,10 @@ class ConsentRecord:
     def covers_data_category(self, category: DataCategory) -> bool:
         """
         Return True if this consent record includes the given DataCategory.
-        
+
         Parameters:
             category (DataCategory): The data category to check.
-        
+
         Returns:
             bool: True if `category` is present in this consent's `data_categories`, otherwise False.
         """
@@ -175,9 +175,9 @@ class ConsentRecord:
     def to_dict(self) -> Dict:
         """
         Return a JSON-serializable dictionary representation of this ConsentRecord.
-        
+
         The dictionary includes identifier fields, enum values (purpose and status) and a list of data category values, ISO-8601 strings for any timestamps (or None), the stored version, and computed flags `is_valid` and `is_expired`. Intended for logging, audit trails, or API responses.
-        
+
         Returns:
             Dict: A mapping with keys:
                 - consent_id (str)
@@ -232,7 +232,7 @@ class DataProcessingActivity:
     def __post_init__(self):
         """
         Ensure the activity has a non-empty processing context after initialization.
-        
+
         Raises:
             ValueError: If the required `context` attribute is empty or falsy.
         """
@@ -242,11 +242,11 @@ class DataProcessingActivity:
     def to_dict(self) -> Dict:
         """
         Return a serializable dictionary representation of the activity for audit logging.
-        
+
         Enum fields are converted to their `.value` and the timestamp is ISO-formatted. The resulting dict contains:
         `activity_id`, `user_id`, `purpose`, `data_categories`, `processing_type`, `timestamp`, `context`,
         `request_id`, `session_id`, `legal_basis`, and `consent_id`.
-        
+
         Returns:
             Dict: Mapping suitable for logging or JSON encoding.
         """
@@ -307,11 +307,11 @@ class PrivacySettings:
     def update_setting(self, setting_name: str, value) -> None:
         """
         Update a named privacy setting on this PrivacySettings instance and refresh the updated_at timestamp.
-        
+
         Parameters:
             setting_name (str): Attribute name of the setting to update; must match an existing attribute on the instance.
             value: New value to assign to the setting.
-        
+
         Raises:
             ValueError: If the given setting_name does not correspond to an existing attribute.
         """
@@ -324,7 +324,7 @@ class PrivacySettings:
     def get_retention_period(self, data_category: DataCategory) -> RetentionPeriod:
         """
         Return the configured retention period for the given data category.
-        
+
         If no explicit preference exists for the category, returns RetentionPeriod.YEAR_1 (1 year) as the default.
         """
         return self.retention_preferences.get(data_category, RetentionPeriod.YEAR_1)
@@ -332,7 +332,7 @@ class PrivacySettings:
     def is_feature_enabled(self, feature: str) -> bool:
         """
         Return whether a named privacy-related feature is enabled for this user.
-        
+
         Accepts feature keys: "analytics", "ai_insights", "social_features", and "marketing".
         Lookup is exact (case-sensitive); unknown keys return False.
         """
@@ -347,11 +347,11 @@ class PrivacySettings:
     def get_sharing_level(self, content_type: str) -> str:
         """
         Return the user's sharing level for a given content type.
-        
+
         Parameters:
             content_type (str): Type of content to query. Recognized values are
                 "achievements", "progress", and "profile". Unknown values return "private".
-        
+
         Returns:
             str: Sharing level for the content (e.g., "public", "friends", "private"); defaults to "private" for unrecognized content types.
         """
@@ -365,7 +365,7 @@ class PrivacySettings:
     def to_dict(self) -> Dict:
         """
         Serialize PrivacySettings to a dictionary suitable for storage or JSON encoding.
-        
+
         Returns:
             dict: A mapping of field names to serializable values. Enum keys and values in
             `retention_preferences` are converted to their `.value` strings; `created_at`
@@ -423,7 +423,7 @@ class DataSubjectRequest:
     def verify_identity(self, method: str) -> None:
         """
         Mark the request's identity as verified and record the verification method.
-        
+
         Parameters:
             method (str): The verification method used (for example: "email", "sms", "in_person", "two_factor"); stored in `verification_method`.
         """
@@ -433,10 +433,10 @@ class DataSubjectRequest:
     def start_processing(self, processor_id: int) -> None:
         """
         Mark the data subject request as being processed and record the responsible processor.
-        
+
         Requires that identity verification has completed; otherwise raises ValueError.
         Sets the request's status to "processing" and assigns processor_id.
-        
+
         Parameters:
             processor_id (int): Identifier of the processor handling this request.
         """
@@ -449,12 +449,12 @@ class DataSubjectRequest:
     def complete_request(self, notes: str = "") -> None:
         """
         Mark this data subject request as completed.
-        
+
         Sets the request status to "completed", records the completion timestamp (UTC) and stores optional processing notes.
-        
+
         Parameters:
             notes (str): Optional notes or summary of actions taken during processing (defaults to empty string).
-        
+
         Returns:
             None
         """
@@ -465,9 +465,9 @@ class DataSubjectRequest:
     def reject_request(self, reason: str) -> None:
         """
         Mark the data subject request as rejected.
-        
+
         Sets the request status to "rejected", records the provided rejection reason, and timestamps completion with the current UTC time.
-        
+
         Parameters:
             reason (str): Human-readable explanation for rejecting the request.
         """
@@ -478,12 +478,12 @@ class DataSubjectRequest:
     def is_overdue(self, days_limit: int = 30) -> bool:
         """
         Return True if the data subject request is past its processing deadline.
-        
+
         By default uses a 30-day statutory window; requests with status "completed" or "rejected" are never considered overdue.
-        
+
         Parameters:
             days_limit (int): Number of days after `requested_at` that defines the deadline (default 30).
-        
+
         Returns:
             bool: True if the current UTC time is later than `requested_at + days_limit`, otherwise False.
         """
@@ -496,9 +496,9 @@ class DataSubjectRequest:
     def to_dict(self) -> Dict:
         """
         Return a serializable dictionary representation of the DataSubjectRequest.
-        
+
         The dictionary contains all public fields with datetime values formatted as ISO 8601 strings, the set of data categories converted to their enum values, and a computed `is_overdue` boolean. `completed_at` is None when the request is not finished.
-        
+
         Returns:
             Dict: Serialized mapping suitable for JSON encoding and audit/logging.
         """

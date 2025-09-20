@@ -214,7 +214,7 @@ class QuestSeleniumTests(SeleniumTestCase):
             user=self.user,
         )
         self.driver.get(
-            f'{self.live_server_url}{reverse("quests:quest_detail", args=[quest.pk])}'
+            f"{self.live_server_url}{reverse('quests:quest_detail', args=[quest.pk])}"
         )
         self.driver.find_element(By.CSS_SELECTOR, "button.complete-quest").click()
 

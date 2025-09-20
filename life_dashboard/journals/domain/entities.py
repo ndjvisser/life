@@ -43,7 +43,7 @@ class JournalEntry:
     def __post_init__(self):
         """
         Perform post-initialization validation for a JournalEntry.
-        
+
         Ensures the required `title` is present and, if `mood` is set, that it falls between 1 and 10 inclusive.
         Raises ValueError when either validation fails.
         """
@@ -56,11 +56,11 @@ class JournalEntry:
     def update_content(self, title: str, content: str) -> None:
         """
         Update the entry's title and content and refresh its updated_at timestamp.
-        
+
         Parameters:
             title (str): New title for the entry.
             content (str): New content/body for the entry.
-        
+
         Side effects:
             Sets `self.updated_at` to the current UTC time.
         """
@@ -71,7 +71,7 @@ class JournalEntry:
     def add_tag(self, tag: str) -> None:
         """
         Add a non-empty, unique tag to the entry.
-        
+
         If `tag` is empty or already present, the tags list is unchanged. When a tag is added, `updated_at` is set to the current UTC time.
         """
         if tag and tag not in self.tags:
@@ -81,7 +81,7 @@ class JournalEntry:
     def remove_tag(self, tag: str) -> None:
         """
         Remove a tag from the entry.
-        
+
         If the tag is present in the entry's tags list it is removed and updated_at is set to the current UTC time.
         If the tag is not present, the method is a no-op.
         """
@@ -92,10 +92,10 @@ class JournalEntry:
     def set_mood(self, mood: int) -> None:
         """
         Set the entry's mood rating and refresh the updated_at timestamp.
-        
+
         Parameters:
             mood (int): Mood rating from 1 (lowest) to 10 (highest).
-        
+
         Raises:
             ValueError: If `mood` is not between 1 and 10 (inclusive).
         """
@@ -108,7 +108,7 @@ class JournalEntry:
     def to_dict(self) -> Dict[str, Any]:
         """
         Return a dictionary representation of the JournalEntry suitable for serialization.
-        
+
         The returned mapping includes all primary fields. `entry_type` is returned as its string value.
         `created_at` and `updated_at` are ISO 8601 strings when present, otherwise None. Lists and
         primitive fields are returned as-is (e.g., `tags` is a list of strings).

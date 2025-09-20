@@ -45,7 +45,7 @@ class Skill(models.Model):
 
     def __str__(self):
         """Return a human-readable representation of the skill as "<name> (Level <level>)".
-        
+
         Provides a concise summary used in admin interfaces and logs.
         """
         return f"{self.name} (Level {self.level})"
@@ -55,16 +55,16 @@ class Skill(models.Model):
     def add_experience(self, amount):
         """
         Deprecated backward-compatible method to add experience to this Skill.
-        
+
         Emits a DeprecationWarning advising use of SkillService.add_experience(), then:
         - Validates that `amount` is non-negative (raises ValidationError if negative).
         - Increments `experience_points`, capped at MAX_EXPERIENCE to avoid overflow.
         - Repeatedly calls level_up() while experience_points >= experience_to_next_level and level < MAX_LEVEL.
         - Persists changes by saving the model instance.
-        
+
         Parameters:
             amount (int): Number of experience points to add.
-        
+
         Raises:
             ValidationError: If `amount` is negative.
         """
@@ -96,12 +96,12 @@ class Skill(models.Model):
     def level_up(self):
         """
         DEPRECATED: Performs an in-place level up on this Skill instance.
-        
+
         If the current level is below MAX_LEVEL, increments the skill's level by 1,
         reduces experience_points by the current experience_to_next_level, and increases
         experience_to_next_level by 10% (capped at MAX_EXPERIENCE). Does not persist
         the model (caller must save if required).
-        
+
         Use SkillService.level_up (domain layer) instead.
         """
         if self.level >= MAX_LEVEL:

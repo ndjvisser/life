@@ -37,7 +37,7 @@ class Achievement:
     def __post_init__(self):
         """
         Validate invariant constraints after Achievement initialization.
-        
+
         Raises:
             ValueError: If `name` is empty or falsy, or if `experience_reward` is negative.
         """
@@ -50,10 +50,10 @@ class Achievement:
     def to_dict(self) -> Dict[str, Any]:
         """
         Return a dictionary representation of the Achievement suitable for serialization.
-        
+
         The mapping includes all dataclass fields. The `tier` is converted to its string value
         (e.g., "bronze"). `required_skill_level` may be None when not set.
-        
+
         Returns:
             Dict[str, Any]: Dictionary with keys:
                 - achievement_id, name, description, tier, icon,
@@ -86,7 +86,7 @@ class UserAchievement:
     def __post_init__(self):
         """
         Validate that the instance has a non-empty `achievement_id`.
-        
+
         Raises:
             ValueError: If `achievement_id` is falsy or an empty string.
         """
@@ -96,9 +96,9 @@ class UserAchievement:
     def unlock(self, notes: str = "") -> None:
         """
         Mark the UserAchievement as unlocked.
-        
+
         Sets `unlocked_at` to the current UTC datetime and stores the provided notes.
-        
+
         Parameters:
             notes (str): Optional free-form notes to record with the unlock (default: "").
         """
@@ -108,14 +108,14 @@ class UserAchievement:
     def to_dict(self) -> Dict[str, Any]:
         """
         Return a dictionary representation of the UserAchievement suitable for serialization.
-        
+
         The dictionary contains:
         - "user_achievement_id": str | None
         - "user_id": int
         - "achievement_id": str
         - "unlocked_at": ISO 8601 string or None (UTC datetime serialized with datetime.isoformat())
         - "notes": str
-        
+
         Returns:
             Dict[str, Any]: Mapping of field names to their serializable values.
         """

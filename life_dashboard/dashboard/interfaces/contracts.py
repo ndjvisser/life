@@ -21,13 +21,13 @@ class UserRegistrationRequest(BaseModel):
     def validate_username(cls, v):
         """
         Validate that a username contains only letters, digits, or underscores.
-        
+
         Parameters:
             v (str): Candidate username to validate.
-        
+
         Returns:
             str: The validated username (unchanged).
-        
+
         Raises:
             ValueError: If `v` contains characters other than letters, digits, or underscores.
         """

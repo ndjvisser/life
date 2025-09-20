@@ -25,9 +25,9 @@ class ExperiencePoints:
     def __post_init__(self):
         """
         Validate the ExperiencePoints.value invariant after dataclass initialization.
-        
+
         Ensures `value` is an integer, non-negative, and does not exceed 2**31 - 1.
-        
+
         Raises:
             ValueError: If `value` is not an int, is negative, or is greater than 2**31 - 1.
         """
@@ -41,13 +41,13 @@ class ExperiencePoints:
     def add(self, points: int) -> "ExperiencePoints":
         """
         Return a new ExperiencePoints representing this value plus the given points.
-        
+
         Parameters:
             points (int): Positive number of points to add.
-        
+
         Returns:
             ExperiencePoints: New instance with the increased value; result is capped at 2**31 - 1.
-        
+
         Raises:
             ValueError: If `points` is not a positive integer.
         """
@@ -60,9 +60,9 @@ class ExperiencePoints:
     def calculate_level(self) -> int:
         """
         Return the user level derived from experience points.
-        
+
         Level is computed as (value // 1000) + 1 and is at minimum 1.
-        
+
         Returns:
             int: Calculated level.
         """
@@ -78,7 +78,7 @@ class UserLevel:
     def __post_init__(self):
         """
         Validate invariants for a UserLevel instance.
-        
+
         Ensures the `value` field is an integer between 1 and 1000 inclusive.
         Raises ValueError if `value` is not an int, is less than 1, or exceeds 1000.
         """
@@ -93,12 +93,12 @@ class UserLevel:
     def from_experience(cls, experience_points: int) -> "UserLevel":
         """
         Create a UserLevel from total experience points.
-        
+
         Computes level as max(1, (experience_points // 1000) + 1) where each 1000 points increases the level by one, then returns a UserLevel instance for that level.
-        
+
         Parameters:
             experience_points (int): Total accumulated experience points.
-        
+
         Returns:
             UserLevel: Instance representing the derived level.
         """
@@ -108,9 +108,9 @@ class UserLevel:
     def experience_threshold(self) -> int:
         """
         Return the inclusive minimum experience points required for this level.
-        
+
         For level N this is (N - 1) * 1000; for level 1 this returns 0.
-        
+
         Returns:
             int: Inclusive lower experience threshold (number of experience points).
         """
@@ -119,7 +119,7 @@ class UserLevel:
     def next_level_threshold(self) -> int:
         """
         Return the cumulative experience required to reach the next level.
-        
+
         Returns:
             int: Experience point threshold for the next level (current level value * 1000).
         """
@@ -141,13 +141,13 @@ class ProfileUpdateData:
         # Validate string lengths
         """
         Validate field length invariants for ProfileUpdateData.
-        
+
         Ensures optional string fields do not exceed their maximum allowed lengths:
         - first_name, last_name: max 150 characters
         - email: max 254 characters
         - bio: max 500 characters
         - location: max 30 characters
-        
+
         Raises:
             ValueError: if any provided field is longer than its allowed maximum.
         """
@@ -165,7 +165,7 @@ class ProfileUpdateData:
     def to_dict(self) -> dict:
         """
         Return a dictionary of the instance's fields excluding any with value None.
-        
+
         The returned dict maps attribute names to their values and is a shallow copy of the instance state; attributes with value None are omitted.
         Returns:
             dict: Mapping of field names to their non-None values.

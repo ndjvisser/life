@@ -32,7 +32,7 @@ class ConsentService:
     ):
         """
         Initialize the ConsentService with repository dependencies.
-        
+
         Stores the consent and processing activity repositories for use by service methods that manage consents and log related activities.
         """
         self.consent_repo = consent_repo
@@ -48,16 +48,16 @@ class ConsentService:
     ) -> ConsentRecord:
         """
         Grant consent for a user for a given processing purpose and set of data categories.
-        
+
         If an existing consent for (user_id, purpose) exists, its data categories are replaced and the consent is marked/granted; otherwise a new consent record is created and marked granted. A DataProcessingActivity with legal basis "consent" is logged for the action.
-        
+
         Parameters:
             user_id: The identifier of the user granting consent.
             purpose: The data processing purpose for which consent is granted.
             data_categories: The set of data categories covered by the consent.
             ip_address: Optional IP address associated with the grant event.
             user_agent: Optional user agent string associated with the grant event.
-        
+
         Returns:
             The persisted ConsentRecord after creation or update.
         """
@@ -99,7 +99,7 @@ class ConsentService:
     ) -> Optional[ConsentRecord]:
         """
         Withdraw a user's consent for the given processing purpose.
-        
+
         If a consent record for the user and purpose exists, marks it withdrawn, persists the change, and logs a corresponding DataProcessingActivity. Returns the updated ConsentRecord, or None if no matching consent was found.
         """
         consent = self.consent_repo.get_by_user_and_purpose(user_id, purpose)
@@ -129,7 +129,7 @@ class ConsentService:
     ) -> bool:
         """
         Return True if the user has an existing, currently valid consent for the given purpose that covers the specified data category.
-        
+
         Checks the repository for a consent record for (user_id, purpose); returns False if none exists. If a record is found, returns True only when the record is both valid and explicitly covers the provided data_category.
         """
         consent = self.consent_repo.get_by_user_and_purpose(user_id, purpose)
@@ -146,7 +146,7 @@ class ConsentService:
     def refresh_expired_consents(self) -> int:
         """
         Mark consents that have reached their expiry as EXPIRED and persist the changes.
-        
+
         Retrieves candidates from the consent repository, sets each consent's status to ConsentStatus.EXPIRED only if its `is_expired()` check returns True, saves the updated record, and returns the number of consents updated.
         """
         expired_consents = self.consent_repo.get_expired_consents()
@@ -172,7 +172,7 @@ class PrivacyService:
     ):
         """
         Create a PrivacyService and store repository and service dependencies.
-        
+
         Initializes the service with a privacy settings repository, a processing activity repository, and a ConsentService which the service uses to evaluate consents and log processing activities.
         """
         self.settings_repo = settings_repo
@@ -182,13 +182,13 @@ class PrivacyService:
     def get_or_create_privacy_settings(self, user_id: int) -> PrivacySettings:
         """
         Return the PrivacySettings for a user, creating and persisting a default (all features disabled) settings record if none exists.
-        
+
         Defaults created:
         - analytics_enabled=False
         - ai_insights_enabled=False
         - social_features_enabled=False
         - marketing_enabled=False
-        
+
         Returns:
             PrivacySettings: The existing or newly created privacy settings for the user.
         """
@@ -212,7 +212,7 @@ class PrivacyService:
     ) -> PrivacySettings:
         """
         Update a single privacy setting for a user.
-        
+
         Ensures the user's PrivacySettings exist (creating defaults if needed), updates the named setting to the provided value, persists the change, and logs a DataProcessingActivity recording the settings update. Returns the saved PrivacySettings instance.
         """
         settings = self.get_or_create_privacy_settings(user_id)
@@ -238,17 +238,17 @@ class PrivacyService:
     ) -> bool:
         """
         Return True if the given data category may be processed for the user and purpose.
-        
+
         First requires an active, applicable consent for (user_id, purpose, data_category).
         If consent is present, privacy settings are consulted: for CORE_FUNCTIONALITY the method
         returns True when consent exists; for other purposes the corresponding settings flag
         (e.g., analytics_enabled, marketing_enabled) must be enabled.
-        
+
         Parameters:
             user_id: ID of the user whose consent and settings are checked.
             purpose: Processing purpose being evaluated.
             data_category: Specific data category being requested for processing.
-        
+
         Returns:
             bool: True when processing is allowed (consent + settings rules), False otherwise.
         """
@@ -288,9 +288,9 @@ class PrivacyService:
     ) -> DataProcessingActivity:
         """
         Create and record a DataProcessingActivity for the given user and return the persisted activity.
-        
+
         The activity is created with the provided purpose, data categories, processing type, and context, is recorded with a legal basis of `"consent"`, and is persisted via the activity repository.
-        
+
         Parameters:
             user_id (int): ID of the user the activity concerns.
             purpose (DataProcessingPurpose): Purpose of the processing.
@@ -298,7 +298,7 @@ class PrivacyService:
             processing_type (str): High-level type of processing performed (e.g., "read", "export", "modify").
             context (str): Freeform context or reason for the processing (e.g., endpoint or operation name).
             request_id (Optional[str]): Optional external request or correlation identifier.
-        
+
         Returns:
             DataProcessingActivity: The activity record returned by the repository after logging.
         """
@@ -317,7 +317,7 @@ class PrivacyService:
     def get_user_activity_summary(self, user_id: int, days: int = 30) -> Dict[str, Any]:
         """
         Return a summary of the user's data processing activities for the past `days` days.
-        
+
         The summary is returned as a dictionary containing aggregated activity information (suitable for reporting or UI display). `days` defaults to 30.
         """
         return self.activity_repo.get_activity_summary(user_id, days)
@@ -335,7 +335,7 @@ class DataSubjectService:
     ):
         """
         Initialize the DataSubjectService.
-        
+
         Stores repository dependencies used to create and process data subject requests, manage privacy settings and consents, and log processing activities.
         """
         self.request_repo = request_repo
@@ -348,14 +348,14 @@ class DataSubjectService:
     ) -> DataSubjectRequest:
         """
         Create and persist a data export request for a user.
-        
+
         If `data_categories` is omitted or empty, the request will include all defined DataCategory values.
         Returns the created DataSubjectRequest as persisted by the request repository.
-        
+
         Parameters:
             user_id: The ID of the user requesting their data export.
             data_categories: Optional set of DataCategory values to include in the export; when None, all categories are included.
-        
+
         Returns:
             The persisted DataSubjectRequest instance.
         """
@@ -371,9 +371,9 @@ class DataSubjectService:
     def create_data_deletion_request(self, user_id: int) -> DataSubjectRequest:
         """
         Create and persist a data deletion request for the given user that covers all data categories.
-        
+
         The created DataSubjectRequest has type "delete" and its `data_categories` set contains every DataCategory. The request is saved via the request repository and the persisted object is returned.
-        
+
         Returns:
             DataSubjectRequest: The persisted deletion request.
         """
@@ -390,14 +390,14 @@ class DataSubjectService:
     ) -> Dict[str, Any]:
         """
         Process a data export data subject request: mark it as processing, collect the requested user data, mark the request completed, and persist state changes.
-        
+
         Parameters:
             request_id (str): Identifier of the data subject request to process.
             processor_id (int): Internal ID of the actor or worker handling the request.
-        
+
         Returns:
             Dict[str, Any]: Collected export data for the request (includes requested data categories, consents, activities, and any included profile data).
-        
+
         Raises:
             ValueError: If no request exists for the given request_id.
         """
@@ -420,14 +420,14 @@ class DataSubjectService:
     def process_deletion_request(self, request_id: str, processor_id: int) -> bool:
         """
         Process a data deletion request: mark it as processing, delete the user's data, mark the request completed, and persist updates.
-        
+
         Parameters:
             request_id (str): Identifier of the data subject request to process.
             processor_id (int): Identifier of the actor (e.g., staff or system) performing the processing.
-        
+
         Returns:
             bool: True if the request was processed successfully.
-        
+
         Raises:
             ValueError: If no request with the given `request_id` exists.
         """
@@ -452,13 +452,13 @@ class DataSubjectService:
     ) -> Dict[str, Any]:
         """
         Assemble an export payload containing a user's requested data categories.
-        
+
         If DataCategory.BASIC_PROFILE is requested and settings exist, includes the user's privacy settings. Always includes all consent records for the user and up to 1000 processing activity records.
-        
+
         Parameters:
             user_id (int): ID of the user whose data is being collected.
             data_categories (Set[DataCategory]): Categories of data to include in the export.
-        
+
         Returns:
             Dict[str, Any]: Export payload with the following top-level keys:
                 - user_id: the requested user_id
@@ -495,12 +495,12 @@ class DataSubjectService:
     def _delete_user_data(self, user_id: int) -> int:
         """
         Delete all stored privacy-related data for a user.
-        
+
         Deletes the user's privacy settings, consent records, and data processing activities via the configured repositories and returns the total number of records/items removed.
-        
+
         Parameters:
             user_id (int): ID of the user whose data will be deleted.
-        
+
         Returns:
             int: Total count of deleted items across settings, consents, and activities.
         """
@@ -525,10 +525,10 @@ class DataSubjectService:
     def get_overdue_requests(self, days_limit: int = 30) -> List[DataSubjectRequest]:
         """
         Return data subject requests that are overdue.
-        
+
         Parameters:
             days_limit (int): Maximum age in days; requests older than this are considered overdue (default 30).
-        
+
         Returns:
             List[DataSubjectRequest]: All requests from the repository considered overdue.
         """

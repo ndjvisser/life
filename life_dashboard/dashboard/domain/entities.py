@@ -27,15 +27,15 @@ class UserProfile:
     def add_experience(self, points: int) -> Tuple[int, bool]:
         """
         Add positive experience points to the profile, update the level, and indicate if a level-up occurred.
-        
+
         Points are validated as a positive integer and accumulated up to a hard cap (2**31 - 1) to prevent overflow. Level is recomputed as max(1, (experience_points // 1000) + 1) — i.e., 1000 XP per level.
-        
+
         Args:
             points (int): Positive experience points to add.
-        
+
         Returns:
             Tuple[int, bool]: (new_level, level_up_occurred) where `level_up_occurred` is True if the level increased.
-        
+
         Raises:
             ValueError: If `points` is not a positive integer.
         """
@@ -60,7 +60,7 @@ class UserProfile:
     def update_profile(self, **kwargs) -> None:
         """
         Update allowed profile fields from keyword arguments.
-        
+
         Only the following fields may be updated: 'first_name', 'last_name', 'email', 'bio', 'location', and 'birth_date'.
         Each provided allowed field is assigned directly to the corresponding attribute on the instance.
         If any keyword name is not in the allowed set a ValueError is raised and no further fields are processed.
@@ -91,7 +91,7 @@ class UserProfile:
     def experience_to_next_level(self) -> int:
         """
         Return the remaining experience points required to reach the next level.
-        
+
         Calculates the next-level threshold as `level * 1000` and returns the non-negative difference
         between that threshold and the current `experience_points`. Result is floored at 0 (already at
         or above next level yields 0).
@@ -103,7 +103,7 @@ class UserProfile:
     def level_progress_percentage(self) -> float:
         """
         Return the user's progress toward the next level as a percentage.
-        
+
         Calculates progress using 1000 XP per level: the percentage of experience gained
         within the current level's range. The result is capped at 100.0. If the
         computed level range is zero (shouldn't occur in normal progression), returns

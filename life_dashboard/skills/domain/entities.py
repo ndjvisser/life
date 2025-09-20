@@ -20,7 +20,7 @@ class SkillCategory:
     def __post_init__(self):
         """
         Validate the dataclass after initialization.
-        
+
         Ensures the category has a non-empty `name`; raises ValueError if the name is missing or empty.
         """
         if not self.name:
@@ -49,12 +49,12 @@ class Skill:
     def __post_init__(self):
         """
         Validate Skill fields after initialization.
-        
+
         Ensures the required invariants for a newly created Skill:
         - `name` must be non-empty.
         - `level` must be at least 1.
         - `experience_points` must not be negative.
-        
+
         Raises:
             ValueError: If any validation fails.
         """
@@ -70,13 +70,13 @@ class Skill:
     def add_experience(self, amount: int) -> Tuple[int, bool]:
         """
         Add experience to the skill, update timestamps, and handle level ups.
-        
+
         Parameters:
             amount (int): Positive number of experience points to add; raises ValueError if <= 0.
-        
+
         Returns:
             Tuple[int, bool]: (current_level, level_up_occurred) where `level_up_occurred` is True if the skill's level increased.
-        
+
         Notes:
             - Total experience is capped at 2^31 - 1 to avoid integer overflow.
             - The method will repeatedly call level_up() while experience meets or exceeds the threshold and the level is below the maximum (100).
@@ -108,13 +108,13 @@ class Skill:
     def level_up(self) -> None:
         """
         Increment the skill's level by one and adjust experience counters.
-        
+
         If the skill is already at the maximum level (100), this is a no-op.
         Otherwise this method:
         - Increments `level` by 1.
         - Subtracts the current `experience_to_next_level` from `experience_points`.
         - Increases `experience_to_next_level` by 10%, capped at 2**31 - 1 to avoid integer overflow.
-        
+
         Modifies the instance in place; returns None.
         """
         max_level = 100
@@ -132,7 +132,7 @@ class Skill:
     def get_progress_percentage(self) -> float:
         """
         Return the current progress toward the next level as a percentage.
-        
+
         If `experience_to_next_level` is zero this returns 100.0. The result is capped at 100.0 and represents
         (experience_points / experience_to_next_level) * 100.
         """
@@ -146,9 +146,9 @@ class Skill:
     def to_dict(self) -> Dict[str, Any]:
         """
         Return a dictionary representation of the Skill suitable for serialization.
-        
+
         The dictionary includes identifiers, core attributes, derived progress, and ISO-8601 timestamp strings.
-        
+
         Returns:
             Dict[str, Any]: {
                 "skill_id": Optional[str],

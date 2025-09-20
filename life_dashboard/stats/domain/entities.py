@@ -33,7 +33,7 @@ class CoreStat:
     def __post_init__(self):
         """
         Run post-initialization checks and compute derived state.
-        
+
         Performs validation of all core stat fields (raises ValueError if any stat is invalid) and initializes the entity's level based on the current experience_points.
         """
         self._validate_stats()
@@ -42,7 +42,7 @@ class CoreStat:
     def _validate_stats(self):
         """
         Validate that each core stat is an integer in the inclusive range 1–100.
-        
+
         Checks the six core stat attributes: strength, endurance, agility, intelligence, wisdom, and charisma.
         Raises:
             ValueError: if any stat is not an int or is outside 1..100.
@@ -63,7 +63,7 @@ class CoreStat:
     def _calculate_level(self):
         """
         Compute and set the object's level from experience points.
-        
+
         Uses integer division to convert experience_points into levels with 1 level per 1000 XP and a minimum level of 1:
         level = max(1, (experience_points // 1000) + 1). Updates self.level in-place.
         """
@@ -72,17 +72,17 @@ class CoreStat:
     def update_stat(self, stat_name: str, value: int) -> int:
         """
         Update a single core stat for this CoreStat instance.
-        
+
         Valid stat names: "strength", "endurance", "agility", "intelligence", "wisdom", "charisma".
         The new value must be an integer in the range [1, 100]. On success the stat is set, updated_at is set to the current UTC time, and the new value is returned.
-        
+
         Parameters:
             stat_name (str): Name of the stat to update.
             value (int): New stat value (1–100).
-        
+
         Returns:
             int: The updated stat value.
-        
+
         Raises:
             ValueError: If `stat_name` is not one of the valid stats or if `value` is not an int in [1, 100].
         """
@@ -108,15 +108,15 @@ class CoreStat:
     def add_experience(self, points: int) -> Tuple[int, bool]:
         """
         Increment the object's experience points, recalculate level, and indicate if a level-up occurred.
-        
+
         Adds the given positive integer `points` to `experience_points` (capped at 2**31 - 1 to prevent overflow), updates the `level` based on the new total, and sets `updated_at` to the current UTC time.
-        
+
         Parameters:
             points (int): Positive integer number of experience points to add.
-        
+
         Returns:
             Tuple[int, bool]: (new_level, level_up_occurred) where `new_level` is the recalculated level and `level_up_occurred` is True if the level increased.
-        
+
         Raises:
             ValueError: If `points` is not a positive integer.
         """
@@ -141,7 +141,7 @@ class CoreStat:
     def get_stat_total(self) -> int:
         """
         Return the sum of the six core stats (strength, endurance, agility, intelligence, wisdom, charisma).
-        
+
         Returns:
             int: Total of all core stat values.
         """
@@ -157,7 +157,7 @@ class CoreStat:
     def get_stat_average(self) -> float:
         """
         Return the arithmetic mean of the six core stats.
-        
+
         Returns:
             float: Average (mean) of strength, endurance, agility, intelligence, wisdom, and charisma.
         """
@@ -166,7 +166,7 @@ class CoreStat:
     def to_dict(self) -> Dict[str, Any]:
         """
         Return a dictionary representation of the CoreStat suitable for serialization.
-        
+
         The mapping includes all core fields and derived aggregates:
         - user_id (int)
         - strength, endurance, agility, intelligence, wisdom, charisma (int)
@@ -212,7 +212,7 @@ class LifeStat:
     def __post_init__(self):
         """
         Post-initialization: normalize and validate category and numeric values.
-        
+
         Calls _validate_category() to enforce and normalize the category to one of
         "health", "wealth", or "relationships" (stored lowercase), and calls
         _validate_value() to ensure `value` (and `target` when present) are numeric
@@ -224,7 +224,7 @@ class LifeStat:
     def _validate_category(self):
         """
         Validate that the instance's category is one of the allowed values and normalize it to lowercase.
-        
+
         Checks that `self.category` (case-insensitive) is one of: "health", "wealth", or "relationships".
         On success, stores the normalized lowercase category back to `self.category`.
         Raises:
@@ -238,7 +238,7 @@ class LifeStat:
     def _validate_value(self):
         """
         Validate and normalize the LifeStat value and optional target.
-        
+
         Ensures `value` is numeric (int, float, or Decimal) and converts int/float inputs to Decimal (using string conversion to preserve precision). If `target` is provided, performs the same validation and conversion. Raises ValueError if either `value` or `target` is not a numeric type.
         """
         if not isinstance(self.value, (int, float, Decimal)):
@@ -256,13 +256,13 @@ class LifeStat:
     def update_value(self, new_value: Decimal, notes: str = "") -> Decimal:
         """
         Update the stat's value.
-        
+
         Accepts a Decimal or a numeric type (int/float — converted to Decimal), sets the new value, replaces notes if provided, updates last_updated to the current UTC time, and returns the stored Decimal value.
-        
+
         Parameters:
             new_value: New value for the stat; ints and floats will be converted to Decimal.
             notes: Optional notes to replace the existing notes.
-        
+
         Returns:
             Decimal: The updated value stored on the instance.
         """
@@ -279,7 +279,7 @@ class LifeStat:
     def set_target(self, target_value: Optional[Decimal]) -> None:
         """
         Set or clear the target value for this LifeStat.
-        
+
         If a numeric (int or float) is provided, it is converted to Decimal. Passing None clears the target. Updates the instance's `target` and sets `last_updated` to the current UTC time.
         """
         if target_value is not None:
@@ -292,7 +292,7 @@ class LifeStat:
     def progress_percentage(self) -> float:
         """
         Return the current value as a percentage of the target.
-        
+
         Returns 0.0 if no target is set or the target is zero. Otherwise returns (value / target) * 100 capped at 100.0 and rounded to 2 decimal places.
         """
         if self.target is None or self.target == 0:
@@ -304,7 +304,7 @@ class LifeStat:
     def is_target_achieved(self) -> bool:
         """
         Return True if a target is set and the current value is greater than or equal to the target.
-        
+
         Returns:
             bool: True when `target` is not None and `value >= target`; False if no target is set or the value is below the target.
         """
@@ -315,7 +315,7 @@ class LifeStat:
     def distance_to_target(self) -> Optional[Decimal]:
         """
         Return the non-negative distance remaining to the target or None if no target is set.
-        
+
         Returns:
             Optional[Decimal]: None when `target` is not provided; otherwise the non-negative `target - value` as a Decimal (returns 0 if the target has been met or exceeded).
         """
@@ -326,7 +326,7 @@ class LifeStat:
     def to_dict(self) -> Dict[str, Any]:
         """
         Return a dictionary representation of the LifeStat suitable for serialization.
-        
+
         The returned dict contains primitive types (floats, strings, booleans, datetimes) and derived fields:
         - value and target are converted to floats (target is None if unset).
         - progress_percentage: percentage toward target (0.0 if no target).
@@ -367,7 +367,7 @@ class StatHistory:
     def __post_init__(self):
         """
         Post-initialization: ensure timestamp and numeric fields are normalized and compute change_amount.
-        
+
         If `timestamp` is None, set it to the current UTC time. Convert `old_value` and `new_value` from int/float to Decimal (preserving numeric representation) and then set `change_amount` to `new_value - old_value`. This mutates the instance fields.
         """
         if self.timestamp is None:
@@ -390,7 +390,7 @@ class StatHistory:
     def is_decrease(self) -> bool:
         """
         Return True if this history entry represents a decrease (change_amount < 0).
-        
+
         Zero change is not considered a decrease.
         """
         return self.change_amount < 0
@@ -399,7 +399,7 @@ class StatHistory:
     def percentage_change(self) -> Optional[float]:
         """
         Return the percentage change from old_value to new_value as a float.
-        
+
         If old_value is zero, returns None to indicate percentage change is undefined.
         The returned value is (change_amount / old_value) * 100 and may be negative for decreases.
         """
@@ -410,7 +410,7 @@ class StatHistory:
     def to_dict(self) -> Dict[str, Any]:
         """
         Return a serializable dictionary representation of the StatHistory.
-        
+
         All Decimal numeric fields are converted to floats for JSON-friendly serialization. The returned dict contains:
         - user_id (int)
         - stat_type (str)

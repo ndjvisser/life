@@ -17,7 +17,7 @@ class ProfileQueries:
     def get_profile_summary(user_id: int) -> Optional[Dict[str, Any]]:
         """
         Return a dictionary with a dashboard-ready summary for the given user's profile or None if no profile exists.
-        
+
         The returned dict contains selected user fields, profile attributes and derived metrics:
         - user_id, username, full_name, first_name, last_name, email
         - bio, location, birth_date
@@ -25,7 +25,7 @@ class ProfileQueries:
         - experience_to_next_level: non-negative points remaining to reach next level
         - level_progress_percentage: 0.0–100.0 float progress toward the next level
         - created_at, updated_at
-        
+
         Returns:
             Optional[dict]: Profile summary dictionary or None when the UserProfile is not found.
         """
@@ -59,12 +59,12 @@ class ProfileQueries:
     def get_user_basic_info(user_id: int) -> Optional[Dict[str, Any]]:
         """
         Return a dictionary of basic public fields for the given user or None if the user does not exist.
-        
+
         The returned mapping contains:
         - id, username, email
         - first_name, last_name, full_name (first + last, trimmed)
         - is_active, date_joined
-        
+
         Returns:
             Optional[Dict[str, Any]]: User info dict or None when no User with the given id exists.
         """
@@ -87,10 +87,10 @@ class ProfileQueries:
     def get_experience_leaderboard(limit: int = 10) -> QuerySet:
         """
         Return a QuerySet of top UserProfile records ordered by descending experience points.
-        
+
         Parameters:
             limit (int): Maximum number of profiles to return (default 10).
-        
+
         Returns:
             QuerySet: Slice of UserProfile objects (select_related('user')) ordered by `-experience_points`.
         """
@@ -102,13 +102,13 @@ class ProfileQueries:
     def get_level_leaderboard(limit: int = 10) -> QuerySet:
         """
         Return the top user profiles ordered by level (ties broken by experience points).
-        
+
         Returns a QuerySet of UserProfile objects (select_related("user")) ordered by descending
         level and then descending experience_points, limited to `limit` results.
-        
+
         Parameters:
             limit (int): Maximum number of profiles to return (default 10).
-        
+
         Returns:
             QuerySet: QuerySet of UserProfile records with related User prefetched.
         """
@@ -120,13 +120,13 @@ class ProfileQueries:
     def search_profiles(query: str, limit: int = 20) -> QuerySet:
         """
         Return profiles whose username contains the given query (case-insensitive).
-        
+
         Performs a case-insensitive substring match against the related User.username, orders results by username, and limits the returned queryset to `limit`. The queryset uses select_related("user") so each UserProfile contains its related User without additional queries.
-        
+
         Parameters:
             query (str): Substring to search for within usernames (case-insensitive).
             limit (int): Maximum number of profiles to return (default: 20).
-        
+
         Returns:
             QuerySet: A queryset of UserProfile instances (with related User selected), ordered by user.username and truncated to `limit`.
         """
@@ -140,14 +140,14 @@ class ProfileQueries:
     def _calculate_level_progress(profile: UserProfile) -> float:
         """
         Return the percentage progress of a profile's experience toward the next level.
-        
+
         Calculates progress based on thresholds where each level spans 1000 experience points
         (i.e., level N ranges from (N-1)*1000 to N*1000). Results are clamped to a maximum of 100.0.
         If the computed level range is zero, the function returns 100.0.
-        
+
         Parameters:
             profile (UserProfile): Profile instance; uses `profile.level` and `profile.experience_points`.
-        
+
         Returns:
             float: Progress percentage in the range [0.0, 100.0].
         """
