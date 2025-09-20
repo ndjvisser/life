@@ -6,9 +6,9 @@ without violating bounded context boundaries. Only read-only operations
 are allowed to maintain context independence.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 
 class CrossContextQueries:
@@ -21,7 +21,7 @@ class CrossContextQueries:
     """
 
     @staticmethod
-    def get_user_summary(user_id: int) -> Optional[Dict[str, Any]]:
+    def get_user_summary(user_id: int) -> dict[str, Any] | None:
         """
         Build a read-only summary of a user suitable for cross-context consumption.
 
@@ -47,6 +47,7 @@ class CrossContextQueries:
                   wisdom, charisma, level, experience_points
         """
         try:
+            User = get_user_model()
             user = User.objects.get(id=user_id)
 
             # Get basic user info
@@ -99,11 +100,11 @@ class CrossContextQueries:
 
             return summary
 
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             return None
 
     @staticmethod
-    def get_user_activity_counts(user_id: int) -> Dict[str, int]:
+    def get_user_activity_counts(user_id: int) -> dict[str, int]:
         """
         Return counts of the user's activities across bounded contexts for dashboard use.
 
@@ -127,6 +128,7 @@ class CrossContextQueries:
         }
 
         try:
+            User = get_user_model()
             user = User.objects.get(id=user_id)
 
             # Quest counts
@@ -152,13 +154,13 @@ class CrossContextQueries:
             if hasattr(user, "skills"):
                 counts["skills"] = user.skills.count()
 
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             pass
 
         return counts
 
     @staticmethod
-    def get_recent_activity(user_id: int, limit: int = 10) -> List[Dict[str, Any]]:
+    def get_recent_activity(user_id: int, limit: int = 10) -> list[dict[str, Any]]:
         """
         Build a unified, read-only recent activity feed for a user across available contexts.
 
@@ -184,6 +186,7 @@ class CrossContextQueries:
         activities = []
 
         try:
+            User = get_user_model()
             user = User.objects.get(id=user_id)
 
             # Recent quest completions
@@ -256,11 +259,11 @@ class CrossContextQueries:
             activities.sort(key=lambda x: x["timestamp"], reverse=True)
             return activities[:limit]
 
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             return []
 
     @staticmethod
-    def get_context_health_check() -> Dict[str, bool]:
+    def get_context_health_check() -> dict[str, bool]:
         """
         Return a mapping of bounded context names to booleans indicating whether each context's models module is importable.
 
@@ -303,7 +306,7 @@ class CrossContextQueries:
         return health
 
     @staticmethod
-    def get_user_preferences(user_id: int) -> Dict[str, Any]:
+    def get_user_preferences(user_id: int) -> dict[str, Any]:
         """
         Return a read-only, safe dictionary of user preferences suitable for cross-context sharing.
 
@@ -327,6 +330,7 @@ class CrossContextQueries:
         }
 
         try:
+            User = get_user_model()
             user = User.objects.get(id=user_id)
 
             # Add any user-specific preferences from profile
@@ -339,14 +343,14 @@ class CrossContextQueries:
                 if user.profile.birth_date:
                     preferences["birth_date"] = user.profile.birth_date
 
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             pass
 
         return preferences
 
 
 # Convenience functions for common cross-context queries
-def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
+def get_user_dashboard_data(user_id: int) -> dict[str, Any]:
     """
     Assemble and return all read-only data required for a user's main dashboard.
 
@@ -364,7 +368,7 @@ def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
     }
 
 
-def get_user_basic_info(user_id: int) -> Optional[Dict[str, Any]]:
+def get_user_basic_info(user_id: int) -> dict[str, Any] | None:
     """
     Return a compact, read-only subset of a user's public information suitable for cross-context sharing.
 

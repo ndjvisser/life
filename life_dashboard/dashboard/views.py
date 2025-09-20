@@ -79,9 +79,15 @@ def register(request):
                 login(request, user)
 
                 return redirect("dashboard:dashboard")
-            except Exception as e:
-                logger.error("Error during user creation: %s", str(e))
-                messages.error(request, f"Error during registration: {str(e)}")
+            except Exception:
+                logger.exception(
+                    "Error during user registration for username: %s",
+                    form.cleaned_data.get("username", "unknown"),
+                )
+                messages.error(
+                    request,
+                    "An error occurred during registration. Please try again or contact support.",
+                )
                 # Let the atomic block handle rollback implicitly by
                 # re-rendering the form
         else:
@@ -177,9 +183,12 @@ def profile(request):
                 request, "Profile updated successfully", extra_tags="profile"
             )
             return redirect("dashboard:profile")
-        except Exception as e:
-            logger.error("Error updating profile: %s", str(e))
-            messages.error(request, f"Error updating profile: {str(e)}")
+        except Exception:
+            logger.exception("Error updating profile for user %s", user.username)
+            messages.error(
+                request,
+                "An error occurred while updating your profile. Please try again or contact support.",
+            )
 
     # Create form with initial data (still using Django form for now)
     user_profile, _ = UserProfile.objects.get_or_create(user=user)

@@ -56,14 +56,19 @@ class ProfileQueries:
             return None
 
     @staticmethod
-    def get_user_basic_info(user_id: int) -> dict[str, Any] | None:
+    def get_dashboard_user_basic_info(user_id: int) -> dict[str, Any] | None:
         """
-        Return a dictionary of basic public fields for the given user or None if the user does not exist.
+        Return a dictionary of basic user fields for dashboard internal use only.
+
+        WARNING: This function is for dashboard context internal use only and should NOT
+        be used across contexts as it may expose PII. For cross-context user info,
+        use life_dashboard.shared.queries.get_user_basic_info() instead.
 
         The returned mapping contains:
-        - id, username, email
+        - id, username (safe for sharing)
         - first_name, last_name, full_name (first + last, trimmed)
-        - is_active, date_joined
+        - is_active, date_joined (administrative info)
+        - email (PII - dashboard internal use only)
 
         Returns:
             Optional[Dict[str, Any]]: User info dict or None when no User with the given id exists.
@@ -74,7 +79,7 @@ class ProfileQueries:
             return {
                 "id": user.id,
                 "username": user.username,
-                "email": user.email,
+                "email": user.email,  # PII - dashboard internal use only
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "full_name": f"{user.first_name} {user.last_name}".strip(),
