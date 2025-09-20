@@ -17,6 +17,12 @@ from life_dashboard.dashboard.models import UserProfile
 from life_dashboard.journals.models import JournalEntry
 from life_dashboard.quests.models import Habit, Quest
 
+from .domain.value_objects import ProfileUpdateData
+from .queries.profile_queries import ProfileQueries
+
+# Import new service layer
+from .services import get_user_service
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,18 +49,21 @@ def register(request):
         if form.is_valid():
             logger.debug("Form is valid, creating user")
             try:
-                # Create user first
-                user = form.save()
-                logger.debug("User created: %s", user.username)
-
-                # Ensure user profile exists (signals may already create it)
-                _, _created = UserProfile.objects.get_or_create(user=user)
-                logger.debug(
-                    "User profile %s",
-                    "created" if _created else "already existed",
+                # Use service layer for user registration
+                user_service = get_user_service()
+                user_id, profile = user_service.register_user(
+                    username=form.cleaned_data["username"],
+                    email=form.cleaned_data["email"],
+                    password=form.cleaned_data["password1"],
+                    first_name=form.cleaned_data.get("first_name", ""),
+                    last_name=form.cleaned_data.get("last_name", ""),
                 )
+                logger.debug("User created via service: %s", profile.username)
 
-                # Log in the user
+                # Get Django user for login
+                from django.contrib.auth.models import User
+
+                user = User.objects.get(id=user_id)
                 login(request, user)
 
                 return redirect("dashboard:dashboard")
@@ -102,7 +111,12 @@ def logout_view(request):
 @login_required
 def profile(request):
     user = request.user
-    user_profile, created = UserProfile.objects.get_or_create(user=user)
+
+    # Use queries for read-only data
+    profile_data = ProfileQueries.get_profile_summary(user.id)
+    if not profile_data:
+        messages.error(request, "Profile not found")
+        return redirect("dashboard:dashboard")
 
     # Safely get or create core stats
     try:
@@ -117,22 +131,36 @@ def profile(request):
 
     if request.method == "POST":
         logger.debug("Processing profile update POST request")
-        # Update User model fields - single source of truth
-        user.first_name = request.POST.get("first_name", user.first_name)
-        user.last_name = request.POST.get("last_name", user.last_name)
-        user.email = request.POST.get("email", user.email)
-        user.save()
-        logger.debug("Updated User model: %s %s", user.first_name, user.last_name)
+        try:
+            # Use service layer for profile updates
+            user_service = get_user_service()
+            update_data = ProfileUpdateData(
+                first_name=request.POST.get("first_name"),
+                last_name=request.POST.get("last_name"),
+                email=request.POST.get("email"),
+                bio=request.POST.get("bio", ""),
+                location=request.POST.get("location", ""),
+            )
 
-        messages.success(request, "Profile updated successfully", extra_tags="profile")
-        return redirect("dashboard:profile")
+            updated_profile = user_service.update_profile(user.id, update_data)
+            logger.debug("Updated profile via service: %s", updated_profile.username)
 
-    # Create form with initial data
+            messages.success(
+                request, "Profile updated successfully", extra_tags="profile"
+            )
+            return redirect("dashboard:profile")
+        except Exception as e:
+            logger.error("Error updating profile: %s", str(e))
+            messages.error(request, f"Error updating profile: {str(e)}")
+
+    # Create form with initial data (still using Django form for now)
+    user_profile, _ = UserProfile.objects.get_or_create(user=user)
     form = UserProfileForm(instance=user_profile)
 
     context = {
         "user": user,
         "user_profile": user_profile,
+        "profile_data": profile_data,  # Add structured profile data
         "core_stats": core_stats,
         "achievements": achievements,
         "recent_entries": recent_entries,

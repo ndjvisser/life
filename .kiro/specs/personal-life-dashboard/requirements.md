@@ -189,7 +189,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 
 ### Requirement 16
 
-**User Story:** As a user, I want my personal data to be secure and private, so that I can trust the system with sensitive life information.
+**User Story:** As a user, I want my personal data to be secure and private with granular control over how it's used, so that I can trust the system with sensitive life information while maintaining full autonomy over my data.
 
 #### Acceptance Criteria
 
@@ -198,6 +198,45 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 3. WHEN a user requests data export THEN the system SHALL provide complete data export in JSON format within 24 hours
 4. WHEN a user requests account deletion THEN the system SHALL permanently delete all personal data within 30 days
 5. WHEN accessing external APIs THEN the system SHALL use OAuth2 flows and never store plain-text passwords
+6. WHEN collecting personal data THEN the system SHALL implement explicit consent mechanisms with clear purpose statements
+7. WHEN processing behavioral data THEN the system SHALL provide granular privacy controls for analytics, AI features, and social sharing
+8. WHEN generating insights THEN the system SHALL allow users to opt-out of AI analysis while maintaining core functionality
+9. WHEN sharing data socially THEN the system SHALL default to private and require explicit consent for each sharing action
+10. WHEN using data for ML training THEN the system SHALL anonymize personal identifiers and provide opt-out mechanisms
+
+### Requirement 19
+
+**User Story:** As a user, I want comprehensive privacy controls and transparency, so that I understand exactly how my data is being used and can control every aspect of data processing.
+
+#### Acceptance Criteria
+
+1. WHEN registering THEN the system SHALL present a privacy dashboard with granular consent options for different data uses
+2. WHEN using AI features THEN the system SHALL clearly explain what data is analyzed and allow per-feature opt-out
+3. WHEN data is processed for insights THEN the system SHALL maintain an audit log of all data access and processing activities
+4. WHEN third-party integrations are connected THEN the system SHALL display exactly what data is shared and allow selective permissions
+5. WHEN social features are used THEN the system SHALL provide fine-grained visibility controls (private, friends, public) for each data type
+6. WHEN ML models are trained THEN the system SHALL use differential privacy techniques to prevent individual data reconstruction
+7. WHEN data retention occurs THEN the system SHALL automatically delete personal data after user-defined retention periods
+8. WHEN analytics are performed THEN the system SHALL provide users with copies of all insights generated about them
+9. WHEN consent is withdrawn THEN the system SHALL immediately stop processing and delete related derived data
+10. WHEN data breaches occur THEN the system SHALL notify affected users within 72 hours with detailed impact assessment
+
+### Requirement 20
+
+**User Story:** As a user, I want ethical AI and social features that prioritize my wellbeing, so that technology enhances rather than manipulates my personal development journey.
+
+#### Acceptance Criteria
+
+1. WHEN AI generates recommendations THEN the system SHALL prioritize user wellbeing over engagement metrics
+2. WHEN social comparisons are shown THEN the system SHALL focus on personal progress rather than competitive rankings
+3. WHEN predictive analytics are used THEN the system SHALL avoid creating anxiety or pressure through predictions
+4. WHEN coaching suggestions are made THEN the system SHALL encourage sustainable habits rather than extreme behaviors
+5. WHEN community features are implemented THEN the system SHALL include mental health safeguards and support resources
+6. WHEN data patterns indicate concerning behaviors THEN the system SHALL suggest professional resources rather than automated interventions
+7. WHEN gamification is applied THEN the system SHALL avoid addictive design patterns and include healthy usage limits
+8. WHEN AI insights are presented THEN the system SHALL clearly distinguish between data-driven observations and subjective interpretations
+9. WHEN social features are used THEN the system SHALL implement anti-harassment measures and community guidelines
+10. WHEN vulnerable users are detected THEN the system SHALL provide additional privacy protections and support resources
 
 ### Requirement 17
 

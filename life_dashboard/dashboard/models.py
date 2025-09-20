@@ -33,7 +33,22 @@ class UserProfile(models.Model):
     def email(self):
         return self.user.email
 
+    # Business logic moved to domain layer - use UserService.add_experience() instead
+    # This method is deprecated and will be removed
     def add_experience(self, points):
+        """
+        DEPRECATED: Use UserService.add_experience() instead.
+        This method will be removed in a future version.
+        """
+        import warnings
+
+        warnings.warn(
+            "UserProfile.add_experience() is deprecated. Use UserService.add_experience() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        # Temporary implementation for backward compatibility
         if not isinstance(points, int) or points <= 0:
             raise ValueError("Experience points must be a positive integer.")
         max_experience = 2**31 - 1

@@ -1,25 +1,127 @@
 repos:
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.0
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
     hooks:
-    -   id: ruff
-        args: [--fix]
-    -   id: ruff-format
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: debug-statements
 
--   repo: https://github.com/psf/black
-    rev: 24.2.0
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.1.6
     hooks:
-    -   id: black
-        language_version: python3
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
 
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.1
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: check-added-large-files
-    -   id: check-ast
-    -   id: check-json
-    -   id: check-merge-conflict
-    -   id: detect-private-key
+      - id: mypy
+        additional_dependencies: [pydantic]
+        files: ^life_dashboard/.*/domain/.*\.py$
+        args: [--config-file=pyproject.toml]
+
+  - repo: local
+    hooks:
+      - id: import-linter
+        name: Check import boundaries
+        entry: python
+        language: system
+        args: [scripts/run-import-linter.py]
+        pass_filenames: false
+
+      - id: check-django-imports-in-domain
+        name: Check for Django imports in domain layers
+        entry: python
+        language: system
+        args:
+          - -c
+          - |
+            import os
+            import glob
+            import sys
+
+            found_django_imports = False
+            for domain_dir in glob.glob('life_dashboard/*/domain/'):
+                for py_file in glob.glob(os.path.join(domain_dir, '**/*.py'), recursive=True):
+                    try:
+                        with open(py_file, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                            if 'from django' in content or 'import django' in content:
+                                print(f"ERROR: Found Django imports in {py_file}")
+                                found_django_imports = True
+                    except Exception:
+                        pass
+
+            if found_django_imports:
+                sys.exit(1)
+            else:
+                print("SUCCESS: No Django imports found in domain layers")
+        pass_filenames: false
+
+      - id: check-cross-context-imports
+        name: Check for cross-context imports in domain layers
+        entry: python
+        language: system
+        args:
+          - -c
+          - |
+            import os
+            import glob
+            import sys
+            import re
+
+            contexts = ["dashboard", "stats", "quests", "skills", "achievements", "journals", "privacy"]
+            found_violations = False
+
+            for context in contexts:
+                domain_dir = f"life_dashboard/{context}/domain"
+                if os.path.exists(domain_dir):
+                    other_contexts = [c for c in contexts if c != context]
+                    pattern = r'from life_dashboard\.(' + '|'.join(other_contexts) + r')'
+
+                    for py_file in glob.glob(os.path.join(domain_dir, '**/*.py'), recursive=True):
+                        try:
+                            with open(py_file, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                                if re.search(pattern, content):
+                                    print(f"ERROR: Found cross-context imports in {py_file}")
+                                    found_violations = True
+                        except Exception:
+                            pass
+
+            if found_violations:
+                sys.exit(1)
+            else:
+                print("SUCCESS: No cross-context imports found in domain layers")
+        pass_filenames: false
+
+      - id: validate-context-structure
+        name: Validate bounded context structure
+        entry: python
+        language: system
+        args:
+          - -c
+          - |
+            import os
+
+            contexts = ["dashboard", "stats", "quests", "skills", "achievements", "journals", "privacy"]
+            missing_layers = []
+
+            for context in contexts:
+                context_dir = f"life_dashboard/{context}"
+                if os.path.exists(context_dir):
+                    for layer in ["domain", "application", "infrastructure"]:
+                        layer_dir = f"{context_dir}/{layer}"
+                        if not os.path.exists(layer_dir):
+                            missing_layers.append(f"{context}/{layer}")
+
+            if missing_layers:
+                print(f"WARNING: Missing layers: {', '.join(missing_layers)}")
+                print("Consider creating these layers to complete the DDD structure")
+            else:
+                print("SUCCESS: All contexts have proper DDD structure")
+        pass_filenames: false

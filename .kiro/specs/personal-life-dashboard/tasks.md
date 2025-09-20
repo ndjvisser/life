@@ -4,44 +4,56 @@
 
 ### 1. Modular Monolith Architecture Foundation
 
-- [ ] 1.1 Implement strict context boundaries with dependency enforcement
+- [x] 1.1 Implement strict context boundaries with dependency enforcement
   - Restructure existing apps as bounded contexts: `life_dashboard.quests`, `life_dashboard.stats`, etc.
   - Set up import-linter or python-archgraph to prevent cross-context imports
   - Create CI guard that fails builds on boundary violations
   - Implement thin read-only query layer for cross-context data access
   - _Requirements: 11.1, 11.2_
 
-- [ ] 1.2 Implement layered Ports & Adapters architecture per context
+- [ ] 1.2 Implement privacy-by-design foundation
+  - Create Privacy context with consent management and data governance
+  - Implement granular consent system with purpose-specific permissions
+  - Add privacy dashboard for user control over data processing
+  - Create audit logging for all personal data access and processing
+  - Implement data minimization principles and retention policies
+  - Add privacy impact assessment framework for new features
+  - _Requirements: 16.6, 16.7, 16.8, 19.1, 19.2, 19.7, 20.1_
+
+- [x] 1.3 Implement layered Ports & Adapters architecture per context
   - Create interfaces/, services.py, domain/, persistence/, infrastructure/ structure in each context
   - Move business logic from Django models to pure Python domain objects (dataclasses/Pydantic)
   - Implement repository pattern with Django ORM in persistence layer
   - Ensure Views → Service → Domain/Repos flow with no Django imports in domain layer
   - _Requirements: 11.1, 11.3, 11.4_
 
-- [ ] 1.3 Implement canonical domain event system
+- [ ] 1.4 Implement canonical domain event system
   - Create BaseEvent class with event_id, timestamp, and version fields
   - Implement all canonical events from domain-events-catalog.md with exact payload schemas
   - Create lightweight event dispatcher with version compatibility checking
   - Add event serialization/deserialization for JSON persistence and debugging
-  - _Requirements: 11.2, 11.4_
+  - Add privacy-aware event processing with consent validation
+  - _Requirements: 11.2, 11.4, 19.3_
 
-- [ ] 1.4 Replace Django signals with canonical domain events
+- [ ] 1.5 Replace Django signals with canonical domain events
   - Refactor existing XP award logic to use QuestCompleted and ExperienceAwarded events
   - Implement event handlers with version compatibility (@handles decorator)
   - Add event publishing to all domain services (StatService, QuestService, etc.)
   - Create optional Celery adapter for async event processing
-  - _Requirements: 11.2, 11.4_
+  - Implement privacy-compliant event processing with consent checks
+  - _Requirements: 11.2, 11.4, 19.3_
 
-- [ ] 1.5 Set up development tooling and architecture enforcement
+- [ ] 1.6 Set up development tooling and architecture enforcement
   - Add mypy --strict + django-stubs for type checking per context
   - Configure structlog with request/trace ID for observability
   - Set up opentelemetry-instrumentation-django for tracing
   - Create make reset && make setup-sample-data one-liner commands
-  - _Requirements: 14.3, 18.1, 18.5_
+  - Add privacy compliance checks to CI/CD pipeline
+  - _Requirements: 14.3, 18.1, 18.5, 19.9_
 
 ### 2. Dashboard Context Refactoring with Command/Query Segregation
 
-- [ ] 2.1 Implement CQRS pattern for UserProfile management
+- [x] 2.1 Implement CQRS pattern for UserProfile management
   - Create UserService with command methods (register_user, update_profile, add_experience)
   - Implement read-only queries in dashboard/queries/ package for profile data
   - Move UserProfile.add_experience() business logic to pure domain objects
@@ -64,14 +76,14 @@
 
 ### 3. Stats Context with Pure Domain Logic
 
-- [ ] 3.1 Consolidate and restructure stats apps with DDD architecture
+- [x] 3.1 Consolidate and restructure stats apps with DDD architecture
   - Merge core_stats, life_stats, and stats apps into single stats context
   - Create domain/, application/, infrastructure/, interfaces/ structure
   - Move existing CoreStat and LifeStat models to infrastructure/models.py
   - Create pure Python domain entities without Django dependencies
   - _Requirements: 1.1, 1.2, 11.1_
 
-- [ ] 3.2 Extract stats business logic to pure Python domain
+- [x] 3.2 Extract stats business logic to pure Python domain
   - Create CoreStat and LifeStat domain entities as dataclasses with validation
   - Implement StatValue value object with 1-100 range validation
   - Move level calculation logic to pure Python functions (no Django dependencies)
@@ -427,14 +439,17 @@
   - Implement Integration entity with connection management
   - Create SyncJob model for scheduled synchronization
   - Implement IntegrationService with OAuth2 support
-  - _Requirements: 12.1, 12.4_
+  - Add privacy-compliant integration consent management
+  - _Requirements: 12.1, 12.4, 19.4_
 
 - [ ] 18.2 Implement integration security and credentials
   - Add encrypted credential storage with key rotation
   - Implement OAuth2 flow for external service authorization
   - Create API key management and validation
   - Write security tests for credential handling
-  - _Requirements: 16.2, 16.5_
+  - Implement granular permission controls for data sharing
+  - Add integration-specific privacy controls and data minimization
+  - _Requirements: 16.2, 16.5, 19.4, 19.7_
 
 ### 19. Health Data Integration
 
@@ -488,35 +503,43 @@
 
 ### 22. AI/ML Integration
 
-- [ ] 22.1 Implement ML pipeline infrastructure
-  - Set up ML model training and deployment pipeline
-  - Create feature store for real-time predictions
-  - Implement model versioning and A/B testing
-  - Write unit tests for ML pipeline components
-  - _Requirements: 13.1, 13.2_
+- [ ] 22.1 Implement privacy-compliant ML pipeline infrastructure
+  - Set up ML model training and deployment pipeline with differential privacy
+  - Create feature store for real-time predictions with data anonymization
+  - Implement model versioning and A/B testing with consent validation
+  - Write unit tests for ML pipeline components including privacy compliance
+  - Add user opt-out mechanisms for ML training and inference
+  - Implement data retention policies for ML features and models
+  - _Requirements: 13.1, 13.2, 19.6, 19.7, 20.1_
 
-- [ ] 22.2 Add advanced insight generation
-  - Integrate OpenAI API for natural language insights
-  - Implement personalized coaching recommendations
-  - Add predictive analytics for goal achievement
-  - Write tests for AI-generated content quality
-  - _Requirements: 13.2, 13.4_
+- [ ] 22.2 Add ethical AI insight generation
+  - Integrate OpenAI API for natural language insights with privacy controls
+  - Implement personalized coaching recommendations prioritizing user wellbeing
+  - Add predictive analytics for goal achievement with anxiety-prevention safeguards
+  - Write tests for AI-generated content quality and ethical compliance
+  - Implement transparency features showing how insights are generated
+  - Add user control over AI processing with granular opt-out options
+  - _Requirements: 13.2, 13.4, 19.8, 20.1, 20.3, 20.8_
 
 ### 23. Social Features and Sharing
 
-- [ ] 23.1 Implement basic social features
-  - Add achievement sharing capabilities
-  - Create progress sharing with privacy controls
-  - Implement social proof and motivation features
-  - Write unit tests for social feature privacy
-  - _Requirements: 6.1_
+- [ ] 23.1 Implement privacy-first social features
+  - Add achievement sharing capabilities with granular privacy controls
+  - Create progress sharing with default-private settings and explicit consent
+  - Implement social proof and motivation features without competitive pressure
+  - Write unit tests for social feature privacy and consent validation
+  - Add anti-harassment measures and community guidelines enforcement
+  - Implement mental health safeguards for social comparisons
+  - _Requirements: 6.1, 16.9, 19.5, 20.2, 20.5, 20.9_
 
-- [ ] 23.2 Build community and coaching features
-  - Create mentor/coach relationship system
-  - Implement group challenges and competitions
-  - Add community insights and benchmarking
-  - Write integration tests for social interactions
-  - _Requirements: 6.1_
+- [ ] 23.2 Build ethical community and coaching features
+  - Create mentor/coach relationship system with verification and safety protocols
+  - Implement group challenges and competitions focused on personal growth
+  - Add community insights and benchmarking without harmful comparisons
+  - Write integration tests for social interactions and safety measures
+  - Implement support resources and professional referral system
+  - Add vulnerable user protections and additional privacy safeguards
+  - _Requirements: 6.1, 20.5, 20.6, 20.10_
 
 ### 24. Advanced Analytics and Reporting
 

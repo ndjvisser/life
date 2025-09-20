@@ -1,55 +1,215 @@
-[tool.ruff]
-# Exclude a variety of commonly ignored directories.
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "life-dashboard"
+version = "0.1.0"
+description = "RPG-inspired personal life dashboard"
+authors = [{name = "Life Dashboard Team"}]
+dependencies = [
+    "django>=5.1.1",
+    "django-crispy-forms",
+    "crispy-bootstrap5",
+    "celery",
+    "redis",
+    "python-dotenv",
+    "pydantic",
+    "pydantic[email]",
 ]
 
-# Same as Black.
-line-length = 88
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-django",
+    "pytest-cov",
+    "import-linter",
+    "mypy",
+    "django-stubs",
+    "ruff",
+    "pre-commit",
+    "behave",
+    "selenium",
+]
 
-# Assume Python 3.8
+[tool.ruff]
 target-version = "py38"
-
-[tool.ruff.lint]
-# Enable pycodestyle (`E`), Pyflakes (`F`), and import sorting (`I`) codes
-select = ["E", "F", "I", "B", "C4", "UP", "N", "W", "Q", "DJ"]
-ignore = []
-
-# Allow autofix for all enabled rules (when `--fix` is used)
-fixable = ["ALL"]
-unfixable = []
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-[tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
-"tests/*" = ["S101"]
-
-[tool.ruff.lint.isort]
-known-first-party = ["life_dashboard"]
-
-[tool.black]
 line-length = 88
-target-version = ['py38']
-include = '\.pyi?$'
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.8"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+# Disable Django plugin for domain-only checking
+# plugins = ["mypy_django_plugin.main"]
+
+# [tool.django-stubs]
+# django_settings_module = "life_dashboard.life_dashboard.settings"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "life_dashboard.life_dashboard.test_settings"
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+addopts = "--tb=short --strict-markers"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = "."
+omit = [
+    "*/migrations/*",
+    "*/venv/*",
+    "*/env/*",
+    "manage.py",
+    "*/settings/*",
+    "*/tests/*",
+    "*/__pycache__/*",
+]
+
+[tool.importlinter]
+root_package = "life_dashboard"
+include_external_packages = true
+
+# Bounded Context Independence disabled until service layers are implemented
+# [[tool.importlinter.contracts]]
+# name = "Bounded Context Independence"
+# type = "independence"
+# modules = [
+#     "life_dashboard.dashboard",
+#     "life_dashboard.stats",
+#     "life_dashboard.quests",
+#     "life_dashboard.skills",
+#     "life_dashboard.achievements",
+#     "life_dashboard.journals",
+#     "life_dashboard.privacy",
+# ]
+
+[[tool.importlinter.contracts]]
+name = "Domain Layer Purity"
+type = "forbidden"
+source_modules = [
+    "life_dashboard.dashboard.domain",
+    "life_dashboard.stats.domain",
+    "life_dashboard.quests.domain",
+    "life_dashboard.skills.domain",
+    "life_dashboard.achievements.domain",
+    "life_dashboard.journals.domain",
+    "life_dashboard.privacy.domain",
+]
+forbidden_modules = [
+    "django",
+    "django.*",
+]
+
+[[tool.importlinter.contracts]]
+name = "Dashboard Domain Independence"
+type = "forbidden"
+source_modules = ["life_dashboard.dashboard.domain"]
+forbidden_modules = [
+    "life_dashboard.stats.domain",
+    "life_dashboard.quests.domain",
+    "life_dashboard.skills.domain",
+    "life_dashboard.achievements.domain",
+    "life_dashboard.journals.domain",
+    "life_dashboard.privacy.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Stats Domain Independence"
+type = "forbidden"
+source_modules = ["life_dashboard.stats.domain"]
+forbidden_modules = [
+    "life_dashboard.dashboard.domain",
+    "life_dashboard.quests.domain",
+    "life_dashboard.skills.domain",
+    "life_dashboard.achievements.domain",
+    "life_dashboard.journals.domain",
+    "life_dashboard.privacy.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Quests Domain Independence"
+type = "forbidden"
+source_modules = ["life_dashboard.quests.domain"]
+forbidden_modules = [
+    "life_dashboard.dashboard.domain",
+    "life_dashboard.stats.domain",
+    "life_dashboard.skills.domain",
+    "life_dashboard.achievements.domain",
+    "life_dashboard.journals.domain",
+    "life_dashboard.privacy.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Skills Domain Independence"
+type = "forbidden"
+source_modules = ["life_dashboard.skills.domain"]
+forbidden_modules = [
+    "life_dashboard.dashboard.domain",
+    "life_dashboard.stats.domain",
+    "life_dashboard.quests.domain",
+    "life_dashboard.achievements.domain",
+    "life_dashboard.journals.domain",
+    "life_dashboard.privacy.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Achievements Domain Independence"
+type = "forbidden"
+source_modules = ["life_dashboard.achievements.domain"]
+forbidden_modules = [
+    "life_dashboard.dashboard.domain",
+    "life_dashboard.stats.domain",
+    "life_dashboard.quests.domain",
+    "life_dashboard.skills.domain",
+    "life_dashboard.journals.domain",
+    "life_dashboard.privacy.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Journals Domain Independence"
+type = "forbidden"
+source_modules = ["life_dashboard.journals.domain"]
+forbidden_modules = [
+    "life_dashboard.dashboard.domain",
+    "life_dashboard.stats.domain",
+    "life_dashboard.quests.domain",
+    "life_dashboard.skills.domain",
+    "life_dashboard.achievements.domain",
+    "life_dashboard.privacy.domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "Privacy Domain Independence"
+type = "forbidden"
+source_modules = ["life_dashboard.privacy.domain"]
+forbidden_modules = [
+    "life_dashboard.dashboard.domain",
+    "life_dashboard.stats.domain",
+    "life_dashboard.quests.domain",
+    "life_dashboard.skills.domain",
+    "life_dashboard.achievements.domain",
+    "life_dashboard.journals.domain",
+]

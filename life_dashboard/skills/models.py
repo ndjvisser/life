@@ -46,8 +46,22 @@ class Skill(models.Model):
     def __str__(self):
         return f"{self.name} (Level {self.level})"
 
+    # Business logic moved to domain layer - use SkillService instead
+    # These methods are deprecated and will be removed
     def add_experience(self, amount):
-        """Add experience points and handle leveling up"""
+        """
+        DEPRECATED: Use SkillService.add_experience() instead.
+        This method will be removed in a future version.
+        """
+        import warnings
+
+        warnings.warn(
+            "Skill.add_experience() is deprecated. Use SkillService.add_experience() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        # Temporary implementation for backward compatibility
         if amount < 0:
             raise ValidationError("Experience amount cannot be negative")
 
@@ -65,7 +79,9 @@ class Skill(models.Model):
         self.save()
 
     def level_up(self):
-        """Handle leveling up logic"""
+        """
+        DEPRECATED: Level up logic moved to domain layer.
+        """
         if self.level >= MAX_LEVEL:
             return
 

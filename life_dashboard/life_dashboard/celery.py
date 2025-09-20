@@ -1,7 +1,28 @@
 # life_dashboard/life_dashboard/celery.py
 import os
 
-from celery import Celery
+try:
+    from celery import Celery
+except ImportError:
+    # Celery is optional - create a dummy class for development
+    class Celery:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def config_from_object(self, *args, **kwargs):
+            pass
+
+        def autodiscover_tasks(self, *args, **kwargs):
+            pass
+
+        def task(self, *args, **kwargs):
+            """Dummy task decorator for when Celery is not installed"""
+
+            def decorator(func):
+                return func
+
+            return decorator
+
 
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault(
