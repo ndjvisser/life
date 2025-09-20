@@ -125,21 +125,7 @@ jobs:
 
     - name: Check for proper layering
       run: |
-        echo "Checking for proper layering violations..."
-
-        # Domain should not import from application or infrastructure
-        if find life_dashboard/*/domain/ -name "*.py" -exec grep -l "from.*\.application\|from.*\.infrastructure" {} \; 2>/dev/null | head -1; then
-          echo "❌ Domain layer importing from application/infrastructure layers!"
-          exit 1
-        fi
-
-        # Application should not import from interfaces
-        if find life_dashboard/*/application/ -name "*.py" -exec grep -l "from.*\.interfaces" {} \; 2>/dev/null | head -1; then
-          echo "❌ Application layer importing from interfaces layer!"
-          exit 1
-        fi
-
-        echo "✅ Layering constraints satisfied"
+        python scripts/check-layering.py
 
   dependency-graph:
     runs-on: ubuntu-latest
