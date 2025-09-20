@@ -198,6 +198,25 @@ class TestCanonicalEvents:
         assert restored.user_id == 123
         assert restored.email == "test@example.com"
 
+    def test_prediction_generated_confidence_interval_serialization(self):
+        """PredictionGenerated serializes confidence interval as list."""
+
+        event = PredictionGenerated(
+            user_id=1,
+            prediction_id=42,
+            prediction_type="trend",
+            forecast_data={"trend": "up"},
+            confidence_interval=(0.2, 0.8),
+            prediction_horizon_days=7,
+        )
+
+        assert isinstance(event.confidence_interval, list)
+        assert event.confidence_interval == [0.2, 0.8]
+
+        data = event.to_dict()
+        assert isinstance(data["confidence_interval"], list)
+        assert data["confidence_interval"] == [0.2, 0.8]
+
     def test_experience_awarded_event(self):
         """Test ExperienceAwarded event schema."""
         event = ExperienceAwarded(
