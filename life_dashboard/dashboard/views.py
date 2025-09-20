@@ -55,7 +55,7 @@ def register(request):
         HttpResponse: Renders the registration template or redirects to the dashboard after successful registration.
     """
     if request.method == "POST":
-        logger.debug("Registration POST data: %s", request.POST)
+        logger.debug("Registration POST received")
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             logger.debug("Form is valid, creating user")
