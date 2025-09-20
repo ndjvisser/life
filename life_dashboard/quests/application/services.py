@@ -405,9 +405,19 @@ class HabitService:
         if existing_completion:
             raise ValueError(f"Habit already completed on {completion_date}")
 
+        # Determine previous completion to maintain streak calculations
+        previous_completion_date = None
+        recent_completions = self.completion_repo.get_by_habit_id(habit_id, limit=1)
+        if recent_completions:
+            candidate_date = recent_completions[0].completion_date
+            if candidate_date < completion_date:
+                previous_completion_date = candidate_date
+
         # Complete the habit (updates streak)
         experience_gained, new_streak, milestone_reached = habit.complete_habit(
-            completion_date
+            completion_date=completion_date,
+            completion_count=count,
+            previous_completion_date=previous_completion_date,
         )
 
         # Save updated habit

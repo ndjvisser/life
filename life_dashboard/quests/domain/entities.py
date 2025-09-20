@@ -231,6 +231,26 @@ class Habit:
         streak_bonus = self.calculate_streak_bonus()
         return int(base_reward * streak_bonus)
 
+    def complete_habit(
+        self,
+        completion_date: date,
+        completion_count: int = 1,
+        previous_completion_date: date | None = None,
+    ) -> tuple[int, StreakCount, str | None]:
+        """Apply completion logic and return experience, streak, and milestone information."""
+
+        if completion_count <= 0:
+            raise ValueError("Completion count must be positive")
+
+        self.update_streak(completion_date, previous_completion_date)
+        experience_gained = self.calculate_experience_reward(completion_count)
+        milestone = self.get_streak_milestone_type()
+
+        # Ensure timestamps reflect the completion action
+        self.updated_at = datetime.utcnow()
+
+        return experience_gained, self.current_streak, milestone
+
     def update_streak(
         self, completion_date: date, previous_completion_date: date | None = None
     ) -> None:
