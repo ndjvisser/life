@@ -70,6 +70,14 @@ def register(request):
                     last_name=form.cleaned_data.get("last_name", ""),
                 )
                 logger.debug("User created via service: %s", profile.username)
+                # Authenticate to attach backend, then log in
+                user = authenticate(
+                    username=form.cleaned_data["username"],
+                    password=form.cleaned_data["password1"],
+                )
+                if not user:
+                    raise ValueError("Authentication failed after registration")
+                login(request, user)
 
                 # Get Django user for login
                 from django.contrib.auth import get_user_model
