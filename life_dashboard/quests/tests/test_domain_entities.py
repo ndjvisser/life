@@ -280,6 +280,34 @@ class TestHabit:
 
         assert habit.current_streak.value == 6
 
+    def test_complete_habit_updates_state_and_returns_details(self):
+        """Test completing a habit returns experience, streak, and milestone data"""
+        habit = Habit(
+            habit_id=HabitId(1),
+            user_id=UserId(1),
+            name=HabitName("Exercise"),
+            description="Daily workout",
+            frequency=HabitFrequency.DAILY,
+            target_count=CompletionCount(1),
+            current_streak=StreakCount(6),
+            longest_streak=StreakCount(10),
+            experience_reward=ExperienceReward(25),
+        )
+
+        today = date.today()
+        yesterday = today - timedelta(days=1)
+
+        experience, streak, milestone = habit.complete_habit(
+            completion_date=today,
+            completion_count=1,
+            previous_completion_date=yesterday,
+        )
+
+        assert experience == habit.calculate_experience_reward(1)
+        assert streak.value == 7
+        assert habit.current_streak.value == 7
+        assert milestone == "week"
+
     def test_habit_streak_update_broken(self):
         """Test habit streak reset when broken"""
         habit = Habit(
