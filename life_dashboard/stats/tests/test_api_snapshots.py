@@ -10,6 +10,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 import pytest
+
+pytest.importorskip("pytest_snapshot")
 from pytest_snapshot.plugin import Snapshot
 
 from ..domain.entities import CoreStat, LifeStat, StatHistory

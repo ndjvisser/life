@@ -8,6 +8,10 @@ import json
 from datetime import datetime
 from unittest.mock import Mock
 
+import pytest
+
+pytest.importorskip("pytest_snapshot")
+
 from life_dashboard.skills.domain.entities import (
     Skill,
     SkillCategory,

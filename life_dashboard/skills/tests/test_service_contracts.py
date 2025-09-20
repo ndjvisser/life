@@ -9,6 +9,8 @@ from typing import Any
 from unittest.mock import Mock
 
 import pytest
+
+pytest.importorskip("pydantic")
 from pydantic import BaseModel, ValidationError
 
 from life_dashboard.skills.domain.entities import (
