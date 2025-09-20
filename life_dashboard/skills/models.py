@@ -57,7 +57,7 @@ class Skill(models.Model):
         Deprecated backward-compatible method to add experience to this Skill.
 
         Emits a DeprecationWarning advising use of SkillService.add_experience(), then:
-        - Validates that `amount` is non-negative (raises ValidationError if negative).
+        - Validates that `amount` is positive (raises ValidationError if <= 0).
         - Increments `experience_points`, capped at MAX_EXPERIENCE to avoid overflow.
         - Repeatedly calls level_up() while experience_points >= experience_to_next_level and level < MAX_LEVEL.
         - Persists changes by saving the model instance.
@@ -66,7 +66,7 @@ class Skill(models.Model):
             amount (int): Number of experience points to add.
 
         Raises:
-            ValidationError: If `amount` is negative.
+            ValidationError: If `amount` is not positive (<= 0).
         """
         import warnings
 
@@ -77,8 +77,8 @@ class Skill(models.Model):
         )
 
         # Temporary implementation for backward compatibility
-        if amount < 0:
-            raise ValidationError("Experience amount cannot be negative")
+        if amount <= 0:
+            raise ValidationError("Experience amount must be positive")
 
         # Cap experience points to prevent overflow
         new_experience = min(self.experience_points + amount, MAX_EXPERIENCE)

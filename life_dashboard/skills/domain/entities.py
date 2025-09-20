@@ -4,7 +4,7 @@ Skills domain entities - pure Python business logic without Django dependencies.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 from uuid import uuid4
 
 
@@ -12,7 +12,7 @@ from uuid import uuid4
 class SkillCategory:
     """Pure domain entity for skill categories."""
 
-    category_id: Optional[str] = field(default_factory=lambda: str(uuid4()))
+    category_id: str | None = field(default_factory=lambda: str(uuid4()))
     name: str = ""
     description: str = ""
     icon: str = ""
@@ -31,7 +31,7 @@ class SkillCategory:
 class Skill:
     """Pure domain entity for skill tracking."""
 
-    skill_id: Optional[str] = field(default_factory=lambda: str(uuid4()))
+    skill_id: str | None = field(default_factory=lambda: str(uuid4()))
     user_id: int = 0
     category_id: str = ""
     name: str = ""
@@ -43,8 +43,8 @@ class Skill:
     experience_to_next_level: int = 1000
 
     # Metadata
-    created_at: Optional[datetime] = None
-    last_practiced: Optional[datetime] = None
+    created_at: datetime | None = None
+    last_practiced: datetime | None = None
 
     def __post_init__(self):
         """
@@ -67,7 +67,7 @@ class Skill:
         if self.experience_points < 0:
             raise ValueError("Experience points cannot be negative")
 
-    def add_experience(self, amount: int) -> Tuple[int, bool]:
+    def add_experience(self, amount: int) -> tuple[int, bool]:
         """
         Add experience to the skill, update timestamps, and handle level ups.
 
@@ -143,7 +143,7 @@ class Skill:
             100.0, (self.experience_points / self.experience_to_next_level) * 100
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a dictionary representation of the Skill suitable for serialization.
 
