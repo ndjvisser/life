@@ -6,7 +6,7 @@ from datetime import date, timedelta
 from typing import Any
 
 from django.contrib.auth.models import User
-from django.db.models import Count, Q
+from django.db.models import Count, Max, Q
 
 from ..domain.entities import Habit as DomainHabit
 from ..domain.entities import HabitCompletion as DomainHabitCompletion
@@ -311,7 +311,6 @@ class DjangoHabitRepository(HabitRepository):
         - user.id -> user_id
         - name, description, target_count, current_streak, longest_streak, experience_reward, created_at, updated_at
         - frequency -> HabitFrequency(enum)
-        - last_practiced -> last_completed
 
         Parameters:
             django_habit (DjangoHabit): The Django model instance to convert.
@@ -331,11 +330,6 @@ class DjangoHabitRepository(HabitRepository):
             experience_reward=django_habit.experience_reward,
             created_at=django_habit.created_at,
             updated_at=django_habit.updated_at,
-            last_completed=getattr(
-                django_habit,
-                "last_completed",
-                getattr(django_habit, "last_practiced", None),
-            ),
         )
 
     def _from_domain(
@@ -347,7 +341,7 @@ class DjangoHabitRepository(HabitRepository):
         If `django_habit` is not provided, the function fetches the User by `domain_habit.user_id`
         and constructs a new DjangoHabit instance attached to that user. Fields copied from the
         domain object include: name, description, frequency (uses the enum's `.value`), target_count,
-        current_streak, longest_streak, experience_reward, and last_practiced (from `last_completed`).
+        current_streak, longest_streak, and experience_reward.
         If `domain_habit.updated_at` is present, it is applied to the model.
 
         Returns:
@@ -364,7 +358,6 @@ class DjangoHabitRepository(HabitRepository):
         django_habit.current_streak = domain_habit.current_streak
         django_habit.longest_streak = domain_habit.longest_streak
         django_habit.experience_reward = domain_habit.experience_reward
-        django_habit.last_practiced = domain_habit.last_completed
 
         if domain_habit.updated_at:
             django_habit.updated_at = domain_habit.updated_at
@@ -485,11 +478,13 @@ class DjangoHabitRepository(HabitRepository):
         """
         Return the list of DomainHabit objects for habits considered "due" today for the given user.
 
-        This uses a simplified rule based on the habit's `last_practiced` and `frequency`:
-        - Never-practiced habits (last_practiced is null) are due.
-        - Daily habits are due if not practiced yesterday.
-        - Weekly habits are due if not practiced within the last 7 days.
-        - Monthly habits are due if not practiced within the last 30 days.
+        A habit is considered due when, based on its completion history, it has not
+        been completed within the expected cadence for its frequency:
+
+        - Habits with no completions are due.
+        - Daily habits are due if they were not completed yesterday.
+        - Weekly habits are due if they have not been completed in the last 7 days.
+        - Monthly habits are due if they have not been completed in the last 30 days.
 
         Parameters:
             user_id (int): ID of the user whose habits to evaluate.
@@ -497,25 +492,27 @@ class DjangoHabitRepository(HabitRepository):
         Returns:
             List[DomainHabit]: Domain representations of habits considered due today.
         """
-        # This is a simplified implementation
-        # In reality, we'd need to check completion history
         today = date.today()
         yesterday = today - timedelta(days=1)
 
         django_habits = (
             DjangoHabit.objects.select_related("user")
             .filter(user_id=user_id)
+            .annotate(last_completion_date=Max("completions__date"))
             .filter(
-                Q(last_practiced__isnull=True)  # Never completed
+                Q(last_completion_date__isnull=True)
                 | Q(
-                    last_practiced__lt=yesterday, frequency="daily"
-                )  # Daily habits not done yesterday
+                    frequency="daily",
+                    last_completion_date__lt=yesterday,
+                )
                 | Q(
-                    last_practiced__lt=today - timedelta(days=7), frequency="weekly"
-                )  # Weekly habits
+                    frequency="weekly",
+                    last_completion_date__lt=today - timedelta(days=7),
+                )
                 | Q(
-                    last_practiced__lt=today - timedelta(days=30), frequency="monthly"
-                )  # Monthly habits
+                    frequency="monthly",
+                    last_completion_date__lt=today - timedelta(days=30),
+                )
             )
         )
         return [self._to_domain(h) for h in django_habits]
