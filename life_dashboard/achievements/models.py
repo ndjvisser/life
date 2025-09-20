@@ -19,7 +19,7 @@ class Achievement(models.Model):
     # Requirements
     required_level = models.IntegerField(default=1)
     required_skill_level = models.IntegerField(null=True, blank=True)
-    required_quest_completions = models.IntegerField(default=0)
+    required_quest_completions = models.IntegerField(default=1)
 
     class Meta:
         verbose_name = "Achievement"

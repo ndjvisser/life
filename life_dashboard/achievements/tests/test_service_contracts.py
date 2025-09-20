@@ -42,7 +42,7 @@ class AchievementCreateRequest(BaseModel):
     experience_reward: int
     required_level: int = 1
     required_skill_level: int | None = None
-    required_quest_completions: int = 0
+    required_quest_completions: int = 1  # Default to 1 to satisfy domain validation (achievements must have at least one meaningful requirement)
     is_hidden: bool = False
     is_repeatable: bool = False
 
