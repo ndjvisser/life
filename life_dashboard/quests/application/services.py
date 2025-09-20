@@ -94,9 +94,7 @@ class QuestService:
         )
 
         quest_type_enum = (
-            quest_type
-            if isinstance(quest_type, QuestType)
-            else QuestType(quest_type)
+            quest_type if isinstance(quest_type, QuestType) else QuestType(quest_type)
         )
 
         quest = Quest(
@@ -430,7 +428,7 @@ class HabitService:
 
     def complete_habit(
         self,
-        habit_id: str,
+        habit_id: int | HabitId,
         completion_date: date | None = None,
         count: int = 1,
         notes: str = "",
@@ -449,13 +447,11 @@ class HabitService:
         Returns:
             tuple(Habit, HabitCompletion, int): A 3-tuple containing the updated Habit entity, the persisted HabitCompletion record, and the experience points gained from this completion.
         """
-        habit_lookup_id = (
-            habit_id.value if isinstance(habit_id, HabitId) else habit_id
-        )
+        habit_lookup_id = habit_id.value if isinstance(habit_id, HabitId) else habit_id
 
         habit = self.habit_repo.get_by_id(habit_lookup_id)
         if not habit:
-            raise ValueError(f"Habit {habit_id} not found")
+            raise ValueError(f"Habit {habit_lookup_id} not found")
 
         if not completion_date:
             completion_date = date.today()
@@ -670,7 +666,9 @@ class HabitService:
             "longest_streak": max((h.longest_streak.value for h in habits), default=0),
             "daily_average": completion_stats.get("daily_average", 0.0),
             "current_streak": completion_stats.get("current_streak", 0),
-            "streak_milestones": len([h for h in habits if h.current_streak.value >= 7]),
+            "streak_milestones": len(
+                [h for h in habits if h.current_streak.value >= 7]
+            ),
             "habits_due_today": len(self.get_habits_due_today(user_id)),
         }
 
@@ -721,9 +719,7 @@ class QuestChainService:
                         f"Invalid quest_id value in quest chain payload: {quest_identifier}"
                     ) from err
 
-            quest_user_id = (
-                user_id if isinstance(user_id, UserId) else UserId(user_id)
-            )
+            quest_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
 
             title_value = quest_payload.get("title", "")
             quest_title = (
@@ -739,9 +735,7 @@ class QuestChainService:
                 else QuestDescription(description_value)
             )
 
-            difficulty_value = quest_payload.get(
-                "difficulty", QuestDifficulty.MEDIUM
-            )
+            difficulty_value = quest_payload.get("difficulty", QuestDifficulty.MEDIUM)
             if isinstance(difficulty_value, str):
                 difficulty_key = difficulty_value.upper()
                 difficulty_value = (
@@ -800,6 +794,199 @@ class QuestChainService:
             created_quests.append(created_quest)
 
         return created_quests
+
+    @staticmethod
+    def _normalize_enum(value: Any, enum_cls: type, field_name: str):
+        """Normalize raw enum values to the expected Enum instances."""
+
+        if isinstance(value, enum_cls):
+            return value
+
+        if value is None:
+            raise ValueError(f"{field_name} is required for quest creation.")
+
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                raise ValueError(f"{field_name} cannot be blank.")
+            try:
+                return enum_cls(value)
+            except ValueError:
+                try:
+                    return enum_cls[value.upper()]
+                except KeyError as exc:
+                    raise ValueError(f"Invalid {field_name}: {value}") from exc
+
+        try:
+            return enum_cls(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"Invalid {field_name}: {value}") from exc
+
+    @staticmethod
+    def _normalize_progress(value: Any) -> float:
+        """Ensure quest progress/completion values are floats within 0-100."""
+
+        try:
+            progress_value = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("progress must be a numeric value") from exc
+
+        if not 0.0 <= progress_value <= 100.0:
+            raise ValueError("progress must be between 0 and 100")
+
+        return progress_value
+
+    @staticmethod
+    def _normalize_date(value: Any, field_name: str) -> date:
+        """Normalize date inputs from strings or datetime objects."""
+
+        if isinstance(value, date) and not isinstance(value, datetime):
+            return value
+
+        if isinstance(value, datetime):
+            return value.date()
+
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                raise ValueError(f"{field_name} cannot be blank")
+            try:
+                return date.fromisoformat(value)
+            except ValueError:
+                try:
+                    return datetime.fromisoformat(value).date()
+                except ValueError as exc:
+                    raise ValueError(
+                        f"{field_name} must be an ISO formatted date string"
+                    ) from exc
+
+        raise ValueError(
+            f"{field_name} must be a date, datetime, or ISO formatted string"
+        )
+
+    @staticmethod
+    def _normalize_datetime(value: Any, field_name: str) -> datetime:
+        """Normalize datetime inputs from strings or dates."""
+
+        if isinstance(value, datetime):
+            return value
+
+        if isinstance(value, date):
+            return datetime.combine(value, datetime.min.time())
+
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                raise ValueError(f"{field_name} cannot be blank")
+            try:
+                return datetime.fromisoformat(value)
+            except ValueError as exc:
+                raise ValueError(
+                    f"{field_name} must be an ISO formatted datetime string"
+                ) from exc
+
+        raise ValueError(
+            f"{field_name} must be a datetime or ISO formatted datetime string"
+        )
+
+    @staticmethod
+    def _normalize_prerequisites(value: Any) -> list[str]:
+        """Normalize prerequisite quest identifiers to a list of strings."""
+
+        if value is None:
+            return []
+
+        if isinstance(value, str):
+            return [value] if value.strip() else []
+
+        if isinstance(value, list | tuple | set):
+            return [str(item) for item in value if str(item).strip()]
+
+        raise ValueError("prerequisite_quest_ids must be a sequence of quest IDs")
+
+    def _sanitize_child_quest_data(self, quest_data: dict[str, Any]) -> dict[str, Any]:
+        """Remove disallowed keys and normalize quest fields."""
+
+        if not isinstance(quest_data, dict):
+            raise ValueError("Each child quest must be provided as a dictionary")
+
+        filtered_data = {
+            key: value
+            for key, value in quest_data.items()
+            if key not in {"user_id", "parent_quest_id", "created_at", "updated_at"}
+        }
+
+        sanitized: dict[str, Any] = {}
+
+        quest_id = filtered_data.pop("quest_id", None)
+        if quest_id is None or not str(quest_id).strip():
+            sanitized["quest_id"] = str(uuid4())
+        else:
+            sanitized["quest_id"] = str(quest_id).strip()
+
+        title = filtered_data.pop("title", None)
+        if title is None or not str(title).strip():
+            raise ValueError("Child quests require a non-empty title")
+        sanitized["title"] = str(title).strip()
+
+        description = filtered_data.pop("description", "")
+        sanitized["description"] = str(description)
+
+        quest_type_value = filtered_data.pop("quest_type", QuestType.MAIN)
+        sanitized["quest_type"] = self._normalize_enum(
+            quest_type_value, QuestType, "quest_type"
+        )
+
+        difficulty_value = filtered_data.pop("difficulty", QuestDifficulty.MEDIUM)
+        sanitized["difficulty"] = self._normalize_enum(
+            difficulty_value, QuestDifficulty, "difficulty"
+        )
+
+        status_value = filtered_data.pop("status", QuestStatus.DRAFT)
+        sanitized["status"] = self._normalize_enum(status_value, QuestStatus, "status")
+
+        experience_reward = filtered_data.pop("experience_reward", None)
+        if experience_reward is None:
+            raise ValueError("Child quests require an experience_reward value")
+        try:
+            reward_value = int(experience_reward)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("experience_reward must be an integer") from exc
+        if reward_value < 0:
+            raise ValueError("experience_reward cannot be negative")
+        sanitized["experience_reward"] = reward_value
+
+        progress_value = filtered_data.pop("progress", None)
+        completion_percentage = filtered_data.pop("completion_percentage", None)
+        progress_source = (
+            progress_value if progress_value is not None else completion_percentage
+        )
+        if progress_source is not None:
+            sanitized["progress"] = self._normalize_progress(progress_source)
+
+        for date_field in ("start_date", "due_date"):
+            if date_field in filtered_data:
+                sanitized[date_field] = self._normalize_date(
+                    filtered_data.pop(date_field), date_field
+                )
+
+        if "completed_at" in filtered_data:
+            sanitized["completed_at"] = self._normalize_datetime(
+                filtered_data.pop("completed_at"), "completed_at"
+            )
+
+        if "prerequisite_quest_ids" in filtered_data:
+            sanitized["prerequisite_quest_ids"] = self._normalize_prerequisites(
+                filtered_data.pop("prerequisite_quest_ids")
+            )
+
+        if filtered_data:
+            raise ValueError(
+                "Unsupported quest fields provided: "
+                + ", ".join(sorted(filtered_data.keys()))
+            )
+
+        return sanitized
 
     def get_quest_chain(self, parent_quest_id: str) -> list[Quest]:
         """

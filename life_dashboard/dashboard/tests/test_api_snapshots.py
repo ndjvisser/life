@@ -7,6 +7,8 @@ from datetime import date, datetime
 
 import pytest
 
+pytest.importorskip("pytest_snapshot")
+
 from life_dashboard.dashboard.domain.entities import UserProfile
 from life_dashboard.dashboard.domain.state_machines import OnboardingStateMachine
 from life_dashboard.dashboard.domain.value_objects import OnboardingState
@@ -224,6 +226,7 @@ class TestDashboardAPISnapshots:
                 "bronze_achievements": 8,
                 "silver_achievements": 3,
                 "gold_achievements": 1,
+                "platinum_achievements": 0,
                 "completion_rate": 75.0,
             },
             "progress_statistics": {

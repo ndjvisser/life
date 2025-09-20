@@ -7,6 +7,8 @@ on:
   pull_request:
     branches:
       - main
+      - develop
+      - 'feature/**'
 
 jobs:
   build:
@@ -68,25 +70,25 @@ jobs:
 
       - name: Run Domain Tests (Fast)
         run: make test-domain-fast
-        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+        continue-on-error: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
 
       - name: Run Contract Tests
         run: make test-contracts
-        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+        continue-on-error: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
 
       - name: Run Property-Based Tests
         run: make test-properties
-        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+        continue-on-error: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
         env:
           HYPOTHESIS_PROFILE: ci
 
       - name: Run Snapshot Tests
         run: make test-snapshots
-        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+        continue-on-error: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
 
       - name: Run Integration Tests
         run: pytest -m integration
-        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+        continue-on-error: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
         env:
           DJANGO_SETTINGS_MODULE: life_dashboard.life_dashboard.test_settings
 
@@ -147,7 +149,7 @@ jobs:
       - name: Run ${{ matrix.description }}
         run: make ${{ matrix.make-target }}
         env: ${{ matrix.env }}
-        continue-on-error: ${{ github.ref != 'refs/heads/main' }}
+        continue-on-error: ${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}
 
   comprehensive-testing:
     name: Comprehensive Test Suite

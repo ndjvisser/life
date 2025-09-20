@@ -8,6 +8,10 @@ import json
 from datetime import datetime, timezone
 from unittest.mock import Mock
 
+import pytest
+
+pytest.importorskip("pytest_snapshot")
+pytest.importorskip("freezegun")
 from freezegun import freeze_time
 
 from life_dashboard.achievements.domain.entities import (

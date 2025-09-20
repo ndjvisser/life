@@ -3,6 +3,8 @@ Property-based tests for dashboard domain - using Hypothesis for comprehensive v
 """
 
 import pytest
+
+pytest.importorskip("hypothesis")
 from hypothesis import assume, given
 from hypothesis import strategies as st
 

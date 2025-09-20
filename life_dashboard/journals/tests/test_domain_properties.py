@@ -5,6 +5,8 @@ Property-based tests for journals domain - using Hypothesis for comprehensive va
 from datetime import datetime, timedelta
 
 import pytest
+
+pytest.importorskip("hypothesis")
 from hypothesis import assume, given
 from hypothesis import strategies as st
 

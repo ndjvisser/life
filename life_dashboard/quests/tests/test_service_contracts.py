@@ -8,6 +8,8 @@ from datetime import date, datetime
 from unittest.mock import Mock
 
 import pytest
+
+pytest.importorskip("pydantic")
 from pydantic import BaseModel, ValidationError
 
 from life_dashboard.quests.domain.entities import (

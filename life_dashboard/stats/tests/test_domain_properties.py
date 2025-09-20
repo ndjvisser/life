@@ -7,6 +7,8 @@ These tests generate random inputs to verify domain invariants and edge cases.
 from decimal import Decimal
 
 import pytest
+
+pytest.importorskip("hypothesis")
 from hypothesis import given
 from hypothesis import strategies as st
 

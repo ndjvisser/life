@@ -78,6 +78,8 @@ class Quest:
     quest_type: QuestType
     status: QuestStatus
     experience_reward: ExperienceReward
+    parent_quest_id: str | None = None
+    prerequisite_quest_ids: list[str] = field(default_factory=list)
     progress: float = 0.0
     start_date: date | None = None
     due_date: date | None = None
@@ -87,6 +89,20 @@ class Quest:
 
     def __post_init__(self):
         """Validate quest data after initialization"""
+        if self.parent_quest_id is not None:
+            self.parent_quest_id = str(self.parent_quest_id)
+
+        if self.prerequisite_quest_ids is None:
+            self.prerequisite_quest_ids = []
+        elif not isinstance(self.prerequisite_quest_ids, list):
+            self.prerequisite_quest_ids = [
+                str(prereq) for prereq in self.prerequisite_quest_ids
+            ]
+        else:
+            self.prerequisite_quest_ids = [
+                str(prereq) for prereq in self.prerequisite_quest_ids
+            ]
+
         self._validate_dates()
         self._validate_status_transitions()
         self._validate_progress()

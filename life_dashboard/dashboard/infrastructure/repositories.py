@@ -138,8 +138,9 @@ class DjangoUserRepository(UserRepository):
 
             if needs_save:
                 user.save()
-            return True
-            return True
+                return True
+
+            return False
         except User.DoesNotExist:
             return False
 

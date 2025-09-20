@@ -9,6 +9,8 @@ from datetime import datetime
 from decimal import Decimal
 
 import pytest
+
+pytest.importorskip("pydantic")
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from ..domain.entities import CoreStat, LifeStat, StatHistory

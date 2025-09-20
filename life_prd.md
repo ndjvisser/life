@@ -114,7 +114,7 @@ Level tracking
 
 ## . Achievements & Titles
 
-Badges: Bronze, Silver, Gold
+Badges: Bronze, Silver, Gold, Platinum
 
 Custom Titles
 
