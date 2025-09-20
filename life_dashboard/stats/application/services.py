@@ -2,9 +2,9 @@
 Stats application services - use case orchestration and business workflows.
 """
 
-from datetime import date, datetime
 from decimal import Decimal
-from typing import Any
+
+from django.utils import timezone
 
 from ..domain.entities import CoreStat, LifeStat, StatHistory
 from ..domain.repositories import (
@@ -18,176 +18,156 @@ class StatService:
     """Service for core stat management."""
 
     def __init__(
-        self, core_stat_repo: CoreStatRepository, history_repo: StatHistoryRepository
+        self,
+        core_stat_repo: CoreStatRepository,
+        life_stat_repo: LifeStatRepository,
+        history_repo: StatHistoryRepository,
     ):
         """
         Initialize the StatService.
 
-        Stores the provided repositories for core stats and stat history for use by the service.
+        Stores the provided repositories for core stats, life stats, and stat history for use by the service.
         """
         self.core_stat_repo = core_stat_repo
+        self.life_stat_repo = life_stat_repo
         self.history_repo = history_repo
 
     def get_or_create_core_stats(self, user_id: int) -> CoreStat:
         """
         Return the CoreStat for the given user, creating and persisting a new CoreStat if none exists.
 
-        If a CoreStat does not exist for user_id, a new CoreStat is created with created_at and updated_at set to the current UTC time and persisted via the repository.
+        If a CoreStat does not exist for user_id, a new CoreStat is created with
+        created_at and updated_at set to the current UTC time and persisted via the repository.
 
         Returns:
             CoreStat: The existing or newly created CoreStat for the user.
         """
         core_stats = self.core_stat_repo.get_by_user_id(user_id)
         if not core_stats:
-from datetime import date, datetime, timedelta
-from ..domain.entities import CoreStat, LifeStat, StatHistory
-from django.utils import timezone
-
-def get_or_create_core_stats(self, user_id: int) -> CoreStat:
-    core_stats = CoreStat(
-        user_id=user_id,
-        created_at=timezone.now(),
-        updated_at=timezone.now(),
-    )
-    # ... (rest unchanged)
-
-# inside create_or_update_stat(...) — keep surrounding code as-is
+            core_stats = CoreStat(
+                user_id=user_id,
                 created_at=timezone.now(),
-                last_updated=timezone.now(),
-    # ... (rest unchanged)
+                updated_at=timezone.now(),
+            )
+            self.core_stat_repo.save(core_stats)
+        return core_stats
 
-def get_recent_activity(self, user_id: int, days: int = 7) -> List[StatHistory]:
-    end_date = timezone.localdate()
-    if days < 1:
-        days = 1
-    start_date = end_date - timedelta(days=days - 1)
-    # ... (rest unchanged)
-            core_stats = self.core_stat_repo.create(core_stats)
+    def update_core_stat(
+        self, user_id: int, stat_name: str, new_value: int
+    ) -> CoreStat:
+        """
+        Update a specific core stat for a user and record the change in history.
+
+        Args:
+            user_id: The user's ID
+            stat_name: Name of the stat to update (e.g., 'strength', 'intelligence')
+            new_value: New value for the stat
+
+        Returns:
+            CoreStat: The updated core stats entity
+
+        Raises:
+            ValueError: If stat_name is invalid or new_value is out of range
+        """
+        core_stats = self.get_or_create_core_stats(user_id)
+
+        # Get the old value
+        old_value = getattr(core_stats, stat_name, None)
+        if old_value is None:
+            raise ValueError(f"Invalid stat name: {stat_name}")
+
+        # Update the stat
+        setattr(core_stats, stat_name, new_value)
+        core_stats.updated_at = timezone.now()
+
+        # Save the updated stats
+        self.core_stat_repo.save(core_stats)
+
+        # Record the change in history
+        history_entry = StatHistory(
+            user_id=user_id,
+            stat_type="core",
+            stat_name=stat_name,
+            old_value=Decimal(str(old_value)),
+            new_value=Decimal(str(new_value)),
+            change_amount=Decimal(str(new_value - old_value)),
+            change_reason="Manual update",
+            timestamp=timezone.now(),
+        )
+        self.history_repo.save(history_entry)
 
         return core_stats
 
-    def update_stat(
-        self, user_id: int, stat_name: str, value: int, reason: str = ""
-    ) -> tuple[CoreStat, bool]:
+    def add_experience(
+        self, user_id: int, experience_points: int, reason: str = "Experience gained"
+    ) -> CoreStat:
         """
-        Update a user's core stat, persist the change, and record history if the value changed.
+        Add experience points to a user's core stats and handle level ups.
 
-        Retrieves or creates the user's CoreStat, updates the named stat to the provided value, saves the CoreStat, and—only if the value changed—creates a StatHistory entry recording the old and new values and the optional reason.
-
-        Parameters:
-            user_id (int): ID of the user whose stat is updated.
-            stat_name (str): Attribute name of the core stat to update.
-            value (int): New numeric value to set for the stat.
-            reason (str, optional): Short reason or note for the change (recorded in history when a change occurs).
+        Args:
+            user_id: The user's ID
+            experience_points: Amount of experience to add
+            reason: Reason for the experience gain
 
         Returns:
-            Tuple[CoreStat, bool]: The saved CoreStat instance and a boolean indicating whether the stat value changed.
+            CoreStat: The updated core stats entity
         """
         core_stats = self.get_or_create_core_stats(user_id)
-        old_value = getattr(core_stats, stat_name, 0)
 
-        # Update the stat
-        new_value = core_stats.update_stat(stat_name, value)
+        old_experience = core_stats.experience_points
+        old_level = core_stats.level
+
+        # Add experience
+        core_stats.experience_points += experience_points
+        core_stats.updated_at = timezone.now()
+
+        # Recalculate level (this happens in the domain entity)
+        core_stats._calculate_level()
 
         # Save the updated stats
-        updated_stats = self.core_stat_repo.save(core_stats)
+        self.core_stat_repo.save(core_stats)
 
-        # Record history if value changed
-        value_changed = old_value != new_value
-        if value_changed:
-            history = StatHistory(
-                user_id=user_id,
-                stat_type="core",
-                stat_name=stat_name,
-                old_value=Decimal(str(old_value)),
-                new_value=Decimal(str(new_value)),
-                change_reason=reason,
-            )
-            self.history_repo.create(history)
-
-        return updated_stats, value_changed
-
-    def add_experience(
-        self, user_id: int, points: int, reason: str = ""
-    ) -> tuple[CoreStat, bool]:
-        """
-        Add experience points to a user's core stats, persist the updated CoreStat, and record history entries.
-
-        This updates the user's experience (and level, if leveled up) using the domain logic on CoreStat, saves the modified CoreStat via the repository, and creates StatHistory records for the experience change and for a level change when one occurs.
-
-        Parameters:
-            user_id (int): ID of the user whose stats will be updated.
-            points (int): Number of experience points to add.
-            reason (str): Optional reason stored on the experience history entry; if omitted a default reason is used.
-
-        Returns:
-            Tuple[CoreStat, bool]: The persisted CoreStat and a boolean indicating whether a level-up occurred.
-        """
-        core_stats = self.get_or_create_core_stats(user_id)
-        old_level = core_stats.level
-        old_experience = core_stats.experience_points
-
-        # Add experience using domain logic
-        new_level, level_up_occurred = core_stats.add_experience(points)
-
-        # Save updated stats
-        updated_stats = self.core_stat_repo.save(core_stats)
-
-        # Record experience history
-        history = StatHistory(
+        # Record experience gain in history
+        history_entry = StatHistory(
             user_id=user_id,
             stat_type="core",
             stat_name="experience_points",
             old_value=Decimal(str(old_experience)),
-            new_value=Decimal(str(updated_stats.experience_points)),
-            change_reason=reason or f"Experience gained: {points} points",
+            new_value=Decimal(str(core_stats.experience_points)),
+            change_amount=Decimal(str(experience_points)),
+            change_reason=reason,
+            timestamp=timezone.now(),
         )
-        self.history_repo.create(history)
+        self.history_repo.save(history_entry)
 
-        # Record level change if it occurred
-        if level_up_occurred:
+        # Record level up if it occurred
+        if core_stats.level > old_level:
             level_history = StatHistory(
                 user_id=user_id,
                 stat_type="core",
                 stat_name="level",
                 old_value=Decimal(str(old_level)),
-                new_value=Decimal(str(new_level)),
-                change_reason="Level up from experience gain",
+                new_value=Decimal(str(core_stats.level)),
+                change_amount=Decimal(str(core_stats.level - old_level)),
+                change_reason=f"Level up from experience gain: {reason}",
+                timestamp=timezone.now(),
             )
-            self.history_repo.create(level_history)
+            self.history_repo.save(level_history)
 
-        return updated_stats, level_up_occurred
+        return core_stats
 
-    def get_core_stats(self, user_id: int) -> CoreStat | None:
+    def get_recent_activity(self, user_id: int, days: int = 7) -> list[StatHistory]:
         """
-        Return the CoreStat for the given user or None if no core stats exist.
+        Get recent stat changes for a user.
 
-        Parameters:
-            user_id (int): ID of the user.
+        Args:
+            user_id: The user's ID
+            days: Number of days to look back
 
         Returns:
-            Optional[CoreStat]: The user's CoreStat, or None if not found.
+            List[StatHistory]: Recent stat changes
         """
-        return self.core_stat_repo.get_by_user_id(user_id)
-
-    def get_stat_history(
-        self, user_id: int, stat_name: str, limit: int = 50
-    ) -> list[StatHistory]:
-        """
-        Return history entries for a user's core stat.
-
-        Retrieves up to `limit` StatHistory records for the given `stat_name` of type "core" for `user_id`.
-        Records are returned in descending time order (most recent first).
-
-        Parameters:
-            user_id (int): ID of the user whose stat history to fetch.
-            stat_name (str): Name of the core stat (e.g., "experience", "level").
-            limit (int): Maximum number of history records to return (default 50).
-
-        Returns:
-            List[StatHistory]: A list of StatHistory entries for the requested stat (may be empty).
-        """
-        return self.history_repo.get_by_stat(user_id, "core", stat_name, limit)
+        return self.history_repo.get_recent_for_user(user_id, days)
 
 
 class LifeStatService:
@@ -196,319 +176,79 @@ class LifeStatService:
     def __init__(
         self, life_stat_repo: LifeStatRepository, history_repo: StatHistoryRepository
     ):
-        """
-        Initialize the LifeStatService with repositories.
-
-        Stores the life stat repository and the history repository used by the service for persistence and history recording.
-        """
+        """Initialize the LifeStatService."""
         self.life_stat_repo = life_stat_repo
         self.history_repo = history_repo
 
-    def create_or_update_stat(
+    def update_life_stat(
         self,
         user_id: int,
         category: str,
-        name: str,
-        value: Decimal,
-        target: Decimal | None = None,
+        subcategory: str,
+        new_value: Decimal,
         unit: str = "",
         notes: str = "",
-    ) -> tuple[LifeStat, bool]:
+    ) -> LifeStat:
         """
-        Create a new life stat for a user or update an existing one.
+        Update or create a life stat for a user.
 
-        If a LifeStat with the given user_id, category, and name exists, updates its value, optional target, unit, and notes; saves the change and records a StatHistory entry only when the value changes. If no existing stat is found, creates and persists a new LifeStat and records a creation StatHistory (old_value = 0).
-
-        Parameters:
-            user_id (int): ID of the user owning the stat.
-            category (str): Stat category (e.g., "health", "wealth", "relationships").
-            name (str): Stat name within the category.
-            value (Decimal): New stat value.
-            target (Optional[Decimal]): Optional target value for the stat.
-            unit (str): Unit of measurement for the stat (optional).
-            notes (str): Optional notes or reason used for the history entry.
+        Args:
+            user_id: The user's ID
+            category: Main category (e.g., 'health', 'wealth', 'relationships')
+            subcategory: Subcategory (e.g., 'physical', 'mental')
+            new_value: New value for the stat
+            unit: Unit of measurement
+            notes: Optional notes
 
         Returns:
-            Tuple[LifeStat, bool]: (the saved LifeStat, was_created) where was_created is True when a new stat was created and False when an existing stat was updated.
+            LifeStat: The updated or created life stat
         """
-        existing_stat = self.life_stat_repo.get_by_user_and_name(
-            user_id, category, name
+        # Try to get existing stat
+        life_stat = self.life_stat_repo.get_by_user_and_category(
+            user_id, category, subcategory
         )
 
-        if existing_stat:
-            # Update existing stat
-            old_value = existing_stat.value
-            existing_stat.update_value(value, notes)
-            if target is not None:
-                existing_stat.set_target(target)
-            if unit:
-                existing_stat.unit = unit
-
-            updated_stat = self.life_stat_repo.save(existing_stat)
-
-            # Record history if value changed
-            if old_value != value:
-                history = StatHistory(
-                    user_id=user_id,
-                    stat_type="life",
-                    stat_name=f"{category}.{name}",
-                    old_value=old_value,
-                    new_value=value,
-                    change_reason=notes or "Stat updated",
-                )
-                self.history_repo.create(history)
-
-            return updated_stat, False
+        old_value = Decimal("0")
+        if life_stat:
+            old_value = life_stat.current_value
+            life_stat.current_value = new_value
+            life_stat.unit = unit
+            life_stat.notes = notes
+            life_stat.last_updated = timezone.now()
         else:
-            # Create new stat
-            new_stat = LifeStat(
+            life_stat = LifeStat(
                 user_id=user_id,
                 category=category,
-                name=name,
-                value=value,
-                target=target,
+                subcategory=subcategory,
+                current_value=new_value,
                 unit=unit,
                 notes=notes,
-                created_at=datetime.utcnow(),
-                last_updated=datetime.utcnow(),
+                last_updated=timezone.now(),
+                created_at=timezone.now(),
             )
 
-            created_stat = self.life_stat_repo.create(new_stat)
+        # Save the stat
+        self.life_stat_repo.save(life_stat)
 
-            # Record creation history
-            history = StatHistory(
-                user_id=user_id,
-                stat_type="life",
-                stat_name=f"{category}.{name}",
-                old_value=Decimal("0"),
-                new_value=value,
-                change_reason=notes or "Stat created",
-            )
-            self.history_repo.create(history)
+        # Record the change in history
+        history_entry = StatHistory(
+            user_id=user_id,
+            stat_type="life",
+            stat_name=f"{category}.{subcategory}",
+            old_value=old_value,
+            new_value=new_value,
+            change_amount=new_value - old_value,
+            change_reason="Life stat update",
+            timestamp=timezone.now(),
+        )
+        self.history_repo.save(history_entry)
 
-            return created_stat, True
+        return life_stat
 
-    def update_stat_value(
-        self, user_id: int, category: str, name: str, value: Decimal, notes: str = ""
-    ) -> LifeStat | None:
-        """
-        Update the numeric value of an existing life stat and record history if it changed.
-
-        Retrieves the LifeStat for (user_id, category, name); if found, sets the new value and notes,
-        persists the updated stat, and creates a StatHistory entry when the value differs from the previous value.
-
-        Parameters:
-            user_id (int): ID of the user who owns the stat.
-            category (str): Life stat category (e.g., "health", "wealth").
-            name (str): Name of the stat within the category.
-            value (Decimal): New value to assign to the stat.
-            notes (str, optional): Optional note or reason stored with the stat and history entry.
-
-        Returns:
-            Optional[LifeStat]: The saved LifeStat after update, or None if the stat does not exist.
-        """
-        stat = self.life_stat_repo.get_by_user_and_name(user_id, category, name)
-        if not stat:
-            return None
-
-        old_value = stat.value
-        stat.update_value(value, notes)
-        updated_stat = self.life_stat_repo.save(stat)
-
-        # Record history
-        if old_value != value:
-            history = StatHistory(
-                user_id=user_id,
-                stat_type="life",
-                stat_name=f"{category}.{name}",
-                old_value=old_value,
-                new_value=value,
-                change_reason=notes or "Value updated",
-            )
-            self.history_repo.create(history)
-
-        return updated_stat
-
-    def set_stat_target(
-        self, user_id: int, category: str, name: str, target: Decimal | None
-    ) -> LifeStat | None:
-        """
-        Set or clear the target value for an existing life stat and persist the change.
-
-        If the stat identified by (user_id, category, name) does not exist, returns None.
-        Passing None for `target` clears the stat's target. Returns the saved LifeStat instance.
-        """
-        stat = self.life_stat_repo.get_by_user_and_name(user_id, category, name)
-        if not stat:
-            return None
-
-        stat.set_target(target)
-        return self.life_stat_repo.save(stat)
-
-    def get_stats_by_category(self, user_id: int, category: str) -> list[LifeStat]:
-        """Get all life stats for a user in a specific category."""
-        return self.life_stat_repo.get_by_category(user_id, category)
-
-    def get_all_stats(self, user_id: int) -> list[LifeStat]:
+    def get_user_life_stats(self, user_id: int) -> list[LifeStat]:
         """Get all life stats for a user."""
         return self.life_stat_repo.get_by_user_id(user_id)
 
-    def get_stats_summary(self, user_id: int) -> dict[str, Any]:
-        """
-        Return a per-category summary of the user's life stats.
-
-        The returned dictionary has the following structure:
-        {
-            "health": [<stat dict>, ...],
-            "wealth": [<stat dict>, ...],
-            "relationships": [<stat dict>, ...],
-            "totals": {
-                "health": {"count": int, "targets_achieved": int},
-                "wealth": {"count": int, "targets_achieved": int},
-                "relationships": {"count": int, "targets_achieved": int},
-            },
-        }
-
-        - Each stat dict is produced by LifeStat.to_dict().
-        - "count" is the number of stats in that category.
-        - "targets_achieved" is the number of stats in the category for which is_target_achieved() returned True.
-        """
-        all_stats = self.get_all_stats(user_id)
-
-        summary = {
-            "health": [],
-            "wealth": [],
-            "relationships": [],
-            "totals": {
-                "health": {"count": 0, "targets_achieved": 0},
-                "wealth": {"count": 0, "targets_achieved": 0},
-                "relationships": {"count": 0, "targets_achieved": 0},
-            },
-        }
-
-        for stat in all_stats:
-            category_stats = summary[stat.category]
-            category_stats.append(stat.to_dict())
-
-            # Update totals
-            summary["totals"][stat.category]["count"] += 1
-            if stat.is_target_achieved():
-                summary["totals"][stat.category]["targets_achieved"] += 1
-
-        return summary
-
-    def delete_stat(self, user_id: int, category: str, name: str) -> bool:
-        """
-        Delete a life stat for a user.
-
-        Deletes the life stat identified by (category, name) for the given user.
-
-        Returns:
-            bool: True if a stat was deleted, False if no matching stat existed.
-        """
-        return self.life_stat_repo.delete(user_id, category, name)
-
-    def get_stat_history(
-        self, user_id: int, category: str, name: str, limit: int = 50
-    ) -> list[StatHistory]:
-        """Get history for a specific life stat."""
-        stat_name = f"{category}.{name}"
-        return self.history_repo.get_by_stat(user_id, "life", stat_name, limit)
-
-
-class StatAnalyticsService:
-    """Service for stat analytics and insights."""
-
-    def __init__(self, history_repo: StatHistoryRepository):
-        """
-        Initialize the service.
-
-        Stores the provided StatHistoryRepository for fetching and analyzing historical stat records.
-        """
-        self.history_repo = history_repo
-
-    def get_recent_activity(self, user_id: int, days: int = 7) -> list[StatHistory]:
-        """
-        Return recent stat history entries for a user within a date window ending today.
-
-        The window covers from (today - days) up to and including today. `days` defaults to 7.
-
-        Parameters:
-            days (int): Number of days before today to include in the window (inclusive). Defaults to 7.
-
-        Returns:
-            List[StatHistory]: History records for the user in the specified date range.
-        """
-        end_date = date.today()
-        start_date = date.fromordinal(end_date.toordinal() - days)
-        return self.history_repo.get_by_date_range(user_id, start_date, end_date)
-
-    def get_activity_summary(self, user_id: int, days: int = 30) -> dict[str, Any]:
-        """
-        Return aggregated activity metrics for a user over a recent time window.
-
-        Delegates to the history repository to compute summary statistics for the user's stat activity over the past `days` (inclusive). Typical contents include totals and breakdowns (for example, counts or aggregates per stat or stat type) and the time window covered.
-
-        Parameters:
-            days (int): Number of days in the lookback window (default 30, inclusive of today).
-
-        Returns:
-            Dict[str, Any]: A dictionary of aggregated activity metrics as produced by the history repository.
-        """
-        return self.history_repo.get_summary_stats(user_id, days)
-
-    def detect_trends(
-        self, user_id: int, stat_type: str, stat_name: str, days: int = 30
-    ) -> dict[str, Any]:
-        """
-        Detect a simple trend for a given stat based on recent history.
-
-        Performs a lightweight heuristic over up to 100 history records (uses the first 10 most recent changes)
-        to classify the stat as "increasing", "decreasing", "stable", or "insufficient_data". Confidence is a
-        basic score derived from the proportion of consistent directional changes; it is not a statistical
-        measure and should be treated as an approximate indicator.
-
-        Parameters:
-            user_id (int): ID of the user whose stat history will be analyzed.
-            stat_type (str): Type/category of the stat (e.g., "core" or "life"); used to scope the history query.
-            stat_name (str): Name of the stat to analyze.
-            days (int): Historical window in days to consider (unused by the heuristic if the repository ignores it),
-                default 30.
-
-        Returns:
-            Dict[str, Any]: A dictionary containing:
-                - "trend" (str): One of "increasing", "decreasing", "stable", or "insufficient_data".
-                - "confidence" (float): Rounded [0.0, 1.0] score representing heuristic confidence.
-                - "recent_changes" (int): Number of recent change records considered.
-                - "positive_changes" (int): Count of positive change events in the sample.
-                - "negative_changes" (int): Count of negative change events in the sample.
-        """
-        history = self.history_repo.get_by_stat(
-            user_id, stat_type, stat_name, limit=100
-        )
-
-        if len(history) < 2:
-            return {"trend": "insufficient_data", "confidence": 0.0}
-
-        # Simple trend detection based on recent changes
-        recent_changes = [h.change_amount for h in history[:10]]
-        positive_changes = sum(1 for change in recent_changes if change > 0)
-        negative_changes = sum(1 for change in recent_changes if change < 0)
-
-        if positive_changes > negative_changes * 1.5:
-            trend = "increasing"
-            confidence = positive_changes / len(recent_changes)
-        elif negative_changes > positive_changes * 1.5:
-            trend = "decreasing"
-            confidence = negative_changes / len(recent_changes)
-        else:
-            trend = "stable"
-            confidence = 0.5
-
-        return {
-            "trend": trend,
-            "confidence": round(confidence, 2),
-            "recent_changes": len(recent_changes),
-            "positive_changes": positive_changes,
-            "negative_changes": negative_changes,
-        }
+    def get_life_stats_by_category(self, user_id: int, category: str) -> list[LifeStat]:
+        """Get life stats for a user in a specific category."""
+        return self.life_stat_repo.get_by_user_and_main_category(user_id, category)

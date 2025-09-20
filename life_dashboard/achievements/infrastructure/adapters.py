@@ -3,6 +3,8 @@ Infrastructure adapters for achievements context.
 Handles mapping between domain entities and Django models.
 """
 
+from django.contrib.auth import get_user_model
+
 from life_dashboard.achievements.domain.entities import Achievement as DomainAchievement
 from life_dashboard.achievements.domain.entities import AchievementTier
 from life_dashboard.achievements.domain.entities import (
@@ -61,8 +63,6 @@ class UserAchievementAdapter:
     """Adapter for mapping between domain UserAchievement entities and Django models."""
 
     @staticmethod
-from django.contrib.auth import get_user_model
-
     def domain_to_django(
         domain_user_achievement: DomainUserAchievement,
         django_achievement: DjangoAchievement,
