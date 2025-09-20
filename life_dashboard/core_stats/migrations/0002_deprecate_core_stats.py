@@ -13,13 +13,12 @@ def verify_data_migration_forward(apps, schema_editor):
     old_count = OldCoreStat.objects.count()
     new_count = NewCoreStat.objects.count()
 
-    if old_count > 0 and new_count == 0:
+    if old_count > 0 and new_count < old_count:
         raise Exception(
             f"Data migration incomplete: {old_count} records in core_stats.CoreStat "
-            f"but {new_count} records in stats.CoreStatModel. "
-            "Run stats migration 0002_consolidate_stats_models first."
+            f"but {new_count} in stats.CoreStatModel. "
+            "Run stats 0003_consolidate_core_stats_data and investigate discrepancies."
         )
-
     # Log the migration status
     print(
         f"Core stats migration verified: {old_count} old records, {new_count} new records"
