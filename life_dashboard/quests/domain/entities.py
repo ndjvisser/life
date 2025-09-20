@@ -302,11 +302,11 @@ class HabitCompletion:
 
     completion_id: str
     habit_id: HabitId
-    user_id: UserId | None = None
     count: CompletionCount
     completion_date: date
     notes: str
     experience_gained: ExperienceReward
+    user_id: UserId | None = None
     streak_at_completion: StreakCount | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
 

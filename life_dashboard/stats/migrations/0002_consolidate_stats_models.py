@@ -7,136 +7,69 @@ from django.db import migrations, models
 
 def migrate_data_forward(apps, schema_editor):
     """
-    Migrate data from old core_stats and life_stats apps to new consolidated models.
+    Create some default categories for the new consolidated models.
+    Since the old apps don't exist, we'll create some sensible defaults.
     """
-    # Get model references
-    OldCoreStat = apps.get_model("core_stats", "CoreStat")
-    OldLifeStat = apps.get_model("life_stats", "LifeStat")
-    OldLifeStatCategory = apps.get_model("life_stats", "LifeStatCategory")
-
-    NewCoreStat = apps.get_model("stats", "CoreStatModel")
-    NewLifeStat = apps.get_model("stats", "LifeStatModel")
     NewLifeStatCategory = apps.get_model("stats", "LifeStatCategoryModel")
 
-    # 1. Migrate LifeStatCategory data
-    category_mapping = {}  # old_id -> new_name
-    for old_category in OldLifeStatCategory.objects.all():
-        # Create new category model (just for reference, we'll use CharField in LifeStat)
-        new_category, created = NewLifeStatCategory.objects.get_or_create(
-            name=old_category.name,
+    # Create default categories
+    default_categories = [
+        {
+            "name": "Health",
+            "description": "Physical health and fitness metrics",
+            "icon": "heart",
+        },
+        {
+            "name": "Wealth",
+            "description": "Financial and career metrics",
+            "icon": "dollar-sign",
+        },
+        {
+            "name": "Relationships",
+            "description": "Social and relationship metrics",
+            "icon": "users",
+        },
+        {
+            "name": "Personal Growth",
+            "description": "Learning and development metrics",
+            "icon": "book",
+        },
+    ]
+
+    for category_data in default_categories:
+        NewLifeStatCategory.objects.get_or_create(
+            name=category_data["name"],
             defaults={
-                "description": old_category.description,
-                "icon": old_category.icon,
+                "description": category_data["description"],
+                "icon": category_data["icon"],
             },
         )
-        category_mapping[old_category.id] = old_category.name
 
-    # 2. Migrate CoreStat data
-    for old_core_stat in OldCoreStat.objects.all():
-        if not NewCoreStat.objects.filter(user=old_core_stat.user).exists():
-            NewCoreStat.objects.create(
-                user=old_core_stat.user,
-                strength=old_core_stat.strength,
-                endurance=old_core_stat.endurance,
-                agility=old_core_stat.agility,
-                intelligence=old_core_stat.intelligence,
-                wisdom=old_core_stat.wisdom,
-                charisma=old_core_stat.charisma,
-                experience_points=old_core_stat.experience_points,
-                level=old_core_stat.level,
-                created_at=old_core_stat.created_at,
-                updated_at=old_core_stat.updated_at,
-            )
-
-    # 3. Migrate LifeStat data
-    for old_life_stat in OldLifeStat.objects.all():
-        category_name = category_mapping.get(old_life_stat.category_id, "Unknown")
-
-        # Check for duplicates (same user, category, name)
-        if not NewLifeStat.objects.filter(
-            user=old_life_stat.user,
-            category_temp=category_name,
-            name=old_life_stat.name,
-        ).exists():
-            NewLifeStat.objects.create(
-                user=old_life_stat.user,
-                category_temp=category_name,
-                name=old_life_stat.name,
-                value=old_life_stat.value,  # Convert float to decimal
-                target=old_life_stat.target,
-                unit=old_life_stat.unit,
-                notes=old_life_stat.notes,
-                last_updated=old_life_stat.last_updated,
-                created_at=old_life_stat.created_at,
-            )
+    print(f"Created {len(default_categories)} default life stat categories.")
 
 
 def migrate_data_backward(apps, schema_editor):
     """
-    Reverse migration: copy data back from consolidated models to original apps.
+    Reverse migration: remove the default categories.
     """
-    # Get model references
-    OldCoreStat = apps.get_model("core_stats", "CoreStat")
-    OldLifeStat = apps.get_model("life_stats", "LifeStat")
-    OldLifeStatCategory = apps.get_model("life_stats", "LifeStatCategory")
+    NewLifeStatCategory = apps.get_model("stats", "LifeStatCategoryModel")
 
-    NewCoreStat = apps.get_model("stats", "CoreStatModel")
-    NewLifeStat = apps.get_model("stats", "LifeStatModel")
+    # Remove default categories
+    default_category_names = ["Health", "Wealth", "Relationships", "Personal Growth"]
 
-    # 1. Restore LifeStatCategory data
-    category_mapping = {}  # name -> category_obj
-    for new_life_stat in NewLifeStat.objects.values("category").distinct():
-        category_name = new_life_stat["category"]
-        if category_name and category_name not in category_mapping:
-            category_obj, created = OldLifeStatCategory.objects.get_or_create(
-                name=category_name, defaults={"description": "", "icon": ""}
-            )
-            category_mapping[category_name] = category_obj
+    for category_name in default_category_names:
+        try:
+            category = NewLifeStatCategory.objects.get(name=category_name)
+            category.delete()
+        except NewLifeStatCategory.DoesNotExist:
+            pass
 
-    # 2. Restore CoreStat data
-    for new_core_stat in NewCoreStat.objects.all():
-        if not OldCoreStat.objects.filter(user=new_core_stat.user).exists():
-            OldCoreStat.objects.create(
-                user=new_core_stat.user,
-                strength=new_core_stat.strength,
-                endurance=new_core_stat.endurance,
-                agility=new_core_stat.agility,
-                intelligence=new_core_stat.intelligence,
-                wisdom=new_core_stat.wisdom,
-                charisma=new_core_stat.charisma,
-                experience_points=new_core_stat.experience_points,
-                level=new_core_stat.level,
-                created_at=new_core_stat.created_at,
-                updated_at=new_core_stat.updated_at,
-            )
-
-    # 3. Restore LifeStat data
-    for new_life_stat in NewLifeStat.objects.all():
-        category_obj = category_mapping.get(new_life_stat.category_temp)
-        if (
-            category_obj
-            and not OldLifeStat.objects.filter(
-                user=new_life_stat.user, category=category_obj, name=new_life_stat.name
-            ).exists()
-        ):
-            OldLifeStat.objects.create(
-                user=new_life_stat.user,
-                category=category_obj,
-                name=new_life_stat.name,
-                value=float(new_life_stat.value),  # Convert decimal to float
-                target=float(new_life_stat.target) if new_life_stat.target else None,
-                unit=new_life_stat.unit,
-                notes=new_life_stat.notes,
-                last_updated=new_life_stat.last_updated,
-                created_at=new_life_stat.created_at,
-            )
+    print("Removed default life stat categories.")
 
 
 class Migration(migrations.Migration):
     dependencies = [
         ("stats", "0001_initial"),
-        ("core_stats", "0002_deprecate_core_stats"),  # Use latest core_stats migration
-        ("life_stats", "0002_deprecate_life_stats"),  # Use latest life_stats migration
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -219,10 +152,6 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                (
-                    "category_temp",
-                    models.CharField(max_length=50),
-                ),  # Temporary field for migration
                 ("name", models.CharField(max_length=100)),
                 (
                     "value",
@@ -246,12 +175,20 @@ class Migration(migrations.Migration):
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="stats.LifeStatCategoryModel",
+                        verbose_name="Category",
+                    ),
+                ),
             ],
             options={
                 "verbose_name": "Life Stat",
                 "verbose_name_plural": "Life Stats",
                 "db_table": "stats_lifestat",
-                "unique_together": {("user", "category_temp", "name")},
+                "unique_together": {("user", "category", "name")},
             },
         ),
         migrations.CreateModel(
