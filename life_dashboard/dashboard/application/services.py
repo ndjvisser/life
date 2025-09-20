@@ -3,7 +3,6 @@ Dashboard application services - use case orchestration and business workflows.
 """
 
 from datetime import datetime
-from typing import Optional, Tuple
 
 from ..domain.entities import UserProfile
 from ..domain.repositories import UserProfileRepository, UserRepository
@@ -30,12 +29,14 @@ class UserService:
         password: str,
         first_name: str = "",
         last_name: str = "",
-    ) -> Tuple[int, UserProfile]:
+        bio: str = "",
+        location: str = "",
+    ) -> tuple[int, UserProfile]:
         """
-        Create a new user account and a corresponding user profile.
+        Create a new user account and a corresponding user profile atomically.
 
-        This persists a user record via the user repository and a UserProfile via the profile repository.
-        The profile's created_at and updated_at timestamps are set to the current UTC time.
+        This operation is performed in a single transaction to ensure both the user
+        and profile are created together, or neither is created if any part fails.
 
         Parameters:
             username: Desired unique username.
@@ -43,32 +44,24 @@ class UserService:
             password: Plain-text password (repository is responsible for hashing).
             first_name: Optional first name (defaults to empty string).
             last_name: Optional last name (defaults to empty string).
+            bio: Optional user bio (defaults to empty string).
+            location: Optional user location (defaults to empty string).
 
         Returns:
             Tuple[int, UserProfile]: The newly created user's id and the saved UserProfile instance.
+
+        Raises:
+            Exception: If user or profile creation fails.
         """
-        # Create user account
-        user_id = self.user_repo.create_user(
+        return self.user_repo.create_user_with_profile(
             username=username,
             email=email,
             password=password,
             first_name=first_name,
             last_name=last_name,
+            bio=bio,
+            location=location,
         )
-
-        # Create user profile
-        profile = UserProfile(
-            user_id=user_id,
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
-
-        saved_profile = self.profile_repo.create(profile)
-        return user_id, saved_profile
 
     def update_profile(
         self, user_id: int, update_data: ProfileUpdateData
@@ -115,7 +108,7 @@ class UserService:
 
         return self.profile_repo.save(profile)
 
-    def add_experience(self, user_id: int, points: int) -> Tuple[UserProfile, bool]:
+    def add_experience(self, user_id: int, points: int) -> tuple[UserProfile, bool]:
         """
         Add experience points to a user's profile and persist the updated profile.
 
@@ -144,11 +137,11 @@ class UserService:
 
         return updated_profile, level_up_occurred
 
-    def get_profile(self, user_id: int) -> Optional[UserProfile]:
+    def get_profile(self, user_id: int) -> UserProfile | None:
         """Get user profile by user ID."""
         return self.profile_repo.get_by_user_id(user_id)
 
-    def get_profile_by_username(self, username: str) -> Optional[UserProfile]:
+    def get_profile_by_username(self, username: str) -> UserProfile | None:
         """
         Return the user's profile for the given username.
 
@@ -171,7 +164,7 @@ class AuthenticationService:
 
     def authenticate(
         self, username: str, password: str
-    ) -> Optional[Tuple[int, UserProfile]]:
+    ) -> tuple[int, UserProfile] | None:
         """
         Authenticate the provided username and password and return the authenticated user's id and profile.
 
@@ -188,7 +181,7 @@ class AuthenticationService:
 
         return user_id, profile
 
-    def get_user_data(self, user_id: int) -> Optional[dict]:
+    def get_user_data(self, user_id: int) -> dict | None:
         """
         Return raw user record used for session management.
 

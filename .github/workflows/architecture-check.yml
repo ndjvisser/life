@@ -55,37 +55,37 @@ jobs:
         echo "Checking for cross-context imports..."
 
         # Check dashboard context
-        if grep -r "from life_dashboard\.\(stats\|quests\|skills\|achievements\|journals\)" life_dashboard/dashboard/domain/ 2>/dev/null; then
+        if grep -rE "(from|import) life_dashboard\.(stats|quests|skills|achievements|journals)" life_dashboard/dashboard/domain/ 2>/dev/null; then
           echo "❌ Found cross-context imports in dashboard domain!"
           exit 1
         fi
 
         # Check stats context
-        if grep -r "from life_dashboard\.\(dashboard\|quests\|skills\|achievements\|journals\)" life_dashboard/stats/domain/ 2>/dev/null; then
+        if grep -rE "(from|import) life_dashboard\.(dashboard|quests|skills|achievements|journals)" life_dashboard/stats/domain/ 2>/dev/null; then
           echo "❌ Found cross-context imports in stats domain!"
           exit 1
         fi
 
         # Check quests context
-        if grep -r "from life_dashboard\.\(dashboard\|stats\|skills\|achievements\|journals\)" life_dashboard/quests/domain/ 2>/dev/null; then
+        if grep -rE "(from|import) life_dashboard\.(dashboard|stats|skills|achievements|journals)" life_dashboard/quests/domain/ 2>/dev/null; then
           echo "❌ Found cross-context imports in quests domain!"
           exit 1
         fi
 
         # Check skills context
-        if grep -r "from life_dashboard\.\(dashboard\|stats\|quests\|achievements\|journals\)" life_dashboard/skills/domain/ 2>/dev/null; then
+        if grep -rE "(from|import) life_dashboard\.(dashboard|stats|quests|achievements|journals)" life_dashboard/skills/domain/ 2>/dev/null; then
           echo "❌ Found cross-context imports in skills domain!"
           exit 1
         fi
 
         # Check achievements context
-        if grep -r "from life_dashboard\.\(dashboard\|stats\|quests\|skills\|journals\)" life_dashboard/achievements/domain/ 2>/dev/null; then
+        if grep -rE "(from|import) life_dashboard\.(dashboard|stats|quests|skills|journals)" life_dashboard/achievements/domain/ 2>/dev/null; then
           echo "❌ Found cross-context imports in achievements domain!"
           exit 1
         fi
 
         # Check journals context
-        if grep -r "from life_dashboard\.\(dashboard\|stats\|quests\|skills\|achievements\)" life_dashboard/journals/domain/ 2>/dev/null; then
+        if grep -rE "(from|import) life_dashboard\.(dashboard|stats|quests|skills|achievements)" life_dashboard/journals/domain/ 2>/dev/null; then
           echo "❌ Found cross-context imports in journals domain!"
           exit 1
         fi

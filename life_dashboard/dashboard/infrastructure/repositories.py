@@ -2,7 +2,7 @@
 Dashboard infrastructure repositories - Django ORM implementations.
 """
 
-from typing import Optional
+from datetime import datetime
 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -42,7 +42,7 @@ class DjangoUserRepository(UserRepository):
             )
             return user.id
 
-    def get_user_by_id(self, user_id: int) -> Optional[dict]:
+    def get_user_by_id(self, user_id: int) -> dict | None:
         """
         Return a dictionary of public user fields for the given user ID, or None if the user does not exist.
 
@@ -67,7 +67,7 @@ class DjangoUserRepository(UserRepository):
         except User.DoesNotExist:
             return None
 
-    def get_user_by_username(self, username: str) -> Optional[dict]:
+    def get_user_by_username(self, username: str) -> dict | None:
         """
         Retrieve a user's public fields by username.
 
@@ -110,7 +110,7 @@ class DjangoUserRepository(UserRepository):
         except User.DoesNotExist:
             return False
 
-    def authenticate_user(self, username: str, password: str) -> Optional[int]:
+    def authenticate_user(self, username: str, password: str) -> int | None:
         """
         Authenticate the given username and password and return the user's ID.
 
@@ -119,6 +119,77 @@ class DjangoUserRepository(UserRepository):
         """
         user = authenticate(username=username, password=password)
         return user.id if user else None
+
+    def create_user_with_profile(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        first_name: str = "",
+        last_name: str = "",
+        bio: str = "",
+        location: str = "",
+    ) -> tuple[int, DomainUserProfile]:
+        """
+        Atomically create a user and their profile in a single transaction.
+
+        This method ensures that both the user and profile are created together,
+        or neither is created if any part of the operation fails.
+
+        Note: A Django signal automatically creates a basic UserProfile when a User
+        is created. This method leverages that signal and then updates the profile
+        with the provided data.
+
+        Parameters:
+            username: Desired unique username.
+            email: User email address.
+            password: Plain-text password (repository is responsible for hashing).
+            first_name: Optional first name (defaults to empty string).
+            last_name: Optional last name (defaults to empty string).
+            bio: Optional user bio (defaults to empty string).
+            location: Optional user location (defaults to empty string).
+
+        Returns:
+            Tuple[int, DomainUserProfile]: The newly created user's id and the saved profile entity.
+
+        Raises:
+            Exception: If either user or profile creation fails.
+        """
+        with transaction.atomic():
+            # Create the user first - this will trigger the signal to create a basic profile
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+
+            # Get the profile created by the signal and update it with our data
+            django_profile = DjangoUserProfile.objects.get(user=user)
+            django_profile.bio = bio
+            django_profile.location = location
+            # Keep the auto-generated created_at, but update updated_at
+            django_profile.updated_at = datetime.utcnow()
+            django_profile.save()
+
+            # Convert to domain entity
+            domain_profile = DomainUserProfile(
+                user_id=user.id,
+                username=user.username,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                email=user.email,
+                bio=django_profile.bio,
+                location=django_profile.location,
+                birth_date=django_profile.birth_date,
+                experience_points=django_profile.experience_points,
+                level=django_profile.level,
+                created_at=django_profile.created_at,
+                updated_at=django_profile.updated_at,
+            )
+
+            return user.id, domain_profile
 
 
 class DjangoUserProfileRepository(UserProfileRepository):
@@ -156,7 +227,7 @@ class DjangoUserProfileRepository(UserProfileRepository):
     def _from_domain(
         self,
         domain_profile: DomainUserProfile,
-        django_profile: Optional[DjangoUserProfile] = None,
+        django_profile: DjangoUserProfile | None = None,
     ) -> DjangoUserProfile:
         """
         Create or update a DjangoUserProfile from a DomainUserProfile.
@@ -195,7 +266,7 @@ class DjangoUserProfileRepository(UserProfileRepository):
 
         return django_profile
 
-    def get_by_user_id(self, user_id: int) -> Optional[DomainUserProfile]:
+    def get_by_user_id(self, user_id: int) -> DomainUserProfile | None:
         """
         Return the domain user profile for the given user ID, or None if not found.
 
@@ -216,7 +287,7 @@ class DjangoUserProfileRepository(UserProfileRepository):
         except DjangoUserProfile.DoesNotExist:
             return None
 
-    def get_by_username(self, username: str) -> Optional[DomainUserProfile]:
+    def get_by_username(self, username: str) -> DomainUserProfile | None:
         """
         Return the DomainUserProfile for the given username.
 

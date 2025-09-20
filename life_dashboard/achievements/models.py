@@ -7,6 +7,7 @@ class Achievement(models.Model):
         ("BRONZE", "Bronze"),
         ("SILVER", "Silver"),
         ("GOLD", "Gold"),
+        ("PLATINUM", "Platinum"),
     ]
 
     name = models.CharField(max_length=200)

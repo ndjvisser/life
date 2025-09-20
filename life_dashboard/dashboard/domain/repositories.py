@@ -3,7 +3,6 @@ Dashboard domain repository interfaces - abstract data access contracts.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from .entities import UserProfile
 
@@ -12,7 +11,7 @@ class UserProfileRepository(ABC):
     """Abstract repository for UserProfile persistence."""
 
     @abstractmethod
-    def get_by_user_id(self, user_id: int) -> Optional[UserProfile]:
+    def get_by_user_id(self, user_id: int) -> UserProfile | None:
         """
         Retrieve the UserProfile for the given user ID.
 
@@ -25,7 +24,7 @@ class UserProfileRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_username(self, username: str) -> Optional[UserProfile]:
+    def get_by_username(self, username: str) -> UserProfile | None:
         """
         Return the UserProfile matching the given username, or None if no profile exists.
 
@@ -94,7 +93,41 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def get_user_by_id(self, user_id: int) -> Optional[dict]:
+    def create_user_with_profile(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        first_name: str = "",
+        last_name: str = "",
+        bio: str = "",
+        location: str = "",
+    ) -> tuple[int, UserProfile]:
+        """
+        Atomically create a user and their profile in a single transaction.
+
+        This method ensures that both the user and profile are created together,
+        or neither is created if any part of the operation fails.
+
+        Parameters:
+            username: Desired unique username.
+            email: User email address.
+            password: Plain-text password (repository is responsible for hashing).
+            first_name: Optional first name (defaults to empty string).
+            last_name: Optional last name (defaults to empty string).
+            bio: Optional user bio (defaults to empty string).
+            location: Optional user location (defaults to empty string).
+
+        Returns:
+            Tuple[int, UserProfile]: The newly created user's id and the saved profile entity.
+
+        Raises:
+            Exception: If either user or profile creation fails.
+        """
+        pass
+
+    @abstractmethod
+    def get_user_by_id(self, user_id: int) -> dict | None:
         """
         Retrieve a user's data by their numeric ID.
 
@@ -109,7 +142,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def get_user_by_username(self, username: str) -> Optional[dict]:
+    def get_user_by_username(self, username: str) -> dict | None:
         """
         Retrieve a user's data by their username.
 
@@ -132,7 +165,7 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
-    def authenticate_user(self, username: str, password: str) -> Optional[int]:
+    def authenticate_user(self, username: str, password: str) -> int | None:
         """
         Authenticate a user with the provided credentials and return their user ID if authentication succeeds.
 
