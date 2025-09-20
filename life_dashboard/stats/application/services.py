@@ -4,7 +4,7 @@ Stats application services - use case orchestration and business workflows.
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from ..domain.entities import CoreStat, LifeStat, StatHistory
 from ..domain.repositories import (
@@ -50,7 +50,7 @@ class StatService:
 
     def update_stat(
         self, user_id: int, stat_name: str, value: int, reason: str = ""
-    ) -> Tuple[CoreStat, bool]:
+    ) -> tuple[CoreStat, bool]:
         """
         Update a user's core stat, persist the change, and record history if the value changed.
 
@@ -91,7 +91,7 @@ class StatService:
 
     def add_experience(
         self, user_id: int, points: int, reason: str = ""
-    ) -> Tuple[CoreStat, bool]:
+    ) -> tuple[CoreStat, bool]:
         """
         Add experience points to a user's core stats, persist the updated CoreStat, and record history entries.
 
@@ -140,7 +140,7 @@ class StatService:
 
         return updated_stats, level_up_occurred
 
-    def get_core_stats(self, user_id: int) -> Optional[CoreStat]:
+    def get_core_stats(self, user_id: int) -> CoreStat | None:
         """
         Return the CoreStat for the given user or None if no core stats exist.
 
@@ -154,7 +154,7 @@ class StatService:
 
     def get_stat_history(
         self, user_id: int, stat_name: str, limit: int = 50
-    ) -> List[StatHistory]:
+    ) -> list[StatHistory]:
         """
         Return history entries for a user's core stat.
 
@@ -192,10 +192,10 @@ class LifeStatService:
         category: str,
         name: str,
         value: Decimal,
-        target: Optional[Decimal] = None,
+        target: Decimal | None = None,
         unit: str = "",
         notes: str = "",
-    ) -> Tuple[LifeStat, bool]:
+    ) -> tuple[LifeStat, bool]:
         """
         Create a new life stat for a user or update an existing one.
 
@@ -272,7 +272,7 @@ class LifeStatService:
 
     def update_stat_value(
         self, user_id: int, category: str, name: str, value: Decimal, notes: str = ""
-    ) -> Optional[LifeStat]:
+    ) -> LifeStat | None:
         """
         Update the numeric value of an existing life stat and record history if it changed.
 
@@ -312,8 +312,8 @@ class LifeStatService:
         return updated_stat
 
     def set_stat_target(
-        self, user_id: int, category: str, name: str, target: Optional[Decimal]
-    ) -> Optional[LifeStat]:
+        self, user_id: int, category: str, name: str, target: Decimal | None
+    ) -> LifeStat | None:
         """
         Set or clear the target value for an existing life stat and persist the change.
 
@@ -327,15 +327,15 @@ class LifeStatService:
         stat.set_target(target)
         return self.life_stat_repo.save(stat)
 
-    def get_stats_by_category(self, user_id: int, category: str) -> List[LifeStat]:
+    def get_stats_by_category(self, user_id: int, category: str) -> list[LifeStat]:
         """Get all life stats for a user in a specific category."""
         return self.life_stat_repo.get_by_category(user_id, category)
 
-    def get_all_stats(self, user_id: int) -> List[LifeStat]:
+    def get_all_stats(self, user_id: int) -> list[LifeStat]:
         """Get all life stats for a user."""
         return self.life_stat_repo.get_by_user_id(user_id)
 
-    def get_stats_summary(self, user_id: int) -> Dict[str, Any]:
+    def get_stats_summary(self, user_id: int) -> dict[str, Any]:
         """
         Return a per-category summary of the user's life stats.
 
@@ -392,7 +392,7 @@ class LifeStatService:
 
     def get_stat_history(
         self, user_id: int, category: str, name: str, limit: int = 50
-    ) -> List[StatHistory]:
+    ) -> list[StatHistory]:
         """Get history for a specific life stat."""
         stat_name = f"{category}.{name}"
         return self.history_repo.get_by_stat(user_id, "life", stat_name, limit)
@@ -409,7 +409,7 @@ class StatAnalyticsService:
         """
         self.history_repo = history_repo
 
-    def get_recent_activity(self, user_id: int, days: int = 7) -> List[StatHistory]:
+    def get_recent_activity(self, user_id: int, days: int = 7) -> list[StatHistory]:
         """
         Return recent stat history entries for a user within a date window ending today.
 
@@ -425,7 +425,7 @@ class StatAnalyticsService:
         start_date = date.fromordinal(end_date.toordinal() - days)
         return self.history_repo.get_by_date_range(user_id, start_date, end_date)
 
-    def get_activity_summary(self, user_id: int, days: int = 30) -> Dict[str, Any]:
+    def get_activity_summary(self, user_id: int, days: int = 30) -> dict[str, Any]:
         """
         Return aggregated activity metrics for a user over a recent time window.
 
@@ -441,7 +441,7 @@ class StatAnalyticsService:
 
     def detect_trends(
         self, user_id: int, stat_type: str, stat_name: str, days: int = 30
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Detect a simple trend for a given stat based on recent history.
 

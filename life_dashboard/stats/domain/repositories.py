@@ -4,7 +4,7 @@ Stats domain repository interfaces - abstract data access contracts.
 
 from abc import ABC, abstractmethod
 from datetime import date
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .entities import CoreStat, LifeStat, StatHistory
 
@@ -13,7 +13,7 @@ class CoreStatRepository(ABC):
     """Abstract repository for CoreStat persistence."""
 
     @abstractmethod
-    def get_by_user_id(self, user_id: int) -> Optional[CoreStat]:
+    def get_by_user_id(self, user_id: int) -> CoreStat | None:
         """
         Return the CoreStat for the given user ID, or None if no core stats exist.
 
@@ -57,12 +57,12 @@ class LifeStatRepository(ABC):
     @abstractmethod
     def get_by_user_and_name(
         self, user_id: int, category: str, name: str
-    ) -> Optional[LifeStat]:
+    ) -> LifeStat | None:
         """Get life stat by user ID, category, and name."""
         pass
 
     @abstractmethod
-    def get_by_user_id(self, user_id: int) -> List[LifeStat]:
+    def get_by_user_id(self, user_id: int) -> list[LifeStat]:
         """
         Return all LifeStat records belonging to the specified user.
 
@@ -71,7 +71,7 @@ class LifeStatRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_category(self, user_id: int, category: str) -> List[LifeStat]:
+    def get_by_category(self, user_id: int, category: str) -> list[LifeStat]:
         """
         Return all LifeStat records for a user filtered by category.
 
@@ -120,7 +120,7 @@ class LifeStatRepository(ABC):
         pass
 
     @abstractmethod
-    def get_categories_for_user(self, user_id: int) -> List[str]:
+    def get_categories_for_user(self, user_id: int) -> list[str]:
         """
         Return the list of distinct stat categories that have entries for the given user.
 
@@ -154,7 +154,7 @@ class StatHistoryRepository(ABC):
         pass
 
     @abstractmethod
-    def get_by_user_id(self, user_id: int, limit: int = 100) -> List[StatHistory]:
+    def get_by_user_id(self, user_id: int, limit: int = 100) -> list[StatHistory]:
         """
         Retrieve a user's stat history ordered most-recent-first.
 
@@ -170,7 +170,7 @@ class StatHistoryRepository(ABC):
     @abstractmethod
     def get_by_stat(
         self, user_id: int, stat_type: str, stat_name: str, limit: int = 50
-    ) -> List[StatHistory]:
+    ) -> list[StatHistory]:
         """
         Return the recent history entries for a specific stat (most recent first).
 
@@ -191,7 +191,7 @@ class StatHistoryRepository(ABC):
     @abstractmethod
     def get_by_date_range(
         self, user_id: int, start_date: date, end_date: date
-    ) -> List[StatHistory]:
+    ) -> list[StatHistory]:
         """
         Return stat history entries for a user that fall within a given date range.
 
@@ -206,7 +206,7 @@ class StatHistoryRepository(ABC):
         pass
 
     @abstractmethod
-    def get_summary_stats(self, user_id: int, days: int = 30) -> Dict[str, Any]:
+    def get_summary_stats(self, user_id: int, days: int = 30) -> dict[str, Any]:
         """
         Return summary statistics for a user's recent stat history.
 

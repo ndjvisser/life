@@ -3,7 +3,7 @@ Stats infrastructure repositories - Django ORM implementations.
 """
 
 from datetime import date
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from django.db.models import Avg, Count, Q
 
@@ -36,7 +36,7 @@ class DjangoCoreStatRepository(CoreStatRepository):
         )
 
     def _from_domain(
-        self, domain_entity: CoreStat, django_model: Optional[CoreStatModel] = None
+        self, domain_entity: CoreStat, django_model: CoreStatModel | None = None
     ) -> CoreStatModel:
         """
         Convert a CoreStat domain entity into a Django CoreStatModel.
@@ -74,7 +74,7 @@ class DjangoCoreStatRepository(CoreStatRepository):
 
         return django_model
 
-    def get_by_user_id(self, user_id: int) -> Optional[CoreStat]:
+    def get_by_user_id(self, user_id: int) -> CoreStat | None:
         """
         Return the CoreStat for the given user ID, or None if no record exists.
 
@@ -164,7 +164,7 @@ class DjangoLifeStatRepository(LifeStatRepository):
         )
 
     def _from_domain(
-        self, domain_entity: LifeStat, django_model: Optional[LifeStatModel] = None
+        self, domain_entity: LifeStat, django_model: LifeStatModel | None = None
     ) -> LifeStatModel:
         """
         Convert a LifeStat domain entity into a LifeStatModel suitable for persistence.
@@ -205,7 +205,7 @@ class DjangoLifeStatRepository(LifeStatRepository):
 
     def get_by_user_and_name(
         self, user_id: int, category: str, name: str
-    ) -> Optional[LifeStat]:
+    ) -> LifeStat | None:
         """Get life stat by user ID, category, and name."""
         try:
             django_model = LifeStatModel.objects.select_related("user").get(
@@ -215,7 +215,7 @@ class DjangoLifeStatRepository(LifeStatRepository):
         except LifeStatModel.DoesNotExist:
             return None
 
-    def get_by_user_id(self, user_id: int) -> List[LifeStat]:
+    def get_by_user_id(self, user_id: int) -> list[LifeStat]:
         """
         Return all life stats for a user, ordered by category then name.
 
@@ -232,7 +232,7 @@ class DjangoLifeStatRepository(LifeStatRepository):
         )
         return [self._to_domain(model) for model in django_models]
 
-    def get_by_category(self, user_id: int, category: str) -> List[LifeStat]:
+    def get_by_category(self, user_id: int, category: str) -> list[LifeStat]:
         """
         Return all life stat domain objects for a user in a specific category, ordered by stat name.
 
@@ -301,7 +301,7 @@ class DjangoLifeStatRepository(LifeStatRepository):
         except LifeStatModel.DoesNotExist:
             return False
 
-    def get_categories_for_user(self, user_id: int) -> List[str]:
+    def get_categories_for_user(self, user_id: int) -> list[str]:
         """
         Return a sorted list of distinct life-stat categories that exist for the given user.
 
@@ -386,7 +386,7 @@ class DjangoStatHistoryRepository(StatHistoryRepository):
         django_model.save()
         return self._to_domain(django_model)
 
-    def get_by_user_id(self, user_id: int, limit: int = 100) -> List[StatHistory]:
+    def get_by_user_id(self, user_id: int, limit: int = 100) -> list[StatHistory]:
         """
         Return a list of the user's stat history entries ordered newest first.
 
@@ -402,7 +402,7 @@ class DjangoStatHistoryRepository(StatHistoryRepository):
 
     def get_by_stat(
         self, user_id: int, stat_type: str, stat_name: str, limit: int = 50
-    ) -> List[StatHistory]:
+    ) -> list[StatHistory]:
         """Get history for a specific stat."""
         django_models = (
             StatHistoryModel.objects.select_related("user")
@@ -413,7 +413,7 @@ class DjangoStatHistoryRepository(StatHistoryRepository):
 
     def get_by_date_range(
         self, user_id: int, start_date: date, end_date: date
-    ) -> List[StatHistory]:
+    ) -> list[StatHistory]:
         """
         Return stat history entries for a user between start_date and end_date (inclusive).
 
@@ -438,7 +438,7 @@ class DjangoStatHistoryRepository(StatHistoryRepository):
         )
         return [self._to_domain(model) for model in django_models]
 
-    def get_summary_stats(self, user_id: int, days: int = 30) -> Dict[str, Any]:
+    def get_summary_stats(self, user_id: int, days: int = 30) -> dict[str, Any]:
         """
         Return summary statistics of stat-history changes for a user over a recent period.
 

@@ -5,7 +5,6 @@ Stats domain value objects - immutable objects that represent concepts.
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
-from typing import Union
 
 
 class StatCategory(Enum):
@@ -156,7 +155,7 @@ class LifeStatValue:
         if isinstance(self.value, (int, float)):
             object.__setattr__(self, "value", Decimal(str(self.value)))
 
-    def add(self, amount: Union[int, float, Decimal]) -> "LifeStatValue":
+    def add(self, amount: int | float | Decimal) -> "LifeStatValue":
         """
         Return a new LifeStatValue equal to this value plus `amount`.
 
@@ -166,7 +165,7 @@ class LifeStatValue:
             amount = Decimal(str(amount))
         return LifeStatValue(self.value + amount)
 
-    def subtract(self, amount: Union[int, float, Decimal]) -> "LifeStatValue":
+    def subtract(self, amount: int | float | Decimal) -> "LifeStatValue":
         """
         Return a new LifeStatValue with `amount` subtracted from this value.
 
@@ -179,7 +178,7 @@ class LifeStatValue:
             amount = Decimal(str(amount))
         return LifeStatValue(max(Decimal("0"), self.value - amount))
 
-    def multiply(self, factor: Union[int, float, Decimal]) -> "LifeStatValue":
+    def multiply(self, factor: int | float | Decimal) -> "LifeStatValue":
         """
         Return a new LifeStatValue representing this value multiplied by `factor`.
 
@@ -227,7 +226,7 @@ class StatTarget:
         if isinstance(self.value, (int, float)):
             object.__setattr__(self, "value", Decimal(str(self.value)))
 
-    def is_achieved_by(self, current_value: Union[int, float, Decimal]) -> bool:
+    def is_achieved_by(self, current_value: int | float | Decimal) -> bool:
         """
         Return True if the provided current value meets or exceeds the target.
 
@@ -237,7 +236,7 @@ class StatTarget:
             current_value = Decimal(str(current_value))
         return current_value >= self.value
 
-    def progress_percentage(self, current_value: Union[int, float, Decimal]) -> float:
+    def progress_percentage(self, current_value: int | float | Decimal) -> float:
         """
         Return the progress toward this StatTarget as a percentage.
 
@@ -258,7 +257,7 @@ class StatTarget:
         progress = min(100.0, float((current_value / self.value) * 100))
         return round(progress, 2)
 
-    def distance_from(self, current_value: Union[int, float, Decimal]) -> Decimal:
+    def distance_from(self, current_value: int | float | Decimal) -> Decimal:
         """
         Return the non-negative Decimal distance from `current_value` to the target.
 

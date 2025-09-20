@@ -5,7 +5,7 @@ Stats domain entities - pure Python business logic without Django dependencies.
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 
 @dataclass
@@ -27,8 +27,8 @@ class CoreStat:
     level: int = 1
 
     # Metadata
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     def __post_init__(self):
         """
@@ -105,7 +105,7 @@ class CoreStat:
 
         return value
 
-    def add_experience(self, points: int) -> Tuple[int, bool]:
+    def add_experience(self, points: int) -> tuple[int, bool]:
         """
         Increment the object's experience points, recalculate level, and indicate if a level-up occurred.
 
@@ -163,7 +163,7 @@ class CoreStat:
         """
         return self.get_stat_total() / 6
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a dictionary representation of the CoreStat suitable for serialization.
 
@@ -201,13 +201,13 @@ class LifeStat:
     category: str
     name: str
     value: Decimal = Decimal("0")
-    target: Optional[Decimal] = None
+    target: Decimal | None = None
     unit: str = ""
     notes: str = ""
 
     # Metadata
-    last_updated: Optional[datetime] = None
-    created_at: Optional[datetime] = None
+    last_updated: datetime | None = None
+    created_at: datetime | None = None
 
     def __post_init__(self):
         """
@@ -276,7 +276,7 @@ class LifeStat:
 
         return self.value
 
-    def set_target(self, target_value: Optional[Decimal]) -> None:
+    def set_target(self, target_value: Decimal | None) -> None:
         """
         Set or clear the target value for this LifeStat.
 
@@ -312,7 +312,7 @@ class LifeStat:
             return False
         return self.value >= self.target
 
-    def distance_to_target(self) -> Optional[Decimal]:
+    def distance_to_target(self) -> Decimal | None:
         """
         Return the non-negative distance remaining to the target or None if no target is set.
 
@@ -323,7 +323,7 @@ class LifeStat:
             return None
         return max(Decimal("0"), self.target - self.value)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a dictionary representation of the LifeStat suitable for serialization.
 
@@ -362,7 +362,7 @@ class StatHistory:
     new_value: Decimal
     change_amount: Decimal
     change_reason: str = ""
-    timestamp: Optional[datetime] = None
+    timestamp: datetime | None = None
 
     def __post_init__(self):
         """
@@ -396,7 +396,7 @@ class StatHistory:
         return self.change_amount < 0
 
     @property
-    def percentage_change(self) -> Optional[float]:
+    def percentage_change(self) -> float | None:
         """
         Return the percentage change from old_value to new_value as a float.
 
@@ -407,7 +407,7 @@ class StatHistory:
             return None
         return float((self.change_amount / self.old_value) * 100)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Return a serializable dictionary representation of the StatHistory.
 
