@@ -358,21 +358,22 @@ class HabitService:
             Habit: The persisted Habit instance with any repository-assigned identifiers or metadata.
         """
         habit = Habit(
-            user_id=user_id,
-            name=name,
+            user_id=UserId(user_id),
+            name=HabitName(name),
             description=description,
             frequency=frequency,
-            target_count=target_count,
-            experience_reward=experience_reward,
+            target_count=CompletionCount(target_count),
+            current_streak=StreakCount(0),
+            longest_streak=StreakCount(0),
+            experience_reward=ExperienceReward(experience_reward),
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
         )
 
         return self.habit_repo.create(habit)
-
     def complete_habit(
         self,
-        habit_id: str,
+        habit_id: int | HabitId,
         completion_date: date | None = None,
         count: int = 1,
         notes: str = "",
@@ -391,23 +392,24 @@ class HabitService:
         Returns:
             tuple(Habit, HabitCompletion, int): A 3-tuple containing the updated Habit entity, the persisted HabitCompletion record, and the experience points gained from this completion.
         """
-        habit = self.habit_repo.get_by_id(habit_id)
+        hid = habit_id if isinstance(habit_id, HabitId) else HabitId(int(habit_id))
+        habit = self.habit_repo.get_by_id(hid)
         if not habit:
-            raise ValueError(f"Habit {habit_id} not found")
+            raise ValueError(f"Habit {hid} not found")
 
         if not completion_date:
             completion_date = date.today()
 
         # Check if already completed today
         existing_completion = self.completion_repo.get_completion_for_date(
-            habit_id, completion_date
+            hid, completion_date
         )
         if existing_completion:
             raise ValueError(f"Habit already completed on {completion_date}")
 
         # Determine previous completion to maintain streak calculations
         previous_completion_date = None
-        recent_completions = self.completion_repo.get_by_habit_id(habit_id, limit=1)
+        recent_completions = self.completion_repo.get_by_habit_id(hid, limit=1)
         if recent_completions:
             candidate_date = recent_completions[0].completion_date
             if candidate_date < completion_date:
@@ -425,12 +427,12 @@ class HabitService:
 
         # Create completion record
         completion = HabitCompletion(
-            habit_id=habit_id,
+            habit_id=hid,
             user_id=habit.user_id,
             completion_date=completion_date,
-            count=count,
+            count=CompletionCount(count),
             notes=notes,
-            experience_gained=experience_gained,
+            experience_gained=ExperienceReward(experience_gained),
             streak_at_completion=new_streak,
             created_at=datetime.utcnow(),
         )
@@ -438,7 +440,6 @@ class HabitService:
         saved_completion = self.completion_repo.create(completion)
 
         return updated_habit, saved_completion, experience_gained
-
     def break_habit_streak(self, habit_id: str) -> Habit:
         """
         Break the active streak for the specified habit and persist the change.
@@ -574,7 +575,6 @@ class HabitService:
         completion_stats = self.completion_repo.get_completion_stats(user_id, days)
 
         stats = {
-        stats = {
             "total_habits": len(habits),
             "active_streaks": len([h for h in habits if h.current_streak.value > 0]),
             "longest_streak": max((h.longest_streak.value for h in habits), default=0),
@@ -585,7 +585,6 @@ class HabitService:
         }
 
         return stats
-
 
 class QuestChainService:
     """Service for managing quest chains and dependencies."""
