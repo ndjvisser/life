@@ -157,18 +157,85 @@ migrate:
 	cd life_dashboard && python manage.py migrate
 
 resetdb:
-	cd life_dashboard && python manage.py flush --noinput || true
-	cd life_dashboard && rm -f db.sqlite3 || true
-	$(MAKE) migrate
+	@echo "🔒 Checking environment before database reset..."
+	@if [ "$${ENV}" = "production" ] || [ "$${DJANGO_SETTINGS_MODULE}" = "life_dashboard.settings.production" ]; then \
+		echo "❌ Error: Cannot reset database in production environment"; \
+		echo "   If you really need to reset the production database, set FORCE_RESET=1"; \
+		exit 1; \
+	fi
+	@if [ -z "$${FORCE_RESET}" ] && [ -f "life_dashboard/db.sqlite3" ]; then \
+		echo "❌ Safety check failed: db.sqlite3 exists and FORCE_RESET is not set"; \
+		echo "   To confirm database reset, run: make resetdb FORCE_RESET=1"; \
+		exit 1; \
+	fi
+	@echo "🔄 Resetting database..."
+	@cd life_dashboard && ( \
+		echo "  - Running database flush..." && \
+		python manage.py flush --noinput && \
+		echo "  - Removing database file..." && \
+		rm -f db.sqlite3 && \
+		echo "  - Running migrations..." && \
+		python manage.py migrate \
+	) || (echo "❌ Database reset failed"; exit 1)
+	@echo "✅ Database reset complete"
 
-setup-sample-data:
-	cd life_dashboard && python manage.py createsuperuser --noinput --username admin --email admin@example.com || true
-	cd life_dashboard && python manage.py shell -c "from django.contrib.auth.models import User; u = User.objects.get(username='admin'); u.set_password('admin'); u.save()" || true
-	@echo "✅ Sample data created (admin/admin)"
+setup-sample-data: check-dev-env
+	@echo "🔄 Setting up development admin user..."
+	@cd life_dashboard && \
+	if ! python -c "import secrets; print(secrets.token_urlsafe(16))" >/dev/null 2>&1; then \
+		echo "❌ Python secrets module not available"; exit 1; \
+	fi
+	@cd life_dashboard && \
+	ADMIN_USER=$${ADMIN_USER:-admin} && \
+	ADMIN_EMAIL=$${ADMIN_EMAIL:-admin@example.com} && \
+	ADMIN_PASSWORD=$$(python -c "import secrets; print(secrets.token_urlsafe(16))") && \
+	echo "ADMIN_USER=$$ADMIN_USER" > .env.local && \
+	echo "ADMIN_EMAIL=$$ADMIN_EMAIL" >> .env.local && \
+	echo "ADMIN_PASSWORD=$$ADMIN_PASSWORD" >> .env.local && \
+	echo "DJANGO_SUPERUSER_PASSWORD=$$ADMIN_PASSWORD" >> .env.local && \
+	if ! python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='$$ADMIN_USER').exists()" 2>/dev/null | grep -q True; then \
+		echo "Creating admin user: $$ADMIN_USER" && \
+		python manage.py createsuperuser --noinput --username "$$ADMIN_USER" --email "$$ADMIN_EMAIL" 2>/dev/null || true && \
+		python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); u = User.objects.get(username='$$ADMIN_USER'); u.set_password('$$ADMIN_PASSWORD'); u.save()" && \
+		echo "✅ Admin user created" && \
+		echo "\n🔑 Admin credentials (saved to .env.local):" && \
+		echo "   Username: $$ADMIN_USER" && \
+		echo "   Password: $$ADMIN_PASSWORD\n" && \
+		echo "⚠️  These credentials are for development only. Do not use in production!" && \
+		echo "   To use these credentials, run: source .env.local"; \
+	else \
+		echo "ℹ️  Admin user '$$ADMIN_USER' already exists. Using existing user." && \
+		echo "   To reset the password, run: make reset-admin-password"; \
+	fi
+
+reset-admin-password: check-dev-env
+	@echo "🔄 Resetting admin password..."
+	@cd life_dashboard && \
+	if [ ! -f .env.local ]; then \
+		echo "❌ .env.local not found. Run 'make setup-sample-data' first."; exit 1; \
+	fi
+	. .env.local && \
+	if [ -z "$$ADMIN_USER" ]; then \
+		echo "❌ ADMIN_USER not found in .env.local"; exit 1; \
+	fi
+	NEW_PASSWORD=$$(python -c "import secrets; print(secrets.token_urlsafe(16))") && \
+	sed -i '' -e "/^ADMIN_PASSWORD=/d" -e "/^DJANGO_SUPERUSER_PASSWORD=/d" .env.local && \
+	echo "ADMIN_PASSWORD=$$NEW_PASSWORD" >> .env.local && \
+	echo "DJANGO_SUPERUSER_PASSWORD=$$NEW_PASSWORD" >> .env.local && \
+	python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); u = User.objects.get(username='$$ADMIN_USER'); u.set_password('$$NEW_PASSWORD'); u.save()" && \
+	echo "✅ Admin password reset successful" && \
+	echo "🔑 New password (saved to .env.local): $$NEW_PASSWORD"
+
+check-dev-env:
+	@if [ "$${ENV:-development}" != "development" ] && [ ! -f .env.development ]; then \
+		echo "❌ This command is only allowed in development environment"; \
+		echo "   Set ENV=development or create a .env.development file to continue"; \
+		exit 1; \
+	fi
 
 # Architecture
 check-boundaries: check-architecture
-	import-linter --config pyproject.toml || echo "⚠️  import-linter not installed"
+	import-linter --config pyproject.toml || (echo "❌ Import boundary violations found or import-linter not installed"; exit 1)
 
 architecture-report:
 	python scripts/check-architecture.py --report
