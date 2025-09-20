@@ -2,7 +2,7 @@
 Contract tests for dashboard services - validating service layer APIs with Pydantic.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from pydantic import BaseModel, ConfigDict, Field
@@ -138,8 +138,8 @@ class TestDashboardServiceContracts:
             bio="Test bio",
             location="Test City",
             experience_points=1500,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
 
         # Convert to dict format expected by contract

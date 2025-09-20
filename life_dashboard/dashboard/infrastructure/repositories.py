@@ -2,10 +2,9 @@
 Dashboard infrastructure repositories - Django ORM implementations.
 """
 
-from datetime import datetime
-
 from django.contrib.auth import authenticate, get_user_model
 from django.db import transaction
+from django.utils import timezone
 
 from ..domain.entities import UserProfile as DomainUserProfile
 from ..domain.repositories import UserProfileRepository, UserRepository
@@ -89,25 +88,56 @@ class DjangoUserRepository(UserRepository):
         except User.DoesNotExist:
             return None
 
+    # Whitelist of user fields that can be updated
+    UPDATABLE_FIELDS = {
+        "first_name",
+        "last_name",
+        "email",
+        "is_active",
+        "password",  # Special handling for password
+    }
+
     def update_user(self, user_id: int, **kwargs) -> bool:
         """
-        Update mutable fields on a Django User and persist the changes.
+        Update whitelisted fields on a Django User and persist the changes.
 
-        Attempts to set each provided keyword argument on the User with the given id; only attributes that exist on the User instance are applied. Saves the User if found and returns True. Returns False if no User with the given id exists.
+        Only fields in UPDATABLE_FIELDS are processed. Password field is handled
+        specially using set_password() to ensure proper hashing. All other fields
+        are set directly on the user object.
 
         Parameters:
             user_id (int): ID of the User to update.
-            **kwargs: Field names and values to set on the User; unknown fields are ignored.
+            **kwargs: Field names and values to set on the User.
+                     Only fields in UPDATABLE_FIELDS are processed.
 
         Returns:
             bool: True if the user was found and saved; False if the user does not exist.
+
+        Example:
+            # Update email and password
+            update_user(1, email='new@example.com', password='new_secure_password')
         """
+        if not kwargs:
+            return False
+
         User = get_user_model()
         try:
             user = User.objects.get(id=user_id)
+            needs_save = False
+
             for field, value in kwargs.items():
-                if hasattr(user, field):
+                if field not in self.UPDATABLE_FIELDS:
+                    continue
+
+                if field == "password":
+                    user.set_password(value)
+                    needs_save = True
+                elif hasattr(user, field):
                     setattr(user, field, value)
+                    needs_save = True
+
+            if needs_save:
+                user.save(update_fields=kwargs.keys())
             user.save()
             return True
         except User.DoesNotExist:
@@ -174,7 +204,7 @@ class DjangoUserRepository(UserRepository):
             django_profile.bio = bio
             django_profile.location = location
             # Keep the auto-generated created_at, but update updated_at
-            django_profile.updated_at = datetime.utcnow()
+            django_profile.updated_at = timezone.now()
             django_profile.save()
 
             # Convert to domain entity

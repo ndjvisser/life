@@ -2,7 +2,7 @@
 Dashboard application services - use case orchestration and business workflows.
 """
 
-from datetime import datetime
+from django.utils import timezone
 
 from ..domain.entities import UserProfile
 from ..domain.repositories import UserProfileRepository, UserRepository
@@ -92,7 +92,7 @@ class UserService:
 
         # Update profile fields
         profile.update_profile(**update_data.to_dict())
-        profile.updated_at = datetime.utcnow()
+        profile.updated_at = timezone.now()
 
         # Also update User model fields if needed
         user_updates = {}
@@ -130,7 +130,7 @@ class UserService:
 
         # Add experience using domain logic
         new_level, level_up_occurred = profile.add_experience(points)
-        profile.updated_at = datetime.utcnow()
+        profile.updated_at = timezone.now()
 
         # Save updated profile
         updated_profile = self.profile_repo.save(profile)
