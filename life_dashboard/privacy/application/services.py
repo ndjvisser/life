@@ -3,7 +3,7 @@ Privacy application services - use case orchestration for privacy and consent ma
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 from ..domain.entities import (
     ConsentRecord,
@@ -42,9 +42,9 @@ class ConsentService:
         self,
         user_id: int,
         purpose: DataProcessingPurpose,
-        data_categories: Set[DataCategory],
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
+        data_categories: set[DataCategory],
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> ConsentRecord:
         """
         Grant consent for a user for a given processing purpose and set of data categories.
@@ -96,7 +96,7 @@ class ConsentService:
 
     def withdraw_consent(
         self, user_id: int, purpose: DataProcessingPurpose
-    ) -> Optional[ConsentRecord]:
+    ) -> ConsentRecord | None:
         """
         Withdraw a user's consent for the given processing purpose.
 
@@ -139,7 +139,7 @@ class ConsentService:
 
         return consent.is_valid() and consent.covers_data_category(data_category)
 
-    def get_user_consents(self, user_id: int) -> List[ConsentRecord]:
+    def get_user_consents(self, user_id: int) -> list[ConsentRecord]:
         """Get all consent records for a user."""
         return self.consent_repo.get_all_for_user(user_id)
 
@@ -281,10 +281,10 @@ class PrivacyService:
         self,
         user_id: int,
         purpose: DataProcessingPurpose,
-        data_categories: Set[DataCategory],
+        data_categories: set[DataCategory],
         processing_type: str,
         context: str,
-        request_id: Optional[str] = None,
+        request_id: str | None = None,
     ) -> DataProcessingActivity:
         """
         Create and record a DataProcessingActivity for the given user and return the persisted activity.
@@ -314,7 +314,7 @@ class PrivacyService:
 
         return self.activity_repo.log_activity(activity)
 
-    def get_user_activity_summary(self, user_id: int, days: int = 30) -> Dict[str, Any]:
+    def get_user_activity_summary(self, user_id: int, days: int = 30) -> dict[str, Any]:
         """
         Return a summary of the user's data processing activities for the past `days` days.
 
@@ -344,7 +344,7 @@ class DataSubjectService:
         self.activity_repo = activity_repo
 
     def create_data_export_request(
-        self, user_id: int, data_categories: Optional[Set[DataCategory]] = None
+        self, user_id: int, data_categories: set[DataCategory] | None = None
     ) -> DataSubjectRequest:
         """
         Create and persist a data export request for a user.
@@ -386,25 +386,31 @@ class DataSubjectService:
         return self.request_repo.create(request)
 
     def process_export_request(
-        self, request_id: str, processor_id: int
-    ) -> Dict[str, Any]:
+        self, request_id: str, processor_id: int, verification_method: str | None = None
+    ) -> dict[str, Any]:
         """
         Process a data export data subject request: mark it as processing, collect the requested user data, mark the request completed, and persist state changes.
 
         Parameters:
             request_id (str): Identifier of the data subject request to process.
             processor_id (int): Internal ID of the actor or worker handling the request.
+            verification_method (Optional[str]): Method used to verify identity (e.g., "email", "sms", "in_person").
+                If None, assumes identity was already verified externally.
 
         Returns:
             Dict[str, Any]: Collected export data for the request (includes requested data categories, consents, activities, and any included profile data).
 
         Raises:
-            ValueError: If no request exists for the given request_id.
+            ValueError: If no request exists for the given request_id or if identity verification is required but not provided.
         """
         request = self.request_repo.get_by_id(request_id)
 
         if not request:
             raise ValueError(f"Request {request_id} not found")
+
+        # Verify identity if verification method is provided
+        if verification_method is not None:
+            request.verify_identity(verification_method)
 
         request.start_processing(processor_id)
         self.request_repo.save(request)
@@ -417,24 +423,32 @@ class DataSubjectService:
 
         return user_data
 
-    def process_deletion_request(self, request_id: str, processor_id: int) -> bool:
+    def process_deletion_request(
+        self, request_id: str, processor_id: int, verification_method: str | None = None
+    ) -> bool:
         """
         Process a data deletion request: mark it as processing, delete the user's data, mark the request completed, and persist updates.
 
         Parameters:
             request_id (str): Identifier of the data subject request to process.
             processor_id (int): Identifier of the actor (e.g., staff or system) performing the processing.
+            verification_method (Optional[str]): Method used to verify identity (e.g., "email", "sms", "in_person").
+                If None, assumes identity was already verified externally.
 
         Returns:
             bool: True if the request was processed successfully.
 
         Raises:
-            ValueError: If no request with the given `request_id` exists.
+            ValueError: If no request with the given `request_id` exists or if identity verification is required but not provided.
         """
         request = self.request_repo.get_by_id(request_id)
 
         if not request:
             raise ValueError(f"Request {request_id} not found")
+
+        # Verify identity if verification method is provided
+        if verification_method is not None:
+            request.verify_identity(verification_method)
 
         request.start_processing(processor_id)
         self.request_repo.save(request)
@@ -448,8 +462,8 @@ class DataSubjectService:
         return True
 
     def _collect_user_data(
-        self, user_id: int, data_categories: Set[DataCategory]
-    ) -> Dict[str, Any]:
+        self, user_id: int, data_categories: set[DataCategory]
+    ) -> dict[str, Any]:
         """
         Assemble an export payload containing a user's requested data categories.
 
@@ -518,11 +532,11 @@ class DataSubjectService:
 
         return deleted_count
 
-    def get_pending_requests(self) -> List[DataSubjectRequest]:
+    def get_pending_requests(self) -> list[DataSubjectRequest]:
         """Get all pending data subject requests."""
         return self.request_repo.get_pending_requests()
 
-    def get_overdue_requests(self, days_limit: int = 30) -> List[DataSubjectRequest]:
+    def get_overdue_requests(self, days_limit: int = 30) -> list[DataSubjectRequest]:
         """
         Return data subject requests that are overdue.
 
