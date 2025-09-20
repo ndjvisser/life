@@ -87,6 +87,10 @@ class DjangoQuestRepository(QuestRepository):
 
         if domain_quest.updated_at:
             django_quest.updated_at = domain_quest.updated_at
+        if hasattr(django_quest, "parent_quest_id"):
+            django_quest.parent_quest_id = (
+                int(domain_quest.parent_quest_id) if domain_quest.parent_quest_id else None
+            )
 
         return django_quest
 
