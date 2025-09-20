@@ -81,7 +81,7 @@ The Life Dashboard follows a **Modular Monolith** architecture with strict bound
 **Responsibility**: Achievement and milestone tracking with intelligent triggers.
 
 **Domain Concepts**:
-- Tiered Achievements (Bronze, Silver, Gold)
+- Tiered Achievements (Bronze, Silver, Gold, Platinum)
 - Dynamic achievement rules
 - Titles and badges
 - Cross-context achievement triggers

@@ -224,6 +224,7 @@ class TestDashboardAPISnapshots:
                 "bronze_achievements": 8,
                 "silver_achievements": 3,
                 "gold_achievements": 1,
+                "platinum_achievements": 0,
                 "completion_rate": 75.0,
             },
             "progress_statistics": {
