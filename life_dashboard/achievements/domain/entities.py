@@ -35,6 +35,12 @@ class Achievement:
     required_quest_completions: int = 0
 
     def __post_init__(self):
+        """
+        Validate invariant constraints after Achievement initialization.
+        
+        Raises:
+            ValueError: If `name` is empty or falsy, or if `experience_reward` is negative.
+        """
         if not self.name:
             raise ValueError("Achievement name is required")
 
@@ -42,7 +48,18 @@ class Achievement:
             raise ValueError("Experience reward cannot be negative")
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
+        """
+        Return a dictionary representation of the Achievement suitable for serialization.
+        
+        The mapping includes all dataclass fields. The `tier` is converted to its string value
+        (e.g., "bronze"). `required_skill_level` may be None when not set.
+        
+        Returns:
+            Dict[str, Any]: Dictionary with keys:
+                - achievement_id, name, description, tier, icon,
+                - experience_reward, required_level, required_skill_level,
+                - required_quest_completions
+        """
         return {
             "achievement_id": self.achievement_id,
             "name": self.name,
@@ -67,16 +84,41 @@ class UserAchievement:
     notes: str = ""
 
     def __post_init__(self):
+        """
+        Validate that the instance has a non-empty `achievement_id`.
+        
+        Raises:
+            ValueError: If `achievement_id` is falsy or an empty string.
+        """
         if not self.achievement_id:
             raise ValueError("Achievement ID is required")
 
     def unlock(self, notes: str = "") -> None:
-        """Unlock the achievement."""
+        """
+        Mark the UserAchievement as unlocked.
+        
+        Sets `unlocked_at` to the current UTC datetime and stores the provided notes.
+        
+        Parameters:
+            notes (str): Optional free-form notes to record with the unlock (default: "").
+        """
         self.unlocked_at = datetime.utcnow()
         self.notes = notes
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
+        """
+        Return a dictionary representation of the UserAchievement suitable for serialization.
+        
+        The dictionary contains:
+        - "user_achievement_id": str | None
+        - "user_id": int
+        - "achievement_id": str
+        - "unlocked_at": ISO 8601 string or None (UTC datetime serialized with datetime.isoformat())
+        - "notes": str
+        
+        Returns:
+            Dict[str, Any]: Mapping of field names to their serializable values.
+        """
         return {
             "user_achievement_id": self.user_achievement_id,
             "user_id": self.user_id,

@@ -43,6 +43,17 @@ def dashboard(request):
 
 @transaction.atomic
 def register(request):
+    """
+    Handle user registration: display the registration form on GET and process form submissions on POST.
+    
+    On POST, validates a UserRegistrationForm; if valid, delegates user creation to the user service (get_user_service().register_user), logs the new user in, and redirects to the dashboard. If the service call fails an error message is added and the form is re-rendered. If the form is invalid, validation errors are added to the messages framework and the form is re-rendered. On GET, renders an empty registration form.
+    
+    Parameters:
+        request (HttpRequest): Django request object for the current request/response cycle.
+    
+    Returns:
+        HttpResponse: Renders the registration template or redirects to the dashboard after successful registration.
+    """
     if request.method == "POST":
         logger.debug("Registration POST data: %s", request.POST)
         form = UserRegistrationForm(request.POST)
@@ -110,6 +121,22 @@ def logout_view(request):
 
 @login_required
 def profile(request):
+    """
+    Render and handle the user profile page.
+    
+    On GET: fetches a structured profile summary via ProfileQueries, ensures the user's CoreStat and UserProfile exist, loads recent achievements and journal entries, and returns the profile page with a UserProfileForm populated from the user's profile.
+    
+    On POST: builds a ProfileUpdateData from submitted form fields and delegates the update to the user service (get_user_service().update_profile). On successful update redirects back to the profile page with a success message; on failure records an error message and re-renders the page.
+    
+    Behavior notes:
+    - If ProfileQueries.get_profile_summary returns no data, the view adds an error message and redirects to the dashboard.
+    - CoreStat is created if missing.
+    - Uses Django messages for user feedback and relies on the service layer for profile mutations.
+    Parameters:
+        request (HttpRequest): Django request object for the current user/session.
+    Returns:
+        HttpResponse: rendered profile page or a redirect response.
+    """
     user = request.user
 
     # Use queries for read-only data

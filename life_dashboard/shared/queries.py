@@ -23,9 +23,28 @@ class CrossContextQueries:
     @staticmethod
     def get_user_summary(user_id: int) -> Optional[Dict[str, Any]]:
         """
-        Get a summary of user data across all contexts.
-
-        Returns basic information that can be safely shared between contexts.
+        Build a read-only summary of a user suitable for cross-context consumption.
+        
+        Returns a plain dict with basic user fields and, when available, additional grouped data
+        from optional related objects. Always returns simple types (ints, strings, datetimes,
+        nested dicts) and never domain model instances.
+        
+        Parameters:
+            user_id (int): Primary key of the User to summarize.
+        
+        Returns:
+            Optional[Dict[str, Any]]: Summary dict or None if no User with the given id exists.
+        
+        Summary contents:
+            - Always present:
+                - user_id, username, email, first_name, last_name, is_active, date_joined
+            - If a related `profile` exists:
+                - experience_points, level, bio, location
+            - If a legacy `stats` relation exists:
+                - legacy_level, legacy_experience
+            - If a `core_stats` relation exists:
+                - core_stats (dict) with keys: strength, endurance, agility, intelligence,
+                  wisdom, charisma, level, experience_points
         """
         try:
             user = User.objects.get(id=user_id)
@@ -86,10 +105,17 @@ class CrossContextQueries:
     @staticmethod
     def get_user_activity_counts(user_id: int) -> Dict[str, int]:
         """
-        Get activity counts across contexts for dashboard display.
-
-        Returns counts of various user activities without exposing
-        internal domain logic.
+        Return counts of the user's activities across bounded contexts for dashboard use.
+        
+        Returns a dictionary with integer counts for the following keys:
+        - "active_quests"
+        - "completed_quests"
+        - "active_habits"
+        - "journal_entries"
+        - "achievements"
+        - "skills"
+        
+        If the user does not exist or a related context is not available on the user object, the corresponding counts remain zero.
         """
         counts = {
             "active_quests": 0,
@@ -134,9 +160,26 @@ class CrossContextQueries:
     @staticmethod
     def get_recent_activity(user_id: int, limit: int = 10) -> List[Dict[str, Any]]:
         """
-        Get recent activity across all contexts for activity feed.
-
-        Returns a unified activity feed without exposing domain internals.
+        Build a unified, read-only recent activity feed for a user across available contexts.
+        
+        Returns a list of activity items (newest first) composed from any available related data (quests, habit completions, journal entries, achievements). Each item is a plain dict with at least:
+        - "type" (str): activity kind, e.g. "quest_completed", "habit_completed", "journal_entry", "achievement_unlocked"
+        - "title" (str): human-facing title for the activity
+        - "timestamp" (datetime): when the activity occurred
+        - "context" (str): originating bounded context, e.g. "quests", "journals", "achievements"
+        
+        Context-specific additional keys may appear:
+        - quests: "experience_reward" (int)
+        - habits: "experience_gained" (int)
+        - journal entries: "entry_type" (str)
+        - achievements: "tier" (int or str)
+        
+        Parameters:
+            user_id (int): primary key of the user to query.
+            limit (int): maximum number of activity items to return (default 10).
+        
+        Returns:
+            List[Dict[str, Any]]: up to `limit` activity dicts sorted by timestamp descending. Returns an empty list if the user does not exist or no related activity is available.
         """
         activities = []
 
@@ -219,9 +262,9 @@ class CrossContextQueries:
     @staticmethod
     def get_context_health_check() -> Dict[str, bool]:
         """
-        Check if all contexts are properly configured and accessible.
-
-        Returns status of each bounded context for monitoring.
+        Return a mapping of bounded context names to booleans indicating whether each context's models module is importable.
+        
+        Checks availability for the following contexts: "dashboard", "stats", "quests", "skills", "achievements", and "journals". Returns a dict where each key is the context name and the value is True when the corresponding `life_dashboard.<context>.models` module can be found, otherwise False.
         """
         health = {}
 
@@ -262,9 +305,18 @@ class CrossContextQueries:
     @staticmethod
     def get_user_preferences(user_id: int) -> Dict[str, Any]:
         """
-        Get user preferences that might be needed across contexts.
-
-        Returns safe, read-only preference data.
+        Return a read-only, safe dictionary of user preferences suitable for cross-context sharing.
+        
+        Begins with sensible defaults:
+        - timezone (str), date_format (str), experience_notifications (bool),
+          achievement_notifications (bool), daily_summary (bool).
+        
+        If the User with the given primary key exists and has a related profile, the returned
+        dict may also include:
+        - location (str): profile.location, when present.
+        - birth_date (date): profile.birth_date, when present.
+        
+        If no User with user_id exists, the function returns the default preferences unchanged.
         """
         preferences = {
             "timezone": "UTC",
@@ -295,7 +347,15 @@ class CrossContextQueries:
 
 # Convenience functions for common cross-context queries
 def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
-    """Get all data needed for the main dashboard."""
+    """
+    Assemble and return all read-only data required for a user's main dashboard.
+    
+    Returns a dictionary with these keys:
+    - user_summary (Optional[Dict[str, Any]]): Comprehensive read-only summary of the user or None if the user doesn't exist.
+    - activity_counts (Dict[str, int]): Counts of user activities (quests, habits, journal entries, achievements, skills).
+    - recent_activity (List[Dict[str, Any]]): Unified recent activity feed across contexts, sorted most-recent-first (limited by the underlying query).
+    - preferences (Dict[str, Any]): Safe, read-only user preferences with sensible defaults when unset.
+    """
     return {
         "user_summary": CrossContextQueries.get_user_summary(user_id),
         "activity_counts": CrossContextQueries.get_user_activity_counts(user_id),
@@ -305,7 +365,20 @@ def get_user_dashboard_data(user_id: int) -> Dict[str, Any]:
 
 
 def get_user_basic_info(user_id: int) -> Optional[Dict[str, Any]]:
-    """Get basic user info that's safe to share between contexts."""
+    """
+    Return a compact, read-only subset of a user's public information suitable for cross-context sharing.
+    
+    If the user does not exist the function returns None.
+    
+    Returns:
+        Optional[Dict[str, Any]]: A dictionary with the following keys when a user is found:
+            - user_id (int): The user's identifier.
+            - username (str): The user's username.
+            - first_name (str): The user's first name (empty string if not available).
+            - last_name (str): The user's last name (empty string if not available).
+            - level (int): User level (defaults to 1 if missing).
+            - experience_points (int): Experience points (defaults to 0 if missing).
+    """
     summary = CrossContextQueries.get_user_summary(user_id)
     if not summary:
         return None

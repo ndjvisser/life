@@ -40,6 +40,12 @@ class CoreStatModel(models.Model):
         db_table = "stats_corestat"  # Use consistent table name
 
     def __str__(self):
+        """
+        Return a human-readable string identifying the user's core stats.
+        
+        Returns:
+            str: "<username>'s Core Stats" where <username> is the associated user's username.
+        """
         return f"{self.user.username}'s Core Stats"
 
 
@@ -57,6 +63,11 @@ class LifeStatCategoryModel(models.Model):
         db_table = "stats_lifestatcategory"
 
     def __str__(self):
+        """
+        Return the human-readable name for the life stat category.
+        
+        This is used as the model's string representation; it returns the category's `name` field.
+        """
         return self.name
 
 
@@ -85,6 +96,12 @@ class LifeStatModel(models.Model):
         db_table = "stats_lifestat"
 
     def __str__(self):
+        """
+        Return a human-readable representation of the life stat in the format "<username>'s <name>".
+        
+        Returns:
+            str: Formatted string "<username>'s <name>".
+        """
         return f"{self.user.username}'s {self.name}"
 
 
@@ -114,6 +131,11 @@ class StatHistoryModel(models.Model):
         ]
 
     def __str__(self):
+        """
+        Return a human-readable representation of the stat history entry.
+        
+        Format: "<username> - <stat_name>: <old_value> → <new_value>" — useful in admin interfaces and logs.
+        """
         return f"{self.user.username} - {self.stat_name}: {self.old_value} → {self.new_value}"
 
 
@@ -144,11 +166,22 @@ class Stats(models.Model):
         verbose_name_plural = "Stats (Legacy)"
 
     def __str__(self):
+        """
+        Return a human-readable representation of the legacy Stats object.
+        
+        Returns:
+            str: "<username>'s Stats (Legacy)", where username is the related User's username.
+        """
         return f"{self.user.username}'s Stats (Legacy)"
 
     def gain_experience(self, amount):
         """
-        DEPRECATED: Use StatService.add_experience() instead.
+        DEPRECATED: Increment this legacy Stats instance's experience and trigger level checks.
+        
+        Adds the given amount to the instance's `experience`, runs the legacy level-up logic, persists the instance, and emits a DeprecationWarning directing callers to `StatService.add_experience()`. Use the newer StatService API instead of this method.
+        
+        Parameters:
+            amount (int | float): The amount of experience to add to the current `experience` field.
         """
         import warnings
 
@@ -164,7 +197,18 @@ class Stats(models.Model):
 
     def check_level_up(self):
         """
-        DEPRECATED: Level calculation moved to domain layer.
+        DEPRECATED: Increment the instance's level while consuming experience points.
+        
+        Iteratively subtracts the experience required for the current level (required_exp = level * 1000),
+        increments `self.level` for each level up, and deducts the required experience from `self.experience`
+        until `self.experience` is less than the requirement for the next level.
+        
+        Returns:
+            int: Number of levels gained.
+        
+        Notes:
+            - This method mutates `self.level` and `self.experience` on the instance but does not save the model.
+            - Level calculation and progression have been moved to the domain layer; prefer the domain API instead of calling this method.
         """
         levels_gained = 0
         while True:
@@ -181,7 +225,15 @@ class Stats(models.Model):
 # Signal handlers for backward compatibility
 @receiver(post_save, sender=User)
 def create_user_stats(sender, instance, created, **kwargs):
-    """Create legacy stats for backward compatibility."""
+    """
+    Post-save signal handler that ensures a legacy Stats record exists for newly created User instances.
+    
+    If `created` is True, attempts to create a legacy `Stats` object linked to `instance`. Errors are handled internally and not re-raised.
+    
+    Parameters:
+        instance (django.contrib.auth.models.User): The User instance that was saved.
+        created (bool): True if the save operation created a new User (post_save `created` flag).
+    """
     if created:
         try:
             Stats.objects.create(user=instance)
@@ -191,7 +243,13 @@ def create_user_stats(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_stats(sender, instance, **kwargs):
-    """Save legacy stats for backward compatibility."""
+    """
+    Ensure a legacy Stats record exists for a saved User and persist it for backward compatibility.
+    
+    Signal handler intended for Django's post_save on User. If the saved User instance exposes a `stats` attribute, this attempts to save it; if the legacy Stats record is missing it will create one. Errors are caught and reported (printed); the function does not raise.
+    Parameters:
+        instance: The User instance that was saved.
+    """
     try:
         if hasattr(instance, "stats"):
             instance.stats.save()

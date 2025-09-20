@@ -17,21 +17,39 @@ class ServiceFactory:
 
     @classmethod
     def get_user_repository(cls):
-        """Get or create user repository instance."""
+        """
+        Return a lazily-initialized singleton instance of DjangoUserRepository stored on the class.
+        
+        If no repository exists yet, one is created and assigned to the class attribute `_user_repo`. Returns the repository instance.
+        """
         if cls._user_repo is None:
             cls._user_repo = DjangoUserRepository()
         return cls._user_repo
 
     @classmethod
     def get_profile_repository(cls):
-        """Get or create profile repository instance."""
+        """
+        Return the singleton DjangoUserProfileRepository instance, creating it lazily.
+        
+        This classmethod provides the shared profile repository used when constructing services. If the repository has not been initialized yet, it instantiates DjangoUserProfileRepository and caches it on the class.
+        
+        Returns:
+            DjangoUserProfileRepository: The cached profile repository instance.
+        """
         if cls._profile_repo is None:
             cls._profile_repo = DjangoUserProfileRepository()
         return cls._profile_repo
 
     @classmethod
     def get_user_service(cls):
-        """Get configured UserService instance."""
+        """
+        Return a configured UserService instance.
+        
+        The returned UserService is constructed with the factory's user and profile repositories so callers receive a service wired with the shared repository instances.
+        
+        Returns:
+            UserService: A UserService configured with the factory's user_repo and profile_repo.
+        """
         return UserService(
             user_repo=cls.get_user_repository(),
             profile_repo=cls.get_profile_repository(),
@@ -39,7 +57,14 @@ class ServiceFactory:
 
     @classmethod
     def get_authentication_service(cls):
-        """Get configured AuthenticationService instance."""
+        """
+        Return a configured AuthenticationService using the factory's repositories.
+        
+        Produces an AuthenticationService instance wired with the ServiceFactory's
+        shared user and profile repositories (lazily initialized).
+        Returns:
+            AuthenticationService: A ready-to-use authentication service instance.
+        """
         return AuthenticationService(
             user_repo=cls.get_user_repository(),
             profile_repo=cls.get_profile_repository(),
@@ -47,7 +72,16 @@ class ServiceFactory:
 
     @classmethod
     def get_onboarding_service(cls):
-        """Get configured OnboardingService instance."""
+        """
+        Return a configured OnboardingService instance.
+        
+        The returned service is constructed with the factory's shared user and profile repositories
+        (obtained via ServiceFactory.get_user_repository and ServiceFactory.get_profile_repository),
+        ensuring consistent dependency wiring across callers.
+        
+        Returns:
+            OnboardingService: An OnboardingService configured with the factory repositories.
+        """
         return OnboardingService(
             user_repo=cls.get_user_repository(),
             profile_repo=cls.get_profile_repository(),
@@ -56,15 +90,33 @@ class ServiceFactory:
 
 # Convenience functions for getting services
 def get_user_service() -> UserService:
-    """Get UserService instance."""
+    """
+    Return a configured UserService wired with the module's shared user and profile repositories.
+    
+    Returns:
+        UserService: A UserService instance created by ServiceFactory.
+    """
     return ServiceFactory.get_user_service()
 
 
 def get_authentication_service() -> AuthenticationService:
-    """Get AuthenticationService instance."""
+    """
+    Return a configured AuthenticationService instance wired with the module's shared repositories.
+    
+    The returned service is created by ServiceFactory and uses the factory's singleton-like
+    user and profile repositories so callers receive a consistently configured AuthenticationService.
+    
+    Returns:
+        AuthenticationService: An AuthenticationService ready for use.
+    """
     return ServiceFactory.get_authentication_service()
 
 
 def get_onboarding_service() -> OnboardingService:
-    """Get OnboardingService instance."""
+    """
+    Return a configured OnboardingService wired with the application's user and profile repositories.
+    
+    Returns:
+        OnboardingService: An instance of OnboardingService created by ServiceFactory.
+    """
     return ServiceFactory.get_onboarding_service()
