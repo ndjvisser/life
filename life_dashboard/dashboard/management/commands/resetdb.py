@@ -33,11 +33,7 @@ class Command(BaseCommand):
         )
 
         if not settings.DEBUG:
-            self.stderr.write(
-                self.style.ERROR("resetdb can only run when DEBUG is enabled.")
-            )
-            return
-
+            raise CommandError("resetdb can only run when DEBUG is enabled.")
         environment = os.getenv("DJANGO_ENV", "").lower()
         if environment in {"production", "prod", "staging"}:
             self.stderr.write(
