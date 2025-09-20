@@ -219,9 +219,8 @@ reset-admin-password: check-dev-env
 		echo "❌ ADMIN_USER not found in .env.local"; exit 1; \
 	fi
 	NEW_PASSWORD=$$(python -c "import secrets; print(secrets.token_urlsafe(16))") && \
-	sed -i '' -e "/^ADMIN_PASSWORD=/d" -e "/^DJANGO_SUPERUSER_PASSWORD=/d" .env.local && \
-	echo "ADMIN_PASSWORD=$$NEW_PASSWORD" >> .env.local && \
-	echo "DJANGO_SUPERUSER_PASSWORD=$$NEW_PASSWORD" >> .env.local && \
+	python -c "\
+import re\n\n# Read existing file\ntry:\n    with open('.env.local', 'r') as f:\n        lines = [line for line in f if not line.startswith(('ADMIN_PASSWORD=', 'DJANGO_SUPERUSER_PASSWORD='))]\nexcept FileNotFoundError:\n    lines = []\n\n# Add new password lines\nlines.append(f'ADMIN_PASSWORD={$$NEW_PASSWORD}\n')\nlines.append(f'DJANGO_SUPERUSER_PASSWORD={$$NEW_PASSWORD}\n')\n\n# Write back to file\nwith open('.env.local', 'w') as f:\n    f.writelines(lines)\n" && \
 	python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); u = User.objects.get(username='$$ADMIN_USER'); u.set_password('$$NEW_PASSWORD'); u.save()" && \
 	echo "✅ Admin password reset successful" && \
 	echo "🔑 New password (saved to .env.local): $$NEW_PASSWORD"

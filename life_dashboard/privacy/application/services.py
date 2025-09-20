@@ -389,29 +389,37 @@ class DataSubjectService:
         self, request_id: str, processor_id: int, verification_method: str | None = None
     ) -> dict[str, Any]:
         """
-        Process a data export data subject request: mark it as processing, collect the requested user data, mark the request completed, and persist state changes.
+        Process a data export data subject request: verify identity if needed, mark it as processing,
+        collect the requested user data, mark the request completed, and persist state changes.
 
         Parameters:
             request_id (str): Identifier of the data subject request to process.
             processor_id (int): Internal ID of the actor or worker handling the request.
             verification_method (Optional[str]): Method used to verify identity (e.g., "email", "sms", "in_person").
-                If None, assumes identity was already verified externally.
+                Required if identity is not already verified.
 
         Returns:
-            Dict[str, Any]: Collected export data for the request (includes requested data categories, consents, activities, and any included profile data).
+            Dict[str, Any]: Collected export data for the request.
 
         Raises:
             ValueError: If no request exists for the given request_id or if identity verification is required but not provided.
+            RuntimeError: If identity verification fails.
         """
         request = self.request_repo.get_by_id(request_id)
 
         if not request:
             raise ValueError(f"Request {request_id} not found")
 
-        # Verify identity if verification method is provided
-        if verification_method is not None:
+        # Ensure identity is verified before processing
+        if not request.identity_verified:
+            if not verification_method:
+                raise ValueError(
+                    "Identity verification is required but no verification method was provided"
+                )
             request.verify_identity(verification_method)
+            self.request_repo.save(request)  # Persist verification status
 
+        # Now that identity is verified, start processing
         request.start_processing(processor_id)
         self.request_repo.save(request)
 
@@ -427,29 +435,37 @@ class DataSubjectService:
         self, request_id: str, processor_id: int, verification_method: str | None = None
     ) -> bool:
         """
-        Process a data deletion request: mark it as processing, delete the user's data, mark the request completed, and persist updates.
+        Process a data deletion request: verify identity if needed, mark it as processing,
+        delete the user's data, mark the request completed, and persist updates.
 
         Parameters:
             request_id (str): Identifier of the data subject request to process.
-            processor_id (int): Identifier of the actor (e.g., staff or system) performing the processing.
+            processor_id (int): Identifier of the actor performing the processing.
             verification_method (Optional[str]): Method used to verify identity (e.g., "email", "sms", "in_person").
-                If None, assumes identity was already verified externally.
+                Required if identity is not already verified.
 
         Returns:
             bool: True if the request was processed successfully.
 
         Raises:
-            ValueError: If no request with the given `request_id` exists or if identity verification is required but not provided.
+            ValueError: If no request exists for the given request_id or if identity verification is required but not provided.
+            RuntimeError: If identity verification fails.
         """
         request = self.request_repo.get_by_id(request_id)
 
         if not request:
             raise ValueError(f"Request {request_id} not found")
 
-        # Verify identity if verification method is provided
-        if verification_method is not None:
+        # Ensure identity is verified before processing
+        if not request.identity_verified:
+            if not verification_method:
+                raise ValueError(
+                    "Identity verification is required but no verification method was provided"
+                )
             request.verify_identity(verification_method)
+            self.request_repo.save(request)  # Persist verification status
 
+        # Now that identity is verified, start processing
         request.start_processing(processor_id)
         self.request_repo.save(request)
 
