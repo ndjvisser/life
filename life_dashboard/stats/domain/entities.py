@@ -2,7 +2,7 @@
 Stats domain entities - pure Python business logic without Django dependencies.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
@@ -55,10 +55,10 @@ class CoreStat:
             "wisdom",
             "charisma",
         ]
-        for field in stat_fields:
-            value = getattr(self, field)
+        for stat_field in stat_fields:
+            value = getattr(self, stat_field)
             if not isinstance(value, int) or value < 1 or value > 100:
-                raise ValueError(f"{field} must be an integer between 1 and 100")
+                raise ValueError(f"{stat_field} must be an integer between 1 and 100")
 
     def _calculate_level(self):
         """
@@ -360,7 +360,7 @@ class StatHistory:
     stat_name: str
     old_value: Decimal
     new_value: Decimal
-    change_amount: Decimal
+    change_amount: Decimal = field(default=Decimal("0"))
     change_reason: str = ""
     timestamp: datetime | None = None
 

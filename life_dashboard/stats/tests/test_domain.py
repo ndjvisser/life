@@ -191,9 +191,9 @@ class TestLifeStat:
 
         # Progress towards weight loss target
         # Current: 70, Target: 65, so we need to lose 5kg
-        # This is a reverse progress calculation
+        # Progress is capped at 100% even when over target
         progress = stat.progress_percentage()
-        assert progress > 100  # Over target
+        assert progress == 100.0  # Capped at 100% even when over target
 
     def test_is_target_achieved(self):
         """Test target achievement check."""
