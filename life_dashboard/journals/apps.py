@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class JournalsConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'journals'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "life_dashboard.journals"

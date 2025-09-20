@@ -1,0 +1,19 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Maintain visual and behavioural consistency in dashboard views
+globs:
+  - "life_dashboard/templates/**/*.html"
+  - "life_dashboard/views/**/*.py"
+alwaysApply: false
+---
+
+- All views should follow the MVC pattern strictly.
+- Use `@login_required` or permission decorators where relevant.
+- Render views using shared components: cards, tiles, or status bars via `base_dashboard.html`.
+Use Bootstrap CSS classes for layout (`container`, `row`, `col-*`, etc.) unless intentionally diverging.
+
+- Each dashboard module must be testable and reloadable independently (e.g. via HTMX or JS modules).

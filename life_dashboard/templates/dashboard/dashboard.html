@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load dashboard_filters %}
+
+{% block title %}Dashboard - LIFE{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>Welcome, {{ user.username }}!</h1>
+            <p class="lead">Track your progress and level up your life.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Stats Overview -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Stats Overview</h5>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Level</span>
+                            <span class="badge bg-primary rounded-pill">{{ user.profile.level }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Experience</span>
+                            <span class="badge bg-success rounded-pill">{{ user.profile.experience }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Active Quests</span>
+                            <span class="badge bg-info rounded-pill">{{ active_quests_count }}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Active Habits</span>
+                            <span class="badge bg-warning rounded-pill">{{ active_habits_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Activity</h5>
+                    {% if recent_activity %}
+                    <div class="list-group list-group-flush">
+                        {% for activity in recent_activity %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ activity.title }}</h6>
+                                <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1">{{ activity.description }}</p>
+                            {% if activity.experience_gained %}
+                            <small class="text-success">+{{ activity.experience_gained }} XP</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No recent activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Active Quests -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Active Quests</h5>
+                        <a href="{% url 'quests:quest_create' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> New Quest
+                        </a>
+                    </div>
+                    {% if active_quests %}
+                    <div class="list-group list-group-flush">
+                        {% for quest in active_quests %}
+                        <a href="{% url 'quest_detail' quest.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ quest.title }}</h6>
+                                <small class="text-muted">{{ quest.due_date|timeuntil }} left</small>
+                            </div>
+                            <p class="mb-1">{{ quest.description|truncatechars:100 }}</p>
+                            <small class="text-primary">{{ quest.experience_reward }} XP</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No active quests</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Habits -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="card-title mb-0">Active Habits</h5>
+                        <a href="{% url 'quests:habit_create' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i> New Habit
+                        </a>
+                    </div>
+                    {% if active_habits %}
+                    <div class="list-group list-group-flush">
+                        {% for habit in active_habits %}
+                        <a href="{% url 'quests:habit_detail' habit.pk %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ habit.name }}</h6>
+                                <small class="text-muted">{{ habit.frequency }}</small>
+                            </div>
+                            <p class="mb-1">{{ habit.description|truncatechars:100 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-success">Current Streak: {{ habit.current_streak }}</small>
+                                <small class="text-primary">Longest: {{ habit.longest_streak }}</small>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No active habits</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

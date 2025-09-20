@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ quest.title }} - LIFE{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if messages %}
+    {% for message in messages %}
+    {% if message.tags == 'success' %}
+    <div class="alert alert-success quest-updated alert-dismissible fade show">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>{{ quest.title }}</h1>
+        <div>
+            <a href="{% url 'quests:quest_update' quest.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'quests:quest_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Quest Details</h5>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Difficulty</strong>
+                                <span class="badge bg-{{ quest.get_difficulty_color }}">{{ quest.get_difficulty_display }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Type</strong>
+                                <span>{{ quest.get_quest_type_display }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Status</strong>
+                                <span>{{ quest.get_status_display }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Experience Reward</strong>
+                                <span>{{ quest.experience_reward }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Start Date</strong>
+                                <span>{{ quest.start_date|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                        {% if quest.due_date %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Due Date</strong>
+                                    <span>{{ quest.due_date|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Due Date</strong>
+                                    <span class="text-muted">Not set</span>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Created</strong>
+                                <span>{{ quest.created_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between">
+                                <strong>Last Updated</strong>
+                                <span>{{ quest.updated_at|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Description</h5>
+                    <p class="card-text">{{ quest.description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'quests:quest_update' quest.pk %}" class="btn btn-warning">
+                            <i class="fas fa-edit me-2"></i>Edit Quest
+                        </a>
+                        <a href="{% url 'quests:quest_delete' quest.pk %}" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Delete Quest
+                        </a>
+                        {% if quest.status == 'active' %}
+                        <form method="post" action="{% url 'quests:complete_quest' quest.pk %}" class="d-grid">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success complete-quest">
+                                <i class="fas fa-check me-2"></i>Complete Quest
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

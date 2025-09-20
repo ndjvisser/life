@@ -1,0 +1,23 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Keep dashboard architecture modular and extensible
+globs:
+  - "**/quests/*.py"
+  - "**/achievements/*.py"
+  - "**/skills/*.py"
+alwaysApply: false
+---
+
+- Quests, Achievements, and Skills should register themselves via a class registry or discovery pattern (not hardcoded imports).
+- Avoid cross-referencing unrelated modules (e.g., no calls from Skills to RomanceQuests).
+- Ensure that new modules support `to_dict()` or `serialize()` for UI rendering.
+- Every new module must include:
+  - At least one integration test.
+  - One display view or dashboard component.
+  - Basic test coverage for model + serializer.
+
+@quest_registry.py

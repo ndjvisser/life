@@ -1,0 +1,14 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+---
+description: Enforce consistent data pipeline for life stats
+alwaysApply: true
+---
+
+- All data updates must go through a single service layer (e.g., `update_stat`, `log_event`, `record_quest_progress`).
+- Never manipulate stats directly in views or templates.
+- Use the `StatValue`, `EventLog`, or `HabitLog` model for time-series tracking.
+- Avoid circular dependencies between models (especially stats <-> skills <-> quests).

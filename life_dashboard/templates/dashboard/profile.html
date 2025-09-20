@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Profile - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div id="profile-success-message" class="alert alert-success profile-updated alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">{{ user.username }}</h3>
+                    <p class="card-text">Member since: {{ user.date_joined|date:"F j, Y" }}</p>
+                    <h4>Core Stats</h4>
+                    <ul class="list-unstyled">
+                        <li>Level: {{ core_stats.level }}</li>
+                        <li>Experience: {{ core_stats.experience }}</li>
+                        <li>Health: {{ core_stats.health }}</li>
+                        <li>Energy: {{ core_stats.energy }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4>Edit Profile</h4>
+                    <form method="post" action="{% url 'dashboard:profile' %}" id="profile-form">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4>Achievements</h4>
+                    {% if achievements %}
+                        <div class="row">
+                            {% for achievement in achievements %}
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ achievement.achievement.name }}</h5>
+                                            <p class="card-text">{{ achievement.achievement.description }}</p>
+                                            <small class="text-muted">Unlocked: {{ achievement.unlocked_at|date:"F j, Y" }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No achievements unlocked yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h4>Recent Journal Entries</h4>
+                    {% if recent_entries %}
+                        {% for entry in recent_entries %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ entry.title }}</h5>
+                                    <p class="card-text">{{ entry.content|truncatewords:50 }}</p>
+                                    <small class="text-muted">Posted: {{ entry.created_at|date:"F j, Y" }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No journal entries yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('profile-form').addEventListener('submit', function(e) {
+    console.log('[DEBUG] Profile form submitted');
+});
+</script>
+{% endblock %}
+{% endblock %}
