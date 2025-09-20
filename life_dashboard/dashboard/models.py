@@ -46,8 +46,10 @@ class UserProfile(models.Model):
         self.save()
 
 
+# Keep only one signal handler for creating UserProfile
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
+    """Create a UserProfile when a User is created."""
     if created:
         try:
             UserProfile.objects.create(user=instance)
@@ -55,14 +57,3 @@ def create_user_profile(sender, instance, created, **kwargs):
             logger.error(
                 f"Error creating profile for user {instance.username}: {str(e)}"
             )
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    try:
-        instance.profile.save()
-    except UserProfile.DoesNotExist:
-        logger.warning(f"Profile not found for user {instance.username}, creating one")
-        UserProfile.objects.create(user=instance)
-    except Exception as e:
-        logger.error(f"Error saving profile for user {instance.username}: {str(e)}")
