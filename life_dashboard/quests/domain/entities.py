@@ -8,6 +8,7 @@ No Django dependencies allowed in this module.
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
+from typing import Optional
 from uuid import uuid4
 
 from .value_objects import (
@@ -62,7 +63,7 @@ class HabitFrequency(Enum):
     CUSTOM = "custom"
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Quest:
     """
     Quest domain entity representing a user's goal or task.
@@ -70,7 +71,6 @@ class Quest:
     Contains pure business logic for quest state transitions and validation.
     """
 
-    quest_id: QuestId
     user_id: UserId
     title: QuestTitle
     description: QuestDescription
@@ -78,6 +78,7 @@ class Quest:
     quest_type: QuestType
     status: QuestStatus
     experience_reward: ExperienceReward
+    quest_id: Optional[QuestId] = None
     parent_quest_id: str | None = None
     prerequisite_quest_ids: list[str] = field(default_factory=list)
     progress: float = 0.0
@@ -172,6 +173,8 @@ class Quest:
 
     def pause(self) -> None:
         """Pause the quest"""
+        if self.quest_type in (QuestType.DAILY, QuestType.WEEKLY):
+            raise ValueError("Daily and weekly quests cannot be paused")
         if not self.can_transition_to(QuestStatus.PAUSED):
             raise ValueError(f"Cannot pause quest from {self.status.value} status")
 
@@ -204,7 +207,7 @@ class Quest:
         return date.today() > self.due_date
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Habit:
     """
     Habit domain entity representing a recurring user activity.
@@ -212,7 +215,6 @@ class Habit:
     Contains pure business logic for habit tracking and streak calculation.
     """
 
-    habit_id: HabitId
     user_id: UserId
     name: HabitName
     description: str
@@ -221,6 +223,7 @@ class Habit:
     current_streak: StreakCount
     longest_streak: StreakCount
     experience_reward: ExperienceReward
+    habit_id: Optional[HabitId] = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
 

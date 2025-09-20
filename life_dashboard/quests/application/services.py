@@ -40,6 +40,48 @@ def _generate_positive_identifier(modulus: int = 1_000_000_000_000) -> int:
     return raw_value if raw_value > 0 else 1
 
 
+def _coerce_quest_id(quest_id: QuestId | int | str) -> QuestId:
+    """Normalize incoming quest identifiers to QuestId value objects."""
+
+    if isinstance(quest_id, QuestId):
+        return quest_id
+
+    try:
+        quest_id_value = int(quest_id)
+    except (TypeError, ValueError) as err:
+        raise ValueError(f"Invalid quest_id: {quest_id}") from err
+
+    return QuestId(quest_id_value)
+
+
+def _coerce_user_id(user_id: UserId | int | str) -> UserId:
+    """Normalize incoming user identifiers to UserId value objects."""
+
+    if isinstance(user_id, UserId):
+        return user_id
+
+    try:
+        user_id_value = int(user_id)
+    except (TypeError, ValueError) as err:
+        raise ValueError(f"Invalid user_id: {user_id}") from err
+
+    return UserId(user_id_value)
+
+
+def _coerce_habit_id(habit_id: HabitId | int | str) -> HabitId:
+    """Normalize habit identifiers to HabitId value objects."""
+
+    if isinstance(habit_id, HabitId):
+        return habit_id
+
+    try:
+        habit_id_value = int(habit_id)
+    except (TypeError, ValueError) as err:
+        raise ValueError(f"Invalid habit_id: {habit_id}") from err
+
+    return HabitId(habit_id_value)
+
+
 class QuestService:
     """Service for quest management and workflows."""
 
@@ -49,9 +91,21 @@ class QuestService:
         """
         self.quest_repo = quest_repo
 
+    @staticmethod
+    def _normalize_quest_id(quest_id: str | QuestId) -> QuestId:
+        """Normalize incoming quest identifiers to QuestId value objects."""
+
+        return _coerce_quest_id(quest_id)
+
+    @staticmethod
+    def _normalize_user_id(user_id: int | UserId | str) -> UserId:
+        """Normalize incoming user identifiers to UserId value objects."""
+
+        return _coerce_user_id(user_id)
+
     def create_quest(
         self,
-        user_id: int,
+        user_id: int | UserId,
         title: str,
         description: str = "",
         quest_type: QuestType = QuestType.MAIN,
@@ -67,7 +121,7 @@ class QuestService:
         `updated_at` to the current UTC time, persists it via the repository, and returns the saved Quest.
 
         Parameters:
-            user_id (int): Owner of the quest.
+            user_id (int | UserId): Owner of the quest.
             title (str): Quest title.
             description (str): Optional quest description.
             quest_type (QuestType): Type/category of the quest.
@@ -80,7 +134,7 @@ class QuestService:
                 difficulty_enum = QuestDifficulty.MEDIUM
         else:
             difficulty_enum = difficulty
-        quest_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
+        quest_user_id = self._normalize_user_id(user_id)
         quest_title = title if isinstance(title, QuestTitle) else QuestTitle(title)
         quest_description = (
             description
@@ -125,9 +179,11 @@ class QuestService:
         Returns:
             Quest: The persisted quest after starting.
         """
-        quest = self.quest_repo.get_by_id(quest_id)
+        quest_identifier = self._normalize_quest_id(quest_id)
+
+        quest = self.quest_repo.get_by_id(quest_identifier)
         if not quest:
-            raise ValueError(f"Quest {quest_id} not found")
+            raise ValueError(f"Quest {quest_identifier.value} not found")
 
         quest.activate()
         return self.quest_repo.save(quest)
@@ -147,9 +203,11 @@ class QuestService:
         Raises:
             ValueError: If no quest exists with the given `quest_id`.
         """
-        quest = self.quest_repo.get_by_id(quest_id)
+        quest_identifier = self._normalize_quest_id(quest_id)
+
+        quest = self.quest_repo.get_by_id(quest_identifier)
         if not quest:
-            raise ValueError(f"Quest {quest_id} not found")
+            raise ValueError(f"Quest {quest_identifier.value} not found")
 
         quest.complete()
         updated_quest = self.quest_repo.save(quest)
@@ -173,9 +231,11 @@ class QuestService:
         Raises:
             ValueError: If no quest exists with the given `quest_id`.
         """
-        quest = self.quest_repo.get_by_id(quest_id)
+        quest_identifier = self._normalize_quest_id(quest_id)
+
+        quest = self.quest_repo.get_by_id(quest_identifier)
         if not quest:
-            raise ValueError(f"Quest {quest_id} not found")
+            raise ValueError(f"Quest {quest_identifier.value} not found")
 
         if not 0.0 <= percentage <= 100.0:
             raise ValueError("Quest progress must be between 0 and 100 percent")
@@ -203,9 +263,11 @@ class QuestService:
         Raises:
             ValueError: If no quest with `quest_id` exists.
         """
-        quest = self.quest_repo.get_by_id(quest_id)
+        quest_identifier = self._normalize_quest_id(quest_id)
+
+        quest = self.quest_repo.get_by_id(quest_identifier)
         if not quest:
-            raise ValueError(f"Quest {quest_id} not found")
+            raise ValueError(f"Quest {quest_identifier.value} not found")
 
         quest.pause()
         return self.quest_repo.save(quest)
@@ -223,9 +285,11 @@ class QuestService:
         Raises:
             ValueError: If no quest exists with the given quest_id.
         """
-        quest = self.quest_repo.get_by_id(quest_id)
+        quest_identifier = self._normalize_quest_id(quest_id)
+
+        quest = self.quest_repo.get_by_id(quest_identifier)
         if not quest:
-            raise ValueError(f"Quest {quest_id} not found")
+            raise ValueError(f"Quest {quest_identifier.value} not found")
 
         quest.activate()
         return self.quest_repo.save(quest)
@@ -246,48 +310,54 @@ class QuestService:
         Returns:
             Quest: The updated Quest after being marked failed and saved.
         """
-        quest = self.quest_repo.get_by_id(quest_id)
+        quest_identifier = self._normalize_quest_id(quest_id)
+
+        quest = self.quest_repo.get_by_id(quest_identifier)
         if not quest:
-            raise ValueError(f"Quest {quest_id} not found")
+            raise ValueError(f"Quest {quest_identifier.value} not found")
 
         quest.fail()
         return self.quest_repo.save(quest)
 
     def get_user_quests(
         self,
-        user_id: int,
+        user_id: int | UserId,
         status: QuestStatus | None = None,
         quest_type: QuestType | None = None,
     ) -> list[Quest]:
         """Get quests for a user with optional filtering."""
-        if status:
-            return self.quest_repo.get_by_status(user_id, status)
-        elif quest_type:
-            return self.quest_repo.get_by_type(user_id, quest_type)
-        else:
-            return self.quest_repo.get_by_user_id(user_id)
+        user_identifier = self._normalize_user_id(user_id)
 
-    def get_overdue_quests(self, user_id: int) -> list[Quest]:
+        if status:
+            return self.quest_repo.get_by_status(user_identifier, status)
+        elif quest_type:
+            return self.quest_repo.get_by_type(user_identifier, quest_type)
+        else:
+            return self.quest_repo.get_by_user_id(user_identifier)
+
+    def get_overdue_quests(self, user_id: int | UserId) -> list[Quest]:
         """
         Return the list of overdue quests for the given user.
 
         Returns:
             List[Quest]: Quests whose due date has passed and are still not completed.
         """
-        return self.quest_repo.get_overdue_quests(user_id)
+        return self.quest_repo.get_overdue_quests(self._normalize_user_id(user_id))
 
-    def get_upcoming_quests(self, user_id: int, days: int = 7) -> list[Quest]:
+    def get_upcoming_quests(
+        self, user_id: int | UserId, days: int = 7
+    ) -> list[Quest]:
         """
         Return quests for the user that are due within the next `days` days (from today, inclusive).
 
         Parameters:
-            user_id (int): ID of the user whose quests are requested.
+            user_id (int | UserId): ID of the user whose quests are requested.
             days (int): Number of days from today to look ahead (default 7).
 
         Returns:
             List[Quest]: Quests with due dates within the specified timeframe.
         """
-        return self.quest_repo.get_due_soon(user_id, days)
+        return self.quest_repo.get_due_soon(self._normalize_user_id(user_id), days)
 
     def delete_quest(self, quest_id: str) -> bool:
         """
@@ -299,23 +369,29 @@ class QuestService:
         Returns:
             bool: True if the quest was deleted, False if no quest was found.
         """
-        return self.quest_repo.delete(quest_id)
+        quest_identifier = self._normalize_quest_id(quest_id)
 
-    def search_quests(self, user_id: int, query: str, limit: int = 20) -> list[Quest]:
+        return self.quest_repo.delete(quest_identifier)
+
+    def search_quests(
+        self, user_id: int | UserId, query: str, limit: int = 20
+    ) -> list[Quest]:
         """
         Search quests belonging to a user that match a text query.
 
         Parameters:
-            user_id (int): ID of the user whose quests will be searched.
+            user_id (int | UserId): ID of the user whose quests will be searched.
             query (str): Text to match against quest titles and descriptions.
             limit (int): Maximum number of results to return (default 20).
 
         Returns:
             List[Quest]: Quests matching the query for the specified user, up to `limit`.
         """
-        return self.quest_repo.search_quests(user_id, query, limit)
+        return self.quest_repo.search_quests(
+            self._normalize_user_id(user_id), query, limit
+        )
 
-    def get_quest_statistics(self, user_id: int) -> dict[str, Any]:
+    def get_quest_statistics(self, user_id: int | UserId) -> dict[str, Any]:
         """
         Return aggregated quest statistics for a user.
 
@@ -332,7 +408,8 @@ class QuestService:
                 - total_experience_earned (int): Sum of `calculate_final_experience()` for completed quests.
                 - average_completion_time (float): Placeholder numeric value for average completion time (currently always 0.0).
         """
-        all_quests = self.quest_repo.get_by_user_id(user_id)
+        user_identifier = self._normalize_user_id(user_id)
+        all_quests = self.quest_repo.get_by_user_id(user_identifier)
 
         stats = {
             "total_quests": len(all_quests),
@@ -351,7 +428,9 @@ class QuestService:
             "average_completion_time": 0.0,
         }
 
-        completed_quests = [q for q in all_quests if q.status == QuestStatus.COMPLETED]
+        completed_quests = [
+            q for q in all_quests if q.status == QuestStatus.COMPLETED
+        ]
         if completed_quests:
             stats["completion_rate"] = (len(completed_quests) / len(all_quests)) * 100
             stats["total_experience_earned"] = sum(
@@ -375,9 +454,21 @@ class HabitService:
         self.habit_repo = habit_repo
         self.completion_repo = completion_repo
 
+    @staticmethod
+    def _normalize_user_id(user_id: int | UserId | str) -> UserId:
+        """Normalize incoming user identifiers to UserId value objects."""
+
+        return _coerce_user_id(user_id)
+
+    @staticmethod
+    def _normalize_habit_id(habit_id: HabitId | int | str) -> HabitId:
+        """Normalize incoming habit identifiers to HabitId value objects."""
+
+        return _coerce_habit_id(habit_id)
+
     def create_habit(
         self,
-        user_id: int,
+        user_id: int | UserId,
         name: str,
         description: str = "",
         frequency: HabitFrequency = HabitFrequency.DAILY,
@@ -392,7 +483,7 @@ class HabitService:
         Returns:
             Habit: The persisted Habit instance with any repository-assigned identifiers or metadata.
         """
-        habit_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
+        habit_user_id = self._normalize_user_id(user_id)
         habit_name = name if isinstance(name, HabitName) else HabitName(name)
         frequency_enum = (
             frequency
@@ -428,7 +519,7 @@ class HabitService:
 
     def complete_habit(
         self,
-        habit_id: int | HabitId,
+        habit_id: HabitId | int | str,
         completion_date: date | None = None,
         count: int = 1,
         notes: str = "",
@@ -439,7 +530,7 @@ class HabitService:
         If completion_date is omitted, today's date (in the system local date) is used. Raises ValueError when the habit does not exist or a completion for the same habit and date already exists.
 
         Parameters:
-            habit_id (str): Identifier of the habit to complete.
+            habit_id (HabitId | int | str): Identifier of the habit to complete.
             completion_date (date | None): Date of the completion; defaults to today when None.
             count (int): Number of times the habit was completed in this entry (defaults to 1).
             notes (str): Optional free-text notes attached to the completion.
@@ -447,18 +538,18 @@ class HabitService:
         Returns:
             tuple(Habit, HabitCompletion, int): A 3-tuple containing the updated Habit entity, the persisted HabitCompletion record, and the experience points gained from this completion.
         """
-        habit_lookup_id = habit_id.value if isinstance(habit_id, HabitId) else habit_id
+        habit_identifier = self._normalize_habit_id(habit_id)
 
-        habit = self.habit_repo.get_by_id(habit_lookup_id)
+        habit = self.habit_repo.get_by_id(habit_identifier)
         if not habit:
-            raise ValueError(f"Habit {habit_lookup_id} not found")
+            raise ValueError(f"Habit {habit_identifier.value} not found")
 
         if not completion_date:
             completion_date = date.today()
 
         # Check if already completed today
         existing_completion = self.completion_repo.get_completion_for_date(
-            habit_lookup_id, completion_date
+            habit_identifier, completion_date
         )
         if existing_completion:
             raise ValueError(f"Habit already completed on {completion_date}")
@@ -466,7 +557,7 @@ class HabitService:
         # Determine previous completion to maintain streak calculations
         previous_completion_date = None
         recent_completions = self.completion_repo.get_by_habit_id(
-            habit_lookup_id, limit=1
+            habit_identifier, limit=1
         )
         if recent_completions:
             candidate_date = recent_completions[0].completion_date
@@ -484,13 +575,6 @@ class HabitService:
         updated_habit = self.habit_repo.save(habit)
 
         # Create completion record
-        if isinstance(habit_id, HabitId):
-            habit_identifier = habit_id
-        else:
-            try:
-                habit_identifier = HabitId(int(habit_id))
-            except (TypeError, ValueError) as err:
-                raise ValueError(f"Invalid habit_id: {habit_id}") from err
         user_identifier = (
             habit.user_id
             if isinstance(habit.user_id, UserId)
@@ -526,7 +610,7 @@ class HabitService:
 
         return updated_habit, saved_completion, experience_gained
 
-    def break_habit_streak(self, habit_id: str) -> Habit:
+    def break_habit_streak(self, habit_id: HabitId | int | str) -> Habit:
         """
         Break the active streak for the specified habit and persist the change.
 
@@ -538,51 +622,60 @@ class HabitService:
         Raises:
             ValueError: If no habit with the given `habit_id` exists.
         """
-        habit = self.habit_repo.get_by_id(habit_id)
+        habit_identifier = self._normalize_habit_id(habit_id)
+
+        habit = self.habit_repo.get_by_id(habit_identifier)
         if not habit:
-            raise ValueError(f"Habit {habit_id} not found")
+            raise ValueError(f"Habit {habit_identifier.value} not found")
 
         habit.break_streak()
         return self.habit_repo.save(habit)
 
     def get_user_habits(
-        self, user_id: int, frequency: HabitFrequency | None = None
+        self, user_id: int | UserId, frequency: HabitFrequency | None = None
     ) -> list[Habit]:
         """Get habits for a user with optional frequency filter."""
+        user_identifier = self._normalize_user_id(user_id)
+
         if frequency:
-            return self.habit_repo.get_by_frequency(user_id, frequency)
+            return self.habit_repo.get_by_frequency(user_identifier, frequency)
         else:
-            return self.habit_repo.get_by_user_id(user_id)
+            return self.habit_repo.get_by_user_id(user_identifier)
 
-    def get_habits_due_today(self, user_id: int) -> list[Habit]:
+    def get_habits_due_today(self, user_id: int | UserId) -> list[Habit]:
         """Get habits due today for a user."""
-        return self.habit_repo.get_due_today(user_id)
+        return self.habit_repo.get_due_today(self._normalize_user_id(user_id))
 
-    def get_active_streaks(self, user_id: int, min_streak: int = 7) -> list[Habit]:
+    def get_active_streaks(
+        self, user_id: int | UserId, min_streak: int = 7
+    ) -> list[Habit]:
         """
         Return the user's habits that currently have an active streak of at least `min_streak` days.
 
         Parameters:
-            user_id (int): ID of the user whose habits to query.
+            user_id (int | UserId): ID of the user whose habits to query.
             min_streak (int): Minimum consecutive days required to consider a streak active. Defaults to 7.
 
         Returns:
             List[Habit]: Habits belonging to the user with active streaks >= `min_streak`.
         """
-        return self.habit_repo.get_active_streaks(user_id, min_streak)
+        return self.habit_repo.get_active_streaks(
+            self._normalize_user_id(user_id), min_streak
+        )
 
     def get_habit_completions(
-        self, habit_id: str, limit: int = 30
+        self, habit_id: HabitId | int | str, limit: int = 30
     ) -> list[HabitCompletion]:
         """
         Return the most recent completions for a habit.
 
         Returns up to `limit` HabitCompletion records for `habit_id`, ordered newest first.
         """
-        return self.completion_repo.get_by_habit_id(habit_id, limit)
+        habit_identifier = self._normalize_habit_id(habit_id)
+        return self.completion_repo.get_by_habit_id(habit_identifier, limit)
 
     def get_completion_history(
-        self, habit_id: str, start_date: date, end_date: date
+        self, habit_id: HabitId | int | str, start_date: date, end_date: date
     ) -> list[HabitCompletion]:
         """
         Return habit completions for the given habit between start_date and end_date.
@@ -590,26 +683,30 @@ class HabitService:
         Retrieves all HabitCompletion records whose completion date falls within the provided date range.
 
         Parameters:
-            habit_id (str): ID of the habit to fetch completions for.
+            habit_id (HabitId | int | str): ID of the habit to fetch completions for.
             start_date (date): Start of the date range.
             end_date (date): End of the date range.
 
         Returns:
             List[HabitCompletion]: List of completions in the specified date range.
         """
-        return self.completion_repo.get_by_date_range(habit_id, start_date, end_date)
+        habit_identifier = self._normalize_habit_id(habit_id)
+        return self.completion_repo.get_by_date_range(
+            habit_identifier, start_date, end_date
+        )
 
-    def delete_habit(self, habit_id: str) -> bool:
+    def delete_habit(self, habit_id: HabitId | int | str) -> bool:
         """
         Delete a habit by its ID.
 
         Parameters:
-            habit_id (str): Identifier of the habit to delete.
+            habit_id (HabitId | int | str): Identifier of the habit to delete.
 
         Returns:
             bool: True if the habit was deleted, False if no habit with the given ID existed.
         """
-        return self.habit_repo.delete(habit_id)
+        habit_identifier = self._normalize_habit_id(habit_id)
+        return self.habit_repo.delete(habit_identifier)
 
     def delete_completion(self, completion_id: str) -> bool:
         """
@@ -623,28 +720,34 @@ class HabitService:
         """
         return self.completion_repo.delete_completion(completion_id)
 
-    def search_habits(self, user_id: int, query: str, limit: int = 20) -> list[Habit]:
+    def search_habits(
+        self, user_id: int | UserId, query: str, limit: int = 20
+    ) -> list[Habit]:
         """
         Search a user's habits by text query.
 
         Performs a text search (e.g., name/description) scoped to the given user and returns up to `limit` matching Habit entities.
 
         Parameters:
-            user_id (int): ID of the user whose habits will be searched.
+            user_id (int | UserId): ID of the user whose habits will be searched.
             query (str): Search string to match against habit fields.
             limit (int): Maximum number of results to return (default 20).
 
         Returns:
             List[Habit]: Matching Habit objects, up to `limit`.
         """
-        return self.habit_repo.search_habits(user_id, query, limit)
+        return self.habit_repo.search_habits(
+            self._normalize_user_id(user_id), query, limit
+        )
 
-    def get_habit_statistics(self, user_id: int, days: int = 30) -> dict[str, Any]:
+    def get_habit_statistics(
+        self, user_id: int | UserId, days: int = 30
+    ) -> dict[str, Any]:
         """
         Retrieve the user's habits and recent completion metrics (last `days` days) and return a summary dictionary containing counts and aggregated values.
 
         Parameters:
-            user_id (int): The ID of the user whose statistics to retrieve.
+            user_id (int | UserId): The ID of the user whose statistics to retrieve.
             days (int, optional): Number of days to look back for completion statistics. Defaults to 30.
 
         Returns:
@@ -657,8 +760,11 @@ class HabitService:
                 - streak_milestones (int): Number of habits whose current streak is at or above the 7-day milestone.
                 - habits_due_today (int): Count of habits due today.
         """
-        habits = self.habit_repo.get_by_user_id(user_id)
-        completion_stats = self.completion_repo.get_completion_stats(user_id, days)
+        user_identifier = self._normalize_user_id(user_id)
+        habits = self.habit_repo.get_by_user_id(user_identifier)
+        completion_stats = self.completion_repo.get_completion_stats(
+            user_identifier, days
+        )
 
         stats = {
             "total_habits": len(habits),
@@ -669,7 +775,7 @@ class HabitService:
             "streak_milestones": len(
                 [h for h in habits if h.current_streak.value >= 7]
             ),
-            "habits_due_today": len(self.get_habits_due_today(user_id)),
+            "habits_due_today": len(self.get_habits_due_today(user_identifier)),
         }
 
         return stats
@@ -685,7 +791,10 @@ class QuestChainService:
         self.quest_repo = quest_repo
 
     def create_quest_chain(
-        self, user_id: int, parent_quest_id: str, child_quests: list[dict[str, Any]]
+        self,
+        user_id: int | UserId,
+        parent_quest_id: QuestId | int | str,
+        child_quests: list[dict[str, Any]],
     ) -> list[Quest]:
         """
         Create and persist a sequence of child quests linked to a parent quest.
@@ -695,6 +804,8 @@ class QuestChainService:
         using the repository.
 
         Parameters:
+            user_id (int | UserId): Owner of the quest chain.
+            parent_quest_id (QuestId | int | str): Identifier of the parent quest.
             child_quests (List[Dict[str, Any]]): List of dicts containing fields for each child quest
                 (e.g., title, description, quest_type, difficulty, experience_reward, due_date).
                 Keys should match the Quest constructor except `user_id`, `parent_quest_id`,
@@ -706,43 +817,43 @@ class QuestChainService:
         created_quests = []
 
         for quest_data in child_quests:
-            quest_payload = quest_data.copy()
+            quest_payload = self._sanitize_child_quest_data(quest_data)
 
-            quest_identifier = quest_payload.get("quest_id")
-            if quest_identifier is None:
+            quest_identifier_value = quest_payload.get("quest_id")
+            if isinstance(quest_identifier_value, QuestId):
+                quest_identifier = quest_identifier_value
+            elif quest_identifier_value is None:
                 quest_identifier = QuestId(_generate_positive_identifier())
-            elif not isinstance(quest_identifier, QuestId):
+            else:
                 try:
-                    quest_identifier = QuestId(int(quest_identifier))
+                    quest_identifier = QuestId(int(quest_identifier_value))
                 except (TypeError, ValueError) as err:
                     raise ValueError(
-                        f"Invalid quest_id value in quest chain payload: {quest_identifier}"
+                        f"Invalid quest_id value in quest chain payload: {quest_identifier_value}"
                     ) from err
 
-            quest_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
+            quest_user_id = _coerce_user_id(user_id)
 
             title_value = quest_payload.get("title", "")
             quest_title = (
                 title_value
                 if isinstance(title_value, QuestTitle)
-                else QuestTitle(title_value)
+                else QuestTitle(str(title_value).strip())
             )
 
             description_value = quest_payload.get("description", "")
             quest_description = (
                 description_value
                 if isinstance(description_value, QuestDescription)
-                else QuestDescription(description_value)
+                else QuestDescription(str(description_value).strip())
             )
 
             difficulty_value = quest_payload.get("difficulty", QuestDifficulty.MEDIUM)
             if isinstance(difficulty_value, str):
                 difficulty_key = difficulty_value.upper()
-                difficulty_value = (
-                    QuestDifficulty[difficulty_key]
-                    if difficulty_key in QuestDifficulty.__members__
-                    else QuestDifficulty.MEDIUM
-                )
+                if difficulty_key not in QuestDifficulty.__members__:
+                    raise ValueError(f"Invalid difficulty: {difficulty_value}")
+                difficulty_value = QuestDifficulty[difficulty_key]
 
             quest_type_value = quest_payload.get("quest_type", QuestType.SIDE)
             if isinstance(quest_type_value, str):
@@ -763,11 +874,15 @@ class QuestChainService:
                 )
 
             experience_value = quest_payload.get("experience_reward", 0)
-            quest_experience = (
-                experience_value
-                if isinstance(experience_value, ExperienceReward)
-                else ExperienceReward(experience_value)
-            )
+            if isinstance(experience_value, ExperienceReward):
+                quest_experience = experience_value
+            else:
+                try:
+                    quest_experience = ExperienceReward(int(experience_value))
+                except (TypeError, ValueError) as err:
+                    raise ValueError(
+                        "experience_reward must be an integer"
+                    ) from err
 
             quest = Quest(
                 quest_id=quest_identifier,
@@ -780,6 +895,7 @@ class QuestChainService:
                 experience_reward=quest_experience,
                 start_date=quest_payload.get("start_date"),
                 due_date=quest_payload.get("due_date"),
+                completed_at=quest_payload.get("completed_at"),
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
             )
@@ -787,7 +903,11 @@ class QuestChainService:
             if "progress" in quest_payload:
                 quest.progress = quest_payload["progress"]
             if parent_quest_id is not None:
-                quest.parent_quest_id = parent_quest_id
+                quest.parent_quest_id = (
+                    str(parent_quest_id.value)
+                    if isinstance(parent_quest_id, QuestId)
+                    else str(parent_quest_id)
+                )
             if "prerequisite_quest_ids" in quest_payload:
                 quest.prerequisite_quest_ids = quest_payload["prerequisite_quest_ids"]
             created_quest = self.quest_repo.create(quest)
@@ -920,7 +1040,7 @@ class QuestChainService:
 
         quest_id = filtered_data.pop("quest_id", None)
         if quest_id is None or not str(quest_id).strip():
-            sanitized["quest_id"] = str(uuid4())
+            sanitized["quest_id"] = None
         else:
             sanitized["quest_id"] = str(quest_id).strip()
 
@@ -988,28 +1108,41 @@ class QuestChainService:
 
         return sanitized
 
-    def get_quest_chain(self, parent_quest_id: str) -> list[Quest]:
+    def get_quest_chain(
+        self, parent_quest_id: QuestId | int | str
+    ) -> list[Quest]:
         """
         Return all child quests that belong to the chain of the given parent quest.
 
         Returns an empty list if there are no child quests.
         """
-        return self.quest_repo.get_by_parent_quest(parent_quest_id)
+        try:
+            quest_identifier: QuestId | str = _coerce_quest_id(parent_quest_id)
+        except ValueError:
+            quest_identifier = str(parent_quest_id)
+        return self.quest_repo.get_by_parent_quest(quest_identifier)
 
-    def check_prerequisites(self, quest_id: str) -> bool:
+    def check_prerequisites(self, quest_id: QuestId | int | str) -> bool:
         """Check if all prerequisite quests are completed."""
-        quest = self.quest_repo.get_by_id(quest_id)
+        quest_identifier = _coerce_quest_id(quest_id)
+        quest = self.quest_repo.get_by_id(quest_identifier)
         if not quest or not quest.prerequisite_quest_ids:
             return True
 
         for prereq_id in quest.prerequisite_quest_ids:
-            prereq_quest = self.quest_repo.get_by_id(prereq_id)
+            try:
+                prereq_identifier = _coerce_quest_id(prereq_id)
+            except ValueError:
+                return False
+            prereq_quest = self.quest_repo.get_by_id(prereq_identifier)
             if not prereq_quest or prereq_quest.status != QuestStatus.COMPLETED:
                 return False
 
         return True
 
-    def unlock_next_quests(self, completed_quest_id: str) -> list[Quest]:
+    def unlock_next_quests(
+        self, completed_quest_id: QuestId | int | str
+    ) -> list[Quest]:
         """
         Unlock quests that list the given quest as a prerequisite.
 
@@ -1021,7 +1154,7 @@ class QuestChainService:
         the method sets the quest's status to QuestStatus.ACTIVE, persists the change via the repository, and collects the updated quest.
 
         Parameters:
-            completed_quest_id (str): ID of the quest that was completed.
+            completed_quest_id (QuestId | int | str): ID of the quest that was completed.
 
         Returns:
             List[Quest]: the quests that were transitioned to ACTIVE and saved.
@@ -1030,19 +1163,36 @@ class QuestChainService:
             ValueError: If the completed quest is not found.
         """
         # First, fetch the completed quest to get the user_id
-        completed_quest = self.quest_repo.get_by_id(completed_quest_id)
+        try:
+            completed_identifier: QuestId | str = _coerce_quest_id(completed_quest_id)
+        except ValueError:
+            completed_identifier = str(completed_quest_id)
+
+        completed_quest = self.quest_repo.get_by_id(completed_identifier)
         if not completed_quest:
             raise ValueError(f"Completed quest {completed_quest_id} not found")
 
         # Find quests for this user that have this quest as a prerequisite
-        all_quests = self.quest_repo.get_by_user_id(completed_quest.user_id)
+        completed_user = completed_quest.user_id
+        if not isinstance(completed_user, UserId):
+            completed_user = _coerce_user_id(completed_user).value
+
+        all_quests = self.quest_repo.get_by_user_id(completed_user)
         unlocked_quests = []
+        completed_token = (
+            str(completed_identifier.value)
+            if isinstance(completed_identifier, QuestId)
+            else str(completed_identifier)
+        )
 
         for quest in all_quests:
+            quest_identifier = quest.quest_id
+            if quest_identifier is None:
+                continue
             if (
-                completed_quest_id in quest.prerequisite_quest_ids
+                completed_token in quest.prerequisite_quest_ids
                 and quest.status == QuestStatus.DRAFT
-                and self.check_prerequisites(quest.quest_id)
+                and self.check_prerequisites(quest_identifier)
             ):
                 quest.status = QuestStatus.ACTIVE
                 updated_quest = self.quest_repo.save(quest)
