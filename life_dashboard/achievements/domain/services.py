@@ -229,6 +229,11 @@ class AchievementService:
         )
         all_achievements = self._achievement_repository.get_all_achievements()
 
+        # Create achievement lookup dict to avoid N+1 queries
+        achievement_lookup = {
+            achievement.achievement_id: achievement for achievement in all_achievements
+        }
+
         # Basic statistics
         total_achievements = len(all_achievements)
         unlocked_achievements = len(user_achievements)
@@ -246,13 +251,11 @@ class AchievementService:
         for achievement in all_achievements:
             tier_totals[achievement.tier.value] += 1
 
-        # Count unlocked achievements by tier
+        # Count unlocked achievements by tier (using lookup dict)
         for user_achievement in user_achievements:
-            found_achievement = self._achievement_repository.get_by_id(
-                user_achievement.achievement_id
-            )
-            if found_achievement is not None:
-                tier_stats[found_achievement.tier.value] += 1
+            if user_achievement.achievement_id in achievement_lookup:
+                achievement = achievement_lookup[user_achievement.achievement_id]
+                tier_stats[achievement.tier.value] += 1
 
         # Category breakdown
         category_stats = {category.value: 0 for category in AchievementCategory}
@@ -262,29 +265,23 @@ class AchievementService:
         for achievement in all_achievements:
             category_totals[achievement.category.value] += 1
 
-        # Count unlocked achievements by category
+        # Count unlocked achievements by category (using lookup dict)
         for user_achievement in user_achievements:
-            found_achievement = self._achievement_repository.get_by_id(
-                user_achievement.achievement_id
-            )
-            if found_achievement is not None:
-                category_stats[found_achievement.category.value] += 1
+            if user_achievement.achievement_id in achievement_lookup:
+                achievement = achievement_lookup[user_achievement.achievement_id]
+                category_stats[achievement.category.value] += 1
 
         # Recent achievements
         recent_achievements = self._user_achievement_repository.get_recent_achievements(
             user_id, 30
         )
 
-        # Calculate total experience from achievements
+        # Calculate total experience from achievements (using lookup dict)
         total_experience = 0
         for user_achievement in user_achievements:
-            found_achievement = self._achievement_repository.get_by_id(
-                user_achievement.achievement_id
-            )
-            if found_achievement is not None:
-                total_experience += (
-                    found_achievement.calculate_final_experience_reward()
-                )
+            if user_achievement.achievement_id in achievement_lookup:
+                achievement = achievement_lookup[user_achievement.achievement_id]
+                total_experience += achievement.calculate_final_experience_reward()
 
         return {
             "total_achievements": total_achievements,
@@ -341,14 +338,23 @@ class AchievementService:
             key=lambda p: float(p.progress_percentage), reverse=True
         )
 
-        # Get achievement details
+        # Get achievement details for the limited set
+        limited_progress = close_achievements[:limit]
+        if not limited_progress:
+            return []
+
+        # Load all achievements once and create lookup to avoid N+1 queries
+        all_achievements = self._achievement_repository.get_all_achievements()
+        achievement_lookup = {
+            achievement.achievement_id: achievement for achievement in all_achievements
+        }
+
+        # Use lookup to get achievement details
         recommended = []
-        for progress in close_achievements[:limit]:
-            found_achievement = self._achievement_repository.get_by_id(
-                progress.achievement_id
-            )
-            if found_achievement is not None:
-                recommended.append(found_achievement)
+        for progress in limited_progress:
+            if progress.achievement_id in achievement_lookup:
+                achievement = achievement_lookup[progress.achievement_id]
+                recommended.append(achievement)
 
         return recommended
 

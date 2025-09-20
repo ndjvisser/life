@@ -53,10 +53,9 @@ INSTALLED_APPS = [
     "life_dashboard.quests",
     "life_dashboard.journals",
     "life_dashboard.achievements",
-    # Stats-related apps
-    "life_dashboard.core_stats",
-    "life_dashboard.life_stats",
-    "life_dashboard.stats",
+    "life_dashboard.skills",
+    # Stats-related apps (consolidated)
+    "life_dashboard.stats",  # Consolidated stats app with all models
 ]
 
 MIDDLEWARE = [
