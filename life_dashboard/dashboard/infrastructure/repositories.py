@@ -137,8 +137,8 @@ class DjangoUserRepository(UserRepository):
                     needs_save = True
 
             if needs_save:
-                user.save(update_fields=kwargs.keys())
-            user.save()
+                user.save()
+            return True
             return True
         except User.DoesNotExist:
             return False
