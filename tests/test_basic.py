@@ -44,6 +44,9 @@ def test_import_domain_layers():
     assert hasattr(privacy_entities, "ConsentRecord")
 
 
+# Django model import test is handled by Django's own system checks
+
+
 def test_architecture_boundaries():
     """Test that domain layers don't import Django."""
     import ast
