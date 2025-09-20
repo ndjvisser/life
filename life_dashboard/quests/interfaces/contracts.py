@@ -4,7 +4,14 @@ Quests API contracts - Pydantic models for request/response validation.
 
 from datetime import date, datetime
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
+
+from life_dashboard.quests.domain.entities import (
+    HabitFrequency,
+    QuestDifficulty,
+    QuestStatus,
+    QuestType,
+)
 
 
 class QuestCreateRequest(BaseModel):
@@ -12,26 +19,28 @@ class QuestCreateRequest(BaseModel):
 
     title: str = Field(..., min_length=1, max_length=200)
     description: str = Field("", max_length=1000)
-    quest_type: str = Field(
-        "main", regex="^(life_goal|annual_goal|main|side|weekly|daily)$"
-    )
-    difficulty: str = Field("medium", regex="^(easy|medium|hard|legendary)$")
+    quest_type: QuestType = QuestType.MAIN
+    difficulty: QuestDifficulty = QuestDifficulty.MEDIUM
     experience_reward: int = Field(10, ge=1, le=10000)
     start_date: date | None = None
     due_date: date | None = None
 
-    @validator("due_date")
-    def validate_due_date(cls, v, values):
+    @field_validator("due_date")
+    @classmethod
+    def validate_due_date(
+        cls, v: date | None, info: ValidationInfo
+    ) -> date | None:
         """
         Validator to ensure a provided due date is not earlier than the start date.
 
-        Checks that when both `start_date` (in the passed-in `values`) and the candidate `v`
-        (due date) are present and non-null, `v` is greater than or equal to `start_date`.
+        Checks that when both `start_date` (read from the already-validated `info.data`)
+        and the candidate `v` (due date) are present and non-null, `v` is greater than or
+        equal to `start_date`.
 
         Parameters:
             cls: The validator's owner class (unused).
             v: The candidate due date value to validate.
-            values: Previously-validated field values in the model (expected to contain `start_date`).
+            info: Pydantic validation context containing previously-validated values.
 
         Returns:
             The validated due date (`v`) unchanged.
@@ -39,12 +48,9 @@ class QuestCreateRequest(BaseModel):
         Raises:
             ValueError: If `v` is before `start_date`.
         """
-        if (
-            v
-            and "start_date" in values
-            and values["start_date"]
-            and v < values["start_date"]
-        ):
+        start_date = info.data.get("start_date") if info.data else None
+
+        if v and start_date and v < start_date:
             raise ValueError("Due date cannot be before start date")
         return v
 
@@ -54,10 +60,8 @@ class QuestUpdateRequest(BaseModel):
 
     title: str | None = Field(None, min_length=1, max_length=200)
     description: str | None = Field(None, max_length=1000)
-    quest_type: str | None = Field(
-        None, regex="^(life_goal|annual_goal|main|side|weekly|daily)$"
-    )
-    difficulty: str | None = Field(None, regex="^(easy|medium|hard|legendary)$")
+    quest_type: QuestType | None = None
+    difficulty: QuestDifficulty | None = None
     experience_reward: int | None = Field(None, ge=1, le=10000)
     start_date: date | None = None
     due_date: date | None = None
@@ -70,9 +74,9 @@ class QuestResponse(BaseModel):
     quest_id: str
     title: str
     description: str
-    quest_type: str
-    difficulty: str
-    status: str
+    quest_type: QuestType
+    difficulty: QuestDifficulty
+    status: QuestStatus
     experience_reward: int
     completion_percentage: float
     start_date: date | None
@@ -118,7 +122,7 @@ class HabitCreateRequest(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=100)
     description: str = Field("", max_length=500)
-    frequency: str = Field("daily", regex="^(daily|weekly|monthly|custom)$")
+    frequency: HabitFrequency = HabitFrequency.DAILY
     target_count: int = Field(1, ge=1, le=100)
     experience_reward: int = Field(5, ge=1, le=1000)
 
@@ -128,7 +132,7 @@ class HabitUpdateRequest(BaseModel):
 
     name: str | None = Field(None, min_length=1, max_length=100)
     description: str | None = Field(None, max_length=500)
-    frequency: str | None = Field(None, regex="^(daily|weekly|monthly|custom)$")
+    frequency: HabitFrequency | None = None
     target_count: int | None = Field(None, ge=1, le=100)
     experience_reward: int | None = Field(None, ge=1, le=1000)
 
@@ -139,7 +143,7 @@ class HabitResponse(BaseModel):
     habit_id: str
     name: str
     description: str
-    frequency: str
+    frequency: HabitFrequency
     target_count: int
     current_streak: int
     longest_streak: int
@@ -223,10 +227,8 @@ class QuestSearchRequest(BaseModel):
     """Request model for searching quests."""
 
     query: str = Field(..., min_length=1, max_length=100)
-    status: str | None = Field(None, regex="^(draft|active|completed|failed|paused)$")
-    quest_type: str | None = Field(
-        None, regex="^(life_goal|annual_goal|main|side|weekly|daily)$"
-    )
+    status: QuestStatus | None = None
+    quest_type: QuestType | None = None
     limit: int = Field(20, ge=1, le=100)
 
 
@@ -234,7 +236,7 @@ class HabitSearchRequest(BaseModel):
     """Request model for searching habits."""
 
     query: str = Field(..., min_length=1, max_length=100)
-    frequency: str | None = Field(None, regex="^(daily|weekly|monthly|custom)$")
+    frequency: HabitFrequency | None = None
     limit: int = Field(20, ge=1, le=100)
 
 
