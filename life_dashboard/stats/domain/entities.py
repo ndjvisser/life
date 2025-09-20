@@ -241,16 +241,16 @@ class LifeStat:
 
         Ensures `value` is numeric (int, float, or Decimal) and converts int/float inputs to Decimal (using string conversion to preserve precision). If `target` is provided, performs the same validation and conversion. Raises ValueError if either `value` or `target` is not a numeric type.
         """
-        if not isinstance(self.value, (int, float, Decimal)):
+        if not isinstance(self.value, int | float | Decimal):
             raise ValueError("Value must be a number")
 
-        if isinstance(self.value, (int, float)):
+        if isinstance(self.value, int | float):
             self.value = Decimal(str(self.value))
 
         if self.target is not None:
-            if not isinstance(self.target, (int, float, Decimal)):
+            if not isinstance(self.target, int | float | Decimal):
                 raise ValueError("Target must be a number")
-            if isinstance(self.target, (int, float)):
+            if isinstance(self.target, int | float):
                 self.target = Decimal(str(self.target))
 
     def update_value(self, new_value: Decimal, notes: str = "") -> Decimal:
@@ -266,7 +266,7 @@ class LifeStat:
         Returns:
             Decimal: The updated value stored on the instance.
         """
-        if isinstance(new_value, (int, float)):
+        if isinstance(new_value, int | float):
             new_value = Decimal(str(new_value))
 
         self.value = new_value
@@ -283,7 +283,7 @@ class LifeStat:
         If a numeric (int or float) is provided, it is converted to Decimal. Passing None clears the target. Updates the instance's `target` and sets `last_updated` to the current UTC time.
         """
         if target_value is not None:
-            if isinstance(target_value, (int, float)):
+            if isinstance(target_value, int | float):
                 target_value = Decimal(str(target_value))
 
         self.target = target_value
@@ -378,9 +378,9 @@ class StatHistory:
             self.timestamp = datetime.now(timezone.utc)
 
         # Ensure values are Decimal
-        if isinstance(self.old_value, (int, float)):
+        if isinstance(self.old_value, int | float):
             self.old_value = Decimal(str(self.old_value))
-        if isinstance(self.new_value, (int, float)):
+        if isinstance(self.new_value, int | float):
             self.new_value = Decimal(str(self.new_value))
 
         self.change_amount = self.new_value - self.old_value
