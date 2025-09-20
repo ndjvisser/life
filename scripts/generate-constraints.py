@@ -49,7 +49,10 @@ def main():
             cwd=project_root,
         )
         if returncode != 0:
-            print("❌ Production constraints are out of date")
+            if "No such file" in (stderr or ""):
+                print("❌ requirements.in not found. Add it or switch to compiling from pyproject.toml.")
+            else:
+                print("❌ Production constraints are out of date")
             sys.exit(1)
 
         # Check development constraints
@@ -58,12 +61,14 @@ def main():
             cwd=project_root,
         )
         if returncode != 0:
-            print("❌ Development constraints are out of date")
+            if "No such file" in (stderr or ""):
+                print("❌ requirements-dev.in not found. Add it or switch to compiling from pyproject.toml.")
+            else:
+                print("❌ Development constraints are out of date")
             sys.exit(1)
 
         print("✅ All constraints files are up to date")
         return
-
     print("Generating constraints files...")
 
     # Generate production constraints
