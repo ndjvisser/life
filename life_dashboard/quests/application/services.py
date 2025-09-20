@@ -53,20 +53,36 @@ class QuestService:
             description (str): Optional quest description.
             quest_type (QuestType): Type/category of the quest.
             difficulty (str): Difficulty name (e.g., "easy", "medium", "hard"); mapped to QuestDifficulty.
-            experience_reward (int): Experience awarded on completion.
-            due_date (Optional[date]): Optional due date for the quest.
+from ..domain.entities import (
+    Habit,
+    HabitCompletion,
+    HabitFrequency,
+    Quest,
+    QuestStatus,
+    QuestType,
+    QuestDifficulty,
+)
 
-        Returns:
-            Quest: The persisted Quest entity with repository-assigned identifiers/timestamps.
-        """
+        quest_type: QuestType = QuestType.MAIN,
+        difficulty: str = "medium",
+        experience_reward: int = 10,
+        due_date: Optional[date] = None,
+    ) -> Quest:
+        """Create a new quest."""
+        # Normalize difficulty
+        if isinstance(difficulty, str):
+            try:
+                difficulty_enum = QuestDifficulty[difficulty.upper()]
+            except KeyError:
+                difficulty_enum = QuestDifficulty.MEDIUM
+        else:
+            difficulty_enum = difficulty
         quest = Quest(
             user_id=user_id,
             title=title,
             description=description,
             quest_type=quest_type,
-            difficulty=getattr(
-                QuestDifficulty, difficulty.upper(), QuestDifficulty.MEDIUM
-            ),
+            difficulty=difficulty_enum,
             experience_reward=experience_reward,
             due_date=due_date,
             created_at=datetime.utcnow(),

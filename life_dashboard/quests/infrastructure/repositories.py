@@ -87,6 +87,10 @@ class DjangoQuestRepository(QuestRepository):
 
         if domain_quest.updated_at:
             django_quest.updated_at = domain_quest.updated_at
+        if hasattr(django_quest, "parent_quest_id"):
+            django_quest.parent_quest_id = (
+                int(domain_quest.parent_quest_id) if domain_quest.parent_quest_id else None
+            )
 
         return django_quest
 
@@ -325,8 +329,16 @@ class DjangoHabitRepository(HabitRepository):
             experience_reward=django_habit.experience_reward,
             created_at=django_habit.created_at,
             updated_at=django_habit.updated_at,
-            last_completed=None,  # Field removed from model
+            last_completed=getattr(
+                django_habit, "last_completed", getattr(django_habit, "last_practiced", None)
+            ),
         )
+
+        # ... (other assignments) ...
+        if hasattr(django_habit, "last_completed"):
+            django_habit.last_completed = domain_habit.last_completed
+        elif hasattr(django_habit, "last_practiced"):
+            django_habit.last_practiced = domain_habit.last_completed
 
     def _from_domain(
         self, domain_habit: DomainHabit, django_habit: DjangoHabit | None = None

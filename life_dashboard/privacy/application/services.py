@@ -428,7 +428,6 @@ class DataSubjectService:
 
         request.complete_request("Data export completed")
         self.request_repo.save(request)
-
         return user_data
 
     def process_deletion_request(
