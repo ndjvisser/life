@@ -131,16 +131,16 @@ class CrossContextQueries:
             User = get_user_model()
             user = User.objects.get(id=user_id)
 
-            # Quest counts
-            if hasattr(user, "quest_set"):
-                counts["active_quests"] = user.quest_set.filter(status="active").count()
-                counts["completed_quests"] = user.quest_set.filter(
+            # Quest counts (use explicit related_name="quests")
+            if hasattr(user, "quests"):
+                counts["active_quests"] = user.quests.filter(status="active").count()
+                counts["completed_quests"] = user.quests.filter(
                     status="completed"
                 ).count()
 
-            # Habit counts
-            if hasattr(user, "habit_set"):
-                counts["active_habits"] = user.habit_set.count()
+            # Habit counts (use explicit related_name="habits")
+            if hasattr(user, "habits"):
+                counts["active_habits"] = user.habits.count()
 
             # Journal counts
             if hasattr(user, "journal_entries"):
