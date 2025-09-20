@@ -6,6 +6,7 @@ This project uses pip-tools for reproducible dependency management.
 
 - `requirements.in` - Production dependencies with version ranges
 - `requirements-dev.in` - Development dependencies with version ranges
+- `requirements.txt` - Compiled application dependencies (generated)
 - `constraints.txt` - Pinned production dependencies (generated)
 - `constraints-dev.txt` - Pinned development dependencies (generated)
 - `pyproject.toml` - Single source of truth for project metadata and dependencies
@@ -27,6 +28,9 @@ This project uses pip-tools for reproducible dependency management.
    ```bash
    make sync-deps
    ```
+
+   This runs `pip-sync requirements.txt -c constraints.txt` to install packages
+   from the compiled requirements while enforcing constraint pins.
 
 4. Commit both the `.in` file changes and the generated constraints files.
 

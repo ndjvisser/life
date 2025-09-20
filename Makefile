@@ -142,7 +142,7 @@ compile-deps:
 	python scripts/generate-constraints.py
 
 sync-deps:
-	pip-sync constraints.txt
+	pip-sync requirements.txt -c constraints.txt
 
 update-deps: generate-constraints
 
@@ -217,12 +217,12 @@ reset-admin-password: check-dev-env
 	fi
 	. .env.local && \
 	if [ -z "$$ADMIN_USER" ]; then \
-		echo "❌ ADMIN_USER not found in .env.local"; exit 1; \
-	fi
+	        echo "❌ ADMIN_USER not found in .env.local"; exit 1; \
+	fi; \
 	NEW_PASSWORD=$$(python -c "import secrets; print(secrets.token_urlsafe(16))") && \
-	python -c "\
-import re\n\n# Read existing file\ntry:\n    with open('.env.local', 'r') as f:\n        lines = [line for line in f if not line.startswith(('ADMIN_PASSWORD=', 'DJANGO_SUPERUSER_PASSWORD='))]\nexcept FileNotFoundError:\n    lines = []\n\n# Add new password lines\nlines.append(f'ADMIN_PASSWORD={$$NEW_PASSWORD}\n')\nlines.append(f'DJANGO_SUPERUSER_PASSWORD={$$NEW_PASSWORD}\n')\n\n# Write back to file\nwith open('.env.local', 'w') as f:\n    f.writelines(lines)\n" && \
-	python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); u = User.objects.get(username='$$ADMIN_USER'); u.set_password('$$NEW_PASSWORD'); u.save()" && \
+	NEW_PASSWORD="$$NEW_PASSWORD" python -c "\
+import os\nfrom pathlib import Path\n\nenv_path = Path('.env.local')\nnew_password = os.environ['NEW_PASSWORD']\n\ntry:\n    with env_path.open('r') as env_file:\n        lines = [line for line in env_file if not line.startswith(('ADMIN_PASSWORD=', 'DJANGO_SUPERUSER_PASSWORD='))]\nexcept FileNotFoundError:\n    lines = []\n\nlines.append(f'ADMIN_PASSWORD={new_password}\\n')\nlines.append(f'DJANGO_SUPERUSER_PASSWORD={new_password}\\n')\n\nwith env_path.open('w') as env_file:\n    env_file.writelines(lines)\n" && \
+	NEW_PASSWORD="$$NEW_PASSWORD" python manage.py shell -c "import os; from django.contrib.auth import get_user_model; User = get_user_model(); u = User.objects.get(username='$$ADMIN_USER'); u.set_password(os.environ['NEW_PASSWORD']); u.save()" && \
 	echo "✅ Admin password reset successful" && \
 	echo "🔑 New password (saved to .env.local): $$NEW_PASSWORD"
 
