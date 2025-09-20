@@ -332,11 +332,19 @@ class HabitCompletion:
 
     def __post_init__(self):
         """Generate completion ID if not provided"""
-        if not hasattr(self, "completion_id") or not self.completion_id:
+        if not self.completion_id:
             self.completion_id = str(uuid4())
+        # Ensure user_id is properly typed
         if self.user_id is not None and not isinstance(self.user_id, UserId):
-            self.user_id = UserId(self.user_id)
+            if isinstance(self.user_id, int):
+                self.user_id = UserId(self.user_id)
+            else:
+                raise ValueError(f"Invalid user_id type: {type(self.user_id)}")
+        # Ensure streak_at_completion is properly typed
         if self.streak_at_completion is None:
             self.streak_at_completion = StreakCount(0)
         elif not isinstance(self.streak_at_completion, StreakCount):
-            self.streak_at_completion = StreakCount(self.streak_at_completion)
+            if isinstance(self.streak_at_completion, int):
+                self.streak_at_completion = StreakCount(self.streak_at_completion)
+            else:
+                raise ValueError(f"Invalid streak_at_completion type: {type(self.streak_at_completion)}")

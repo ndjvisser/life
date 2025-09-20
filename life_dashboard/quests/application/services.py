@@ -574,12 +574,13 @@ class HabitService:
         completion_stats = self.completion_repo.get_completion_stats(user_id, days)
 
         stats = {
+        stats = {
             "total_habits": len(habits),
-            "active_streaks": len([h for h in habits if h.current_streak > 0]),
-            "longest_streak": max([h.longest_streak for h in habits], default=0),
+            "active_streaks": len([h for h in habits if h.current_streak.value > 0]),
+            "longest_streak": max((h.longest_streak.value for h in habits), default=0),
             "daily_average": completion_stats.get("daily_average", 0.0),
             "current_streak": completion_stats.get("current_streak", 0),
-            "streak_milestones": len([h for h in habits if h.current_streak >= 7]),
+            "streak_milestones": len([h for h in habits if h.current_streak.value >= 7]),
             "habits_due_today": len(self.get_habits_due_today(user_id)),
         }
 
