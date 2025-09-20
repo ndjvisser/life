@@ -135,8 +135,8 @@ def migrate_data_backward(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ("stats", "0001_initial"),
-        ("core_stats", "0001_initial"),  # Ensure core_stats exists
-        ("life_stats", "0001_initial"),  # Ensure life_stats exists
+        ("core_stats", "0002_deprecate_core_stats"),  # Use latest core_stats migration
+        ("life_stats", "0002_deprecate_life_stats"),  # Use latest life_stats migration
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
