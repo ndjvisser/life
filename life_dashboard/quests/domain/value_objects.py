@@ -63,38 +63,6 @@ class QuestId:
 
 
 @dataclass(frozen=True)
-class UserId:
-    """User identifier value object"""
-
-    value: int
-
-    def __post_init__(self) -> None:
-        if self.value <= 0:
-            raise ValueError("User ID must be positive")
-
-    def __eq__(self, other: object) -> bool:  # pragma: no cover - simple comparison
-        if isinstance(other, UserId):
-            return self.value == other.value
-        if isinstance(other, int):
-            return self.value == other
-        if isinstance(other, str):
-            try:
-                return self.value == int(other)
-            except ValueError:
-                return False
-        return False
-
-    def __hash__(self) -> int:  # pragma: no cover - delegation to underlying value
-        return hash(self.value)
-
-    def __int__(self) -> int:  # pragma: no cover - trivial conversion helper
-        return self.value
-
-    def __str__(self) -> str:  # pragma: no cover - trivial representation
-        return str(self.value)
-
-
-@dataclass(frozen=True)
 class QuestTitle:
     """Quest title value object with validation"""
 
@@ -142,40 +110,6 @@ class QuestDescription:
 
     def __str__(self) -> str:  # pragma: no cover - trivial representation
         return self.value
-
-
-@dataclass(frozen=True)
-class ExperienceReward:
-    """Experience reward value object with validation"""
-
-    value: int
-
-    def __post_init__(self) -> None:
-        if self.value < 0:
-            raise ValueError("Experience reward cannot be negative")
-        if self.value > 10000:
-            raise ValueError("Experience reward cannot exceed 10000")
-
-    def __eq__(self, other: object) -> bool:  # pragma: no cover - simple comparison
-        if isinstance(other, ExperienceReward):
-            return self.value == other.value
-        if isinstance(other, int):
-            return self.value == other
-        if isinstance(other, str):
-            try:
-                return self.value == int(other)
-            except ValueError:
-                return False
-        return False
-
-    def __hash__(self) -> int:  # pragma: no cover - delegation to underlying value
-        return hash(self.value)
-
-    def __int__(self) -> int:  # pragma: no cover - trivial conversion helper
-        return self.value
-
-    def __str__(self) -> str:  # pragma: no cover - trivial representation
-        return str(self.value)
 
 
 @dataclass(frozen=True)

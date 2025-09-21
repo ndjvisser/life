@@ -23,7 +23,11 @@ class LoginRequiredMiddleware:
                 or (view_name or "").startswith("admin:")
             )
 
-        if request.user.is_authenticated or is_admin_view or view_name in self.exempt_view_names:
+        if (
+            request.user.is_authenticated
+            or is_admin_view
+            or view_name in self.exempt_view_names
+        ):
             return self.get_response(request)
 
         if request.method in {"GET", "HEAD"}:

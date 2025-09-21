@@ -168,9 +168,7 @@ class EventDispatcher:
             return False
 
         self._handlers[event_type] = filtered_handlers
-        logger.info(
-            f"Unregistered handler {handler_name} for {event_type.__name__}"
-        )
+        logger.info(f"Unregistered handler {handler_name} for {event_type.__name__}")
         return True
 
     def clear_handlers(self, event_type: type[BaseEvent] | None = None) -> None:
