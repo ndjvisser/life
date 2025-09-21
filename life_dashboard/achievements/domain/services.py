@@ -8,6 +8,8 @@ No Django dependencies allowed in this module.
 from datetime import datetime, timezone
 from typing import Any
 
+from life_dashboard.common.value_objects import ExperienceReward, UserId
+
 from .entities import (
     Achievement,
     AchievementCategory,
@@ -25,12 +27,9 @@ from .value_objects import (
     AchievementIcon,
     AchievementId,
     AchievementName,
-    ExperienceReward,
     RequiredLevel,
     RequiredQuestCompletions,
     RequiredSkillLevel,
-    UserAchievementId,
-    UserId,
 )
 
 
@@ -70,18 +69,14 @@ class AchievementService:
         achievement_name = AchievementName(name)
         achievement_description = AchievementDescription(description)
         achievement_icon = AchievementIcon(icon)
-        exp_reward = ExperienceReward(experience_reward)
+        exp_reward = ExperienceReward(experience_reward, max_value=50000)
         req_level = RequiredLevel(required_level)
         req_skill_level = (
             RequiredSkillLevel(required_skill_level) if required_skill_level else None
         )
         req_quest_completions = RequiredQuestCompletions(required_quest_completions)
 
-        # Generate achievement ID (in real implementation, this would come from repository)
-        achievement_id = AchievementId(1)  # Placeholder
-
         achievement = Achievement(
-            achievement_id=achievement_id,
             name=achievement_name,
             description=achievement_description,
             tier=tier_enum,
@@ -117,13 +112,8 @@ class AchievementService:
             ):
                 raise ValueError("User already has this achievement")
 
-        # Repository will assign ID during save
-        # Use placeholder ID for entity creation, repository will replace
-        user_achievement_id = UserAchievementId(-1)  # Temporary placeholder
-
         # Create user achievement
         user_achievement = UserAchievement(
-            user_achievement_id=user_achievement_id,
             user_id=user_id,
             achievement_id=achievement_id,
             unlocked_at=datetime.now(timezone.utc),
@@ -147,7 +137,7 @@ class AchievementService:
 
         # Get all achievements user doesn't have yet
         user_achievement_ids = {
-            ua.achievement_id
+            ua.achievement_id.value
             for ua in self._user_achievement_repository.get_user_achievements(user_id)
         }
 
@@ -155,8 +145,9 @@ class AchievementService:
         eligible_achievements = [
             achievement
             for achievement in all_achievements
-            if (
-                achievement.achievement_id not in user_achievement_ids
+            if achievement.achievement_id is not None
+            and (
+                achievement.achievement_id.value not in user_achievement_ids
                 or achievement.is_repeatable
             )
             and achievement.check_eligibility(user_stats)
@@ -186,6 +177,8 @@ class AchievementService:
         progress_list = []
 
         for achievement in all_achievements:
+            if achievement.achievement_id is None:
+                continue
             # Skip if user already has this achievement (unless repeatable)
             if not achievement.is_repeatable:
                 if self._user_achievement_repository.has_achievement(
@@ -232,7 +225,9 @@ class AchievementService:
 
         # Create achievement lookup dict to avoid N+1 queries
         achievement_lookup = {
-            achievement.achievement_id: achievement for achievement in all_achievements
+            achievement.achievement_id.value: achievement
+            for achievement in all_achievements
+            if achievement.achievement_id is not None
         }
 
         # Basic statistics
@@ -254,8 +249,9 @@ class AchievementService:
 
         # Count unlocked achievements by tier (using lookup dict)
         for user_achievement in user_achievements:
-            if user_achievement.achievement_id in achievement_lookup:
-                achievement = achievement_lookup[user_achievement.achievement_id]
+            achievement_id_value = user_achievement.achievement_id.value
+            if achievement_id_value in achievement_lookup:
+                achievement = achievement_lookup[achievement_id_value]
                 tier_stats[achievement.tier.value] += 1
 
         # Category breakdown
@@ -268,8 +264,9 @@ class AchievementService:
 
         # Count unlocked achievements by category (using lookup dict)
         for user_achievement in user_achievements:
-            if user_achievement.achievement_id in achievement_lookup:
-                achievement = achievement_lookup[user_achievement.achievement_id]
+            achievement_id_value = user_achievement.achievement_id.value
+            if achievement_id_value in achievement_lookup:
+                achievement = achievement_lookup[achievement_id_value]
                 category_stats[achievement.category.value] += 1
 
         # Recent achievements
@@ -280,8 +277,9 @@ class AchievementService:
         # Calculate total experience from achievements (using lookup dict)
         total_experience = 0
         for user_achievement in user_achievements:
-            if user_achievement.achievement_id in achievement_lookup:
-                achievement = achievement_lookup[user_achievement.achievement_id]
+            achievement_id_value = user_achievement.achievement_id.value
+            if achievement_id_value in achievement_lookup:
+                achievement = achievement_lookup[achievement_id_value]
                 total_experience += achievement.calculate_final_experience_reward()
 
         return {
@@ -347,14 +345,17 @@ class AchievementService:
         # Load all achievements once and create lookup to avoid N+1 queries
         all_achievements = self._achievement_repository.get_all_achievements()
         achievement_lookup = {
-            achievement.achievement_id: achievement for achievement in all_achievements
+            achievement.achievement_id.value: achievement
+            for achievement in all_achievements
+            if achievement.achievement_id is not None
         }
 
         # Use lookup to get achievement details
         recommended = []
         for progress in limited_progress:
-            if progress.achievement_id in achievement_lookup:
-                achievement = achievement_lookup[progress.achievement_id]
+            achievement_id_value = progress.achievement_id.value
+            if achievement_id_value in achievement_lookup:
+                achievement = achievement_lookup[achievement_id_value]
                 recommended.append(achievement)
 
         return recommended

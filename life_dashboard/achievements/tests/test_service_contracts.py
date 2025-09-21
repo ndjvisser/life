@@ -249,7 +249,7 @@ class TestAchievementServiceContracts:
             tier=AchievementTier.BRONZE,
             category=AchievementCategory.QUEST_COMPLETION,
             icon=AchievementIcon("trophy"),
-            experience_reward=ExperienceReward(100),
+            experience_reward=ExperienceReward(100, max_value=50000),
             required_level=RequiredLevel(1),
             required_quest_completions=RequiredQuestCompletions(1),
             created_at=datetime(2024, 1, 1, 10, 0, 0, tzinfo=timezone.utc),
@@ -305,7 +305,7 @@ class TestAchievementServiceContracts:
             tier=AchievementTier.BRONZE,
             category=AchievementCategory.QUEST_COMPLETION,
             icon=AchievementIcon("trophy"),
-            experience_reward=ExperienceReward(100),
+            experience_reward=ExperienceReward(100, max_value=50000),
             required_level=RequiredLevel(1),
             required_quest_completions=RequiredQuestCompletions(1),
         )
@@ -355,7 +355,7 @@ class TestAchievementServiceContracts:
                 tier=AchievementTier.BRONZE,
                 category=AchievementCategory.PROGRESSION,
                 icon=AchievementIcon("BRONZE"),
-                experience_reward=ExperienceReward(100),
+                experience_reward=ExperienceReward(100, max_value=50000),
                 required_level=RequiredLevel(5),
             ),
             Achievement(
@@ -365,7 +365,7 @@ class TestAchievementServiceContracts:
                 tier=AchievementTier.SILVER,
                 category=AchievementCategory.QUEST_COMPLETION,
                 icon=AchievementIcon("SILVER"),
-                experience_reward=ExperienceReward(200),
+                experience_reward=ExperienceReward(200, max_value=50000),
                 required_level=RequiredLevel(10),
             ),
         ]

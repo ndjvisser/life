@@ -41,7 +41,7 @@ class TestAchievement:
             tier=AchievementTier.BRONZE,
             category=AchievementCategory.QUEST_COMPLETION,
             icon=AchievementIcon("trophy"),
-            experience_reward=ExperienceReward(100),
+            experience_reward=ExperienceReward(100, max_value=50000),
             required_level=RequiredLevel(1),
             required_quest_completions=RequiredQuestCompletions(1),
         )
@@ -63,7 +63,7 @@ class TestAchievement:
                 tier=AchievementTier.BRONZE,
                 category=AchievementCategory.PROGRESSION,
                 icon=AchievementIcon("trophy"),
-                experience_reward=ExperienceReward(100),
+                experience_reward=ExperienceReward(100, max_value=50000),
                 required_level=RequiredLevel(
                     1
                 ),  # This is default, not a real requirement
@@ -81,7 +81,7 @@ class TestAchievement:
             tier=AchievementTier.BRONZE,
             category=AchievementCategory.PROGRESSION,
             icon=AchievementIcon("BRONZE"),
-            experience_reward=ExperienceReward(100),
+            experience_reward=ExperienceReward(100, max_value=50000),
             required_level=RequiredLevel(5),
         )
 
@@ -92,7 +92,7 @@ class TestAchievement:
             tier=AchievementTier.PLATINUM,
             category=AchievementCategory.PROGRESSION,
             icon=AchievementIcon("PLATINUM"),
-            experience_reward=ExperienceReward(100),
+            experience_reward=ExperienceReward(100, max_value=50000),
             required_level=RequiredLevel(50),
         )
 
@@ -112,7 +112,7 @@ class TestAchievement:
             tier=AchievementTier.BRONZE,
             category=AchievementCategory.PROGRESSION,
             icon=AchievementIcon("easy"),
-            experience_reward=ExperienceReward(50),
+            experience_reward=ExperienceReward(50, max_value=50000),
             required_level=RequiredLevel(5),
         )
 
@@ -124,7 +124,7 @@ class TestAchievement:
             tier=AchievementTier.PLATINUM,
             category=AchievementCategory.SKILL_MASTERY,
             icon=AchievementIcon("legendary"),
-            experience_reward=ExperienceReward(5000),
+            experience_reward=ExperienceReward(5000, max_value=50000),
             required_level=RequiredLevel(80),
             required_skill_level=RequiredSkillLevel(90),
             required_quest_completions=RequiredQuestCompletions(200),
@@ -142,7 +142,7 @@ class TestAchievement:
             tier=AchievementTier.SILVER,
             category=AchievementCategory.MILESTONE,
             icon=AchievementIcon("milestone"),
-            experience_reward=ExperienceReward(500),
+            experience_reward=ExperienceReward(500, max_value=50000),
             required_level=RequiredLevel(10),
             required_skill_level=RequiredSkillLevel(25),
             required_quest_completions=RequiredQuestCompletions(5),
@@ -173,7 +173,7 @@ class TestAchievement:
             tier=AchievementTier.GOLD,
             category=AchievementCategory.PROGRESSION,
             icon=AchievementIcon("progress"),
-            experience_reward=ExperienceReward(1000),
+            experience_reward=ExperienceReward(1000, max_value=50000),
             required_level=RequiredLevel(20),
             required_quest_completions=RequiredQuestCompletions(10),
         )
@@ -196,7 +196,7 @@ class TestAchievement:
             tier=AchievementTier.SILVER,
             category=AchievementCategory.SKILL_MASTERY,
             icon=AchievementIcon("skill"),
-            experience_reward=ExperienceReward(750),
+            experience_reward=ExperienceReward(750, max_value=50000),
             required_level=RequiredLevel(15),
             required_skill_level=RequiredSkillLevel(30),
             required_quest_completions=RequiredQuestCompletions(8),

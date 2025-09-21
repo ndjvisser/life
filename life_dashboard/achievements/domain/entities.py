@@ -8,19 +8,19 @@ No Django dependencies allowed in this module.
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
+
+from life_dashboard.common.value_objects import ExperienceReward, UserId
 
 from .value_objects import (
     AchievementDescription,
     AchievementIcon,
     AchievementId,
     AchievementName,
-    ExperienceReward,
     RequiredLevel,
     RequiredQuestCompletions,
     RequiredSkillLevel,
     UserAchievementId,
-    UserId,
 )
 
 
@@ -54,7 +54,6 @@ class Achievement:
     and reward calculation.
     """
 
-    achievement_id: AchievementId
     name: AchievementName
     description: AchievementDescription
     tier: AchievementTier
@@ -69,6 +68,7 @@ class Achievement:
     is_hidden: bool = False  # Hidden until unlocked
     is_repeatable: bool = False  # Can be unlocked multiple times
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    achievement_id: Optional[AchievementId] = None
 
     def __post_init__(self):
         """Validate achievement data after initialization"""
@@ -242,7 +242,6 @@ class UserAchievement:
     Contains pure business logic for achievement unlocking and tracking.
     """
 
-    user_achievement_id: UserAchievementId
     user_id: UserId
     achievement_id: AchievementId
     unlocked_at: datetime
@@ -250,6 +249,7 @@ class UserAchievement:
     unlock_context: dict[str, Any] = field(
         default_factory=dict
     )  # Context when unlocked
+    user_achievement_id: Optional[UserAchievementId] = None
 
     def __post_init__(self):
         """Validate user achievement data after initialization"""

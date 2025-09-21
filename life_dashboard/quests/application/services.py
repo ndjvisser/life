@@ -344,9 +344,7 @@ class QuestService:
         """
         return self.quest_repo.get_overdue_quests(self._normalize_user_id(user_id))
 
-    def get_upcoming_quests(
-        self, user_id: int | UserId, days: int = 7
-    ) -> list[Quest]:
+    def get_upcoming_quests(self, user_id: int | UserId, days: int = 7) -> list[Quest]:
         """
         Return quests for the user that are due within the next `days` days (from today, inclusive).
 
@@ -428,9 +426,7 @@ class QuestService:
             "average_completion_time": 0.0,
         }
 
-        completed_quests = [
-            q for q in all_quests if q.status == QuestStatus.COMPLETED
-        ]
+        completed_quests = [q for q in all_quests if q.status == QuestStatus.COMPLETED]
         if completed_quests:
             stats["completion_rate"] = (len(completed_quests) / len(all_quests)) * 100
             stats["total_experience_earned"] = sum(
@@ -814,7 +810,7 @@ class QuestChainService:
         Returns:
             List[Quest]: The list of persisted Quest instances for the created child quests.
         """
-        created_quests = []
+        created_quests: list[Quest] = []
 
         for quest_data in child_quests:
             quest_payload = self._sanitize_child_quest_data(quest_data)
@@ -832,16 +828,29 @@ class QuestChainService:
                         f"Invalid quest_id value in quest chain payload: {quest_identifier_value}"
                     ) from err
 
-            quest_user_id = _coerce_user_id(user_id)
+        quest_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
+        parent_identifier = (
+            None if parent_quest_id is None else str(parent_quest_id).strip() or None
+        )
 
-            title_value = quest_payload.get("title", "")
+        for quest_data in child_quests:
+            sanitized = self._sanitize_child_quest_data(quest_data)
+
+            raw_identifier = sanitized.pop("quest_id")
+            quest_identifier = (
+                raw_identifier
+                if isinstance(raw_identifier, QuestId)
+                else QuestId(raw_identifier)
+            )
+
+            title_value = sanitized.pop("title")
             quest_title = (
                 title_value
                 if isinstance(title_value, QuestTitle)
                 else QuestTitle(str(title_value).strip())
             )
 
-            description_value = quest_payload.get("description", "")
+            description_value = sanitized.pop("description")
             quest_description = (
                 description_value
                 if isinstance(description_value, QuestDescription)
@@ -880,25 +889,35 @@ class QuestChainService:
                 try:
                     quest_experience = ExperienceReward(int(experience_value))
                 except (TypeError, ValueError) as err:
-                    raise ValueError(
-                        "experience_reward must be an integer"
-                    ) from err
+                    raise ValueError("experience_reward must be an integer") from err
+
+            timestamp = datetime.utcnow()
 
             quest = Quest(
                 quest_id=quest_identifier,
                 user_id=quest_user_id,
                 title=quest_title,
                 description=quest_description,
-                quest_type=quest_type_value,
-                difficulty=difficulty_value,
-                status=status_value,
+                quest_type=sanitized.pop("quest_type"),
+                difficulty=sanitized.pop("difficulty"),
+                status=sanitized.pop("status"),
                 experience_reward=quest_experience,
-                start_date=quest_payload.get("start_date"),
-                due_date=quest_payload.get("due_date"),
-                completed_at=quest_payload.get("completed_at"),
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                progress=sanitized.pop("progress", 0.0),
+                start_date=sanitized.pop("start_date", None),
+                due_date=sanitized.pop("due_date", None),
+                completed_at=sanitized.pop("completed_at", None),
+                prerequisite_quest_ids=sanitized.pop("prerequisite_quest_ids", []),
+                parent_quest_id=parent_identifier,
+                created_at=timestamp,
+                updated_at=timestamp,
             )
+
+            if sanitized:
+                # Defensive guard: _sanitize_child_quest_data should have consumed all keys.
+                unexpected_keys = ", ".join(sorted(sanitized.keys()))
+                raise ValueError(
+                    f"Unsupported quest fields provided after sanitization: {unexpected_keys}"
+                )
 
             if "progress" in quest_payload:
                 quest.progress = quest_payload["progress"]
@@ -1108,9 +1127,7 @@ class QuestChainService:
 
         return sanitized
 
-    def get_quest_chain(
-        self, parent_quest_id: QuestId | int | str
-    ) -> list[Quest]:
+    def get_quest_chain(self, parent_quest_id: QuestId | int | str) -> list[Quest]:
         """
         Return all child quests that belong to the chain of the given parent quest.
 
