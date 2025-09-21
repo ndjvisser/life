@@ -202,11 +202,19 @@ def validate_redis_connection(url: str, *, strict: bool) -> None:
 
     client = None
     try:
-        client = redis.from_url(
-            url,
-            socket_connect_timeout=1,
-            socket_timeout=1,
-        )
+        timeout_kwargs = {"socket_timeout": 1}
+        try:
+            client = redis.from_url(
+                url,
+                socket_connect_timeout=1,
+                **timeout_kwargs,
+            )
+        except TypeError:
+            client = redis.from_url(
+                url,
+                connect_timeout=1,
+                **timeout_kwargs,
+            )
         client.ping()
     except redis.RedisError as exc:
         message = f"Redis connection failed for {url}: {exc}"
@@ -218,7 +226,9 @@ def validate_redis_connection(url: str, *, strict: bool) -> None:
             try:
                 client.close()
             except AttributeError:
-                pass
+                connection_pool = getattr(client, "connection_pool", None)
+                if connection_pool is not None:
+                    connection_pool.disconnect()
 
 
 # Validate Redis connectivity only in production environments

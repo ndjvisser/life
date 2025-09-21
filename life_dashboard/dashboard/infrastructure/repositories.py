@@ -200,13 +200,20 @@ class DjangoUserRepository(UserRepository):
                 last_name=last_name,
             )
 
-            # Get the profile created by the signal and update it with our data
-            django_profile = DjangoUserProfile.objects.get(user=user)
+            # Ensure a profile exists even if the signal failed to create it
+            django_profile, _created = DjangoUserProfile.objects.get_or_create(
+                user=user,
+                defaults={
+                    "bio": bio,
+                    "location": location,
+                },
+            )
+
             django_profile.bio = bio
             django_profile.location = location
             # Keep the auto-generated created_at, but update updated_at
             django_profile.updated_at = timezone.now()
-            django_profile.save()
+            django_profile.save(update_fields=["bio", "location", "updated_at"])
 
             # Convert to domain entity
             domain_profile = DomainUserProfile(

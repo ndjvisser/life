@@ -73,11 +73,16 @@ class UserProfile:
             "birth_date",
         }
 
+        invalid_fields = sorted(set(kwargs) - allowed_fields)
+        if invalid_fields:
+            field_list = ", ".join(invalid_fields)
+            field_label = "Field" if len(invalid_fields) == 1 else "Fields"
+            verb = "is" if len(invalid_fields) == 1 else "are"
+            raise ValueError(f"{field_label} '{field_list}' {verb} not allowed to be updated")
+
         for field, value in kwargs.items():
             if field in allowed_fields:
                 setattr(self, field, value)
-            else:
-                raise ValueError(f"Field '{field}' is not allowed to be updated")
 
     @property
     def full_name(self) -> str:
