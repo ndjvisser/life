@@ -25,5 +25,10 @@ class AchievementTracker:
         return [a for a in self.achievements if a.completion_percentage < 100]
 
     def highest_reward(self) -> int:
-        rewards = [a.potential_reward for a in self.achievements if a.potential_reward]
+        rewards = [achievement.reward_points for achievement in self.achievements]
+        rewards.extend(
+            achievement.potential_reward
+            for achievement in self.achievements
+            if achievement.potential_reward is not None
+        )
         return max(rewards) if rewards else 0

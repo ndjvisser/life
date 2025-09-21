@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -50,7 +49,7 @@ class SkillProgress:
     experience_points: int
     experience_to_next_level: int
     progress_points: int
-    last_practiced: Optional[datetime]
+    last_practiced: datetime | None
 
     def __post_init__(self) -> None:
         if self.current_level < 0:
@@ -77,7 +76,7 @@ class SkillProgress:
         percentage = (total_progress / self.experience_to_next_level) * 100
         return max(0.0, min(100.0, percentage))
 
-    def days_since_practice(self, reference: datetime) -> Optional[int]:
+    def days_since_practice(self, reference: datetime) -> int | None:
         """Return the number of days since the skill was last practiced."""
 
         if self.last_practiced is None:

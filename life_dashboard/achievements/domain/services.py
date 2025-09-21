@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from .entities import AchievementTracker
 from .repositories import AchievementRepository
@@ -91,7 +90,7 @@ class AchievementProgressService:
     def generate(
         self,
         user_id: int,
-        as_of: Optional[datetime] = None,
+        as_of: datetime | None = None,
     ) -> AchievementProgressResponse:
         tracker = self._repository.tracker_for_user(UserIdentifier(user_id))
         tracked, completed = self._build_snapshots(tracker)
@@ -111,7 +110,7 @@ class AchievementProgressService:
 def build_achievement_progress_response(
     service: AchievementProgressService,
     user_id: int,
-    as_of: Optional[datetime] = None,
+    as_of: datetime | None = None,
 ) -> dict[str, object]:
     response = service.generate(user_id=user_id, as_of=as_of)
     return response.as_dict()

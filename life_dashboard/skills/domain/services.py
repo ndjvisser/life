@@ -5,11 +5,10 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional
 
-from .entities import PracticeHistory, SkillPortfolio, SkillProfile
+from .entities import PracticeHistory, SkillPortfolio
 from .repositories import PracticeRepository, SkillRepository
-from .value_objects import PracticeSession, UserIdentifier
+from .value_objects import UserIdentifier
 
 
 @dataclass(frozen=True)
@@ -36,6 +35,7 @@ class SkillProgressSnapshot:
     current_level: int
     next_milestone: int
     progress_percentage: float
+    recent_experience: int = 0
 
     def as_dict(self) -> dict[str, float | int | str]:
         return {
@@ -114,7 +114,9 @@ class SkillProgressSummaryResponse:
             "user_id": self.user_id,
             "summary_generated_at": self.summary_generated_at.isoformat(),
             "skill_progress_summary": self.skill_progress_summary.as_dict(),
-            "recommended_actions": [action.as_dict() for action in self.recommended_actions],
+            "recommended_actions": [
+                action.as_dict() for action in self.recommended_actions
+            ],
         }
 
 
@@ -150,17 +152,36 @@ class SkillProgressSummaryService:
             grouped[session.skill_id.value] += session.experience_gained
         return grouped
 
+    def _latest_practice_by_skill(
+        self, history: PracticeHistory
+    ) -> dict[str, datetime]:
+        latest: dict[str, datetime] = {}
+        for session in history:
+            key = session.skill_id.value
+            current = latest.get(key)
+            if current is None or session.practiced_at > current:
+                latest[key] = session.practiced_at
+        return latest
+
     def _stagnant_skills(
         self,
         portfolio: SkillPortfolio,
         as_of: datetime,
+        last_practiced_map: dict[str, datetime],
     ) -> list[StagnantSkill]:
         stagnant: list[StagnantSkill] = []
-        threshold_days = self._stagnation_threshold.days
         for skill in portfolio:
-            days = skill.days_since_practice(as_of)
-            if days is None or days < threshold_days:
-                continue
+            last_practiced = last_practiced_map.get(skill.skill_id.value)
+            if last_practiced is not None:
+                inactivity = as_of - last_practiced
+                if inactivity < self._stagnation_threshold:
+                    continue
+                days = max(0, inactivity.days)
+            else:
+                days = skill.days_since_practice(as_of)
+                threshold_days = self._stagnation_threshold.days
+                if days is None or days < threshold_days:
+                    continue
             stagnant.append(
                 StagnantSkill(
                     name=skill.name,
@@ -214,17 +235,30 @@ class SkillProgressSummaryService:
         snapshots: list[SkillProgressSnapshot] = []
         for skill in portfolio:
             xp_gain = recent_xp.get(skill.skill_id.value, 0)
-            progress = skill.progress_percentage(xp_gain)
+            progress = skill.progress_percentage()
             snapshots.append(
                 SkillProgressSnapshot(
                     skill_name=skill.name,
                     current_level=skill.current_level,
                     next_milestone=skill.next_milestone(),
                     progress_percentage=progress,
+                    recent_experience=xp_gain,
                 )
             )
-        snapshots.sort(key=lambda item: item.progress_percentage, reverse=True)
+        snapshots.sort(
+            key=lambda item: (item.recent_experience, item.progress_percentage),
+            reverse=True,
+        )
         return snapshots[:5]
+
+    def _total_experience(
+        self, portfolio: SkillPortfolio, recent_xp: dict[str, int]
+    ) -> int:
+        total = 0
+        for skill in portfolio:
+            xp_gain = recent_xp.get(skill.skill_id.value, 0)
+            total += max(0, skill.experience_points - xp_gain)
+        return total
 
     def _recommended_actions(
         self,
@@ -246,7 +280,10 @@ class SkillProgressSummaryService:
             focus_skill = active[0]
             actions.append(
                 RecommendedAction(
-                    description=f"Push {focus_skill.skill_name} to level {focus_skill.next_milestone}",
+                    description=(
+                        f"Push {focus_skill.skill_name} to level "
+                        f"{focus_skill.next_milestone}"
+                    ),
                     priority="medium",
                     reason="Strong momentum towards next milestone",
                 )
@@ -265,7 +302,7 @@ class SkillProgressSummaryService:
     def generate_summary(
         self,
         user_id: int,
-        as_of: Optional[datetime] = None,
+        as_of: datetime | None = None,
     ) -> SkillProgressSummaryResponse:
         as_of = as_of or datetime.utcnow()
         user_identifier = UserIdentifier(user_id)
@@ -274,14 +311,15 @@ class SkillProgressSummaryService:
 
         recent_xp = self._recent_experience_by_skill(history, as_of)
         active_skills = self._active_skills(portfolio, recent_xp)
-        stagnant = self._stagnant_skills(portfolio, as_of)
+        last_practiced = self._latest_practice_by_skill(history)
+        stagnant = self._stagnant_skills(portfolio, as_of, last_practiced)
         top_skills = self._top_skills(portfolio)
 
         summary = SkillProgressSummary(
             top_skills=top_skills,
             stagnant_skills=stagnant,
             active_skills=active_skills,
-            total_experience=portfolio.total_experience(),
+            total_experience=self._total_experience(portfolio, recent_xp),
             total_skills=portfolio.total_skills(),
         )
         actions = self._recommended_actions(stagnant, active_skills)
@@ -296,7 +334,7 @@ class SkillProgressSummaryService:
 def build_skill_progress_summary_response(
     service: SkillProgressSummaryService,
     user_id: int,
-    as_of: Optional[datetime] = None,
+    as_of: datetime | None = None,
 ) -> dict[str, object]:
     """Utility helper returning a serialisable summary for tests/API."""
 

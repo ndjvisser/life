@@ -4,9 +4,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Iterable, Optional
+from typing import Iterable
 
-from .value_objects import PracticeSession, SkillIdentifier, SkillProgress, UserIdentifier
+from .value_objects import (
+    PracticeSession,
+    SkillIdentifier,
+    SkillProgress,
+    UserIdentifier,
+)
 
 
 @dataclass(frozen=True)
@@ -34,7 +39,7 @@ class SkillProfile:
         return self.progress.experience_points
 
     @property
-    def last_practiced(self) -> Optional[datetime]:
+    def last_practiced(self) -> datetime | None:
         return self.progress.last_practiced
 
     def progress_percentage(self, additional_progress: int = 0) -> float:
@@ -43,7 +48,7 @@ class SkillProfile:
     def next_milestone(self) -> int:
         return self.progress.next_milestone()
 
-    def days_since_practice(self, reference: datetime) -> Optional[int]:
+    def days_since_practice(self, reference: datetime) -> int | None:
         return self.progress.days_since_practice(reference)
 
 
@@ -79,5 +84,9 @@ class PracticeHistory:
     def __iter__(self) -> Iterable[PracticeSession]:
         return iter(self.sessions)
 
-    def sessions_for_skill(self, skill_id: SkillIdentifier) -> tuple[PracticeSession, ...]:
-        return tuple(session for session in self.sessions if session.skill_id == skill_id)
+    def sessions_for_skill(
+        self, skill_id: SkillIdentifier
+    ) -> tuple[PracticeSession, ...]:
+        return tuple(
+            session for session in self.sessions if session.skill_id == skill_id
+        )

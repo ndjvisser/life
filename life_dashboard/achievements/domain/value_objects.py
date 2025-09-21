@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -34,7 +33,7 @@ class AchievementProgress:
     current_progress: int
     target_progress: int
     reward_points: int
-    potential_reward: Optional[int]
+    potential_reward: int | None
 
     def __post_init__(self) -> None:
         if self.current_progress < 0:
