@@ -194,7 +194,7 @@ setup-sample-data: check-dev-env
 	echo "ADMIN_EMAIL=$$ADMIN_EMAIL" >> .env.local && \
 	echo "ADMIN_PASSWORD=$$ADMIN_PASSWORD" >> .env.local && \
 	echo "DJANGO_SUPERUSER_PASSWORD=$$ADMIN_PASSWORD" >> .env.local && \
-	if ! python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='$$ADMIN_USER').exists()" 2>/dev/null | grep -q True; then \
+        if ! python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(User.objects.filter(username='$$ADMIN_USER').exists())" 2>/dev/null | grep -q True; then \
 		echo "Creating admin user: $$ADMIN_USER" && \
 		python manage.py createsuperuser --noinput --username "$$ADMIN_USER" --email "$$ADMIN_EMAIL" 2>/dev/null || true && \
 		python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); u = User.objects.get(username='$$ADMIN_USER'); u.set_password('$$ADMIN_PASSWORD'); u.save()" && \
@@ -265,7 +265,7 @@ ci-install:
 	pip install -r requirements.txt
 	pip install -e ".[dev]"
 
-ci-check: lint type-check-strict check-architecture
+ci-check: lint type-check-strict check-architecture check-boundaries
 	@echo "✅ CI checks passed"
 
 # Docker helpers (for future use)
