@@ -50,18 +50,20 @@ class QuestId:
 
         if isinstance(value, str):
             text_value = value.strip()
-        else:
-            text_value = str(value).strip()
-        if not text_value:
-            raise ValueError("Quest ID cannot be empty")
+            if not text_value:
+                raise ValueError("Quest ID cannot be empty")
 
-        if text_value.isdigit():
-            numeric_value = int(text_value)
-            if numeric_value <= 0:
-                raise ValueError("Quest ID must be positive")
-            return numeric_value
+            if text_value.isdigit():
+                numeric_value = int(text_value)
+                if numeric_value <= 0:
+                    raise ValueError("Quest ID must be positive")
+                return numeric_value
 
-        return text_value
+            return text_value
+
+        raise TypeError(
+            f"Unsupported Quest ID type: {type(value).__name__}"
+        )
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - simple delegation
         if isinstance(other, QuestId):
