@@ -97,7 +97,7 @@ class QuestService:
 
     def calculate_quest_completion_rate(self, user_id: UserId, days: int = 30) -> float:
         """Calculate quest completion rate for a user over specified days"""
-        all_quests = self._quest_repository.get_user_quests(user_id)
+        all_quests = self._quest_repository.get_by_user_id(user_id)
 
         # Filter quests from the last N days
         cutoff_date = datetime.utcnow().date() - timedelta(days=days)
@@ -221,7 +221,7 @@ class HabitService:
         end_date = date.today()
         start_date = end_date - timedelta(days=days)
 
-        completions = self._completion_repository.get_habit_completions(
+        completions = self._completion_repository.get_by_date_range(
             habit_id, start_date, end_date
         )
 

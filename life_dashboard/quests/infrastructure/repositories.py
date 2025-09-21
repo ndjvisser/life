@@ -63,6 +63,30 @@ def _habit_id_as_int(habit_id: HabitId | int | str | None) -> int:
     raise ValueError(f"Invalid habit_id: {habit_id}")
 
 
+def _completion_id_as_int(completion_id: str | int | None) -> int:
+    """Normalize completion identifiers to integers for ORM operations."""
+
+    if isinstance(completion_id, int):
+        if completion_id <= 0:
+            raise ValueError("Completion ID must be positive")
+        return completion_id
+
+    if completion_id is None:
+        raise ValueError("Completion ID is required")
+
+    text_value = str(completion_id).strip()
+    if not text_value:
+        raise ValueError("Completion ID cannot be blank")
+
+    if not text_value.isdigit():
+        raise ValueError(f"Invalid completion_id: {completion_id}")
+
+    numeric_value = int(text_value)
+    if numeric_value <= 0:
+        raise ValueError("Completion ID must be positive")
+    return numeric_value
+
+
 def _user_id_as_int(user_id: UserId | int | str) -> int:
     """Normalize user identifiers to integers for ORM operations."""
 
@@ -187,6 +211,21 @@ class DjangoQuestRepository(QuestRepository):
         django_quests = (
             DjangoQuest.objects.select_related("user")
             .filter(user_id=_user_id_as_int(user_id))
+            .order_by("-created_at")
+        )
+        return [self._to_domain(q) for q in django_quests]
+
+    def get_user_quests(self, user_id: UserId | int | str) -> list[DomainQuest]:
+        """Return all quests for a user (alias of get_by_user_id for compatibility)."""
+
+        return self.get_by_user_id(user_id)
+
+    def get_active_quests(self, user_id: UserId | int | str) -> list[DomainQuest]:
+        """Return quests currently in the ACTIVE status for the given user."""
+
+        django_quests = (
+            DjangoQuest.objects.select_related("user")
+            .filter(user_id=_user_id_as_int(user_id), status=QuestStatus.ACTIVE.value)
             .order_by("-created_at")
         )
         return [self._to_domain(q) for q in django_quests]
@@ -333,16 +372,11 @@ class DjangoQuestRepository(QuestRepository):
         )
         return [self._to_domain(q) for q in django_quests]
 
-    def get_by_parent_quest(
-        self, parent_quest_id: QuestId | int | str
-    ) -> list[DomainQuest]:
+    def get_by_parent_quest(self, parent_quest_id: QuestId) -> list[DomainQuest]:
         """
         Return child DomainQuest objects for a given parent quest ID.
 
-        Retrieves DjangoQuest rows with parent_quest_id equal to the provided ID, converts them to domain entities and returns them ordered by creation time (oldest first). If parent_quest_id is not a valid integer, an empty list is returned.
-
-        Parameters:
-            parent_quest_id (str): Parent quest identifier (string form of the Django PK).
+        Retrieves DjangoQuest rows with parent_quest_id equal to the provided ID, converts them to domain entities and returns them ordered by creation time (oldest first). If parent_quest_id cannot be coerced to an integer, an empty list is returned.
 
         Returns:
             List[DomainQuest]: Child quests ordered by created_at; empty list on invalid id or no children.
@@ -475,6 +509,11 @@ class DjangoHabitRepository(HabitRepository):
             .order_by("-created_at")
         )
         return [self._to_domain(h) for h in django_habits]
+
+    def get_user_habits(self, user_id: UserId | int | str) -> list[DomainHabit]:
+        """Return all habits for a user (compatibility wrapper)."""
+
+        return self.get_by_user_id(user_id)
 
     def get_by_frequency(
         self, user_id: UserId | int | str, frequency: HabitFrequency
@@ -722,6 +761,87 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
         # Update completion_id with the generated ID
         completion.completion_id = str(django_completion.id)
         return self._to_domain(django_completion)
+
+    def save(self, completion: DomainHabitCompletion) -> DomainHabitCompletion:
+        """Persist changes to an existing completion or create a new one when needed."""
+
+        if not completion.completion_id:
+            return self.create(completion)
+
+        try:
+            completion_identifier = _completion_id_as_int(completion.completion_id)
+        except ValueError as exc:
+            raise ValueError("Invalid completion ID provided") from exc
+
+        try:
+            django_completion = DjangoHabitCompletion.objects.select_related(
+                "habit__user"
+            ).get(id=completion_identifier)
+        except DjangoHabitCompletion.DoesNotExist as exc:
+            raise ValueError(
+                f"Habit completion {completion_identifier} not found"
+            ) from exc
+
+        habit_identifier = _habit_id_as_int(completion.habit_id)
+        if django_completion.habit_id != habit_identifier:
+            django_completion.habit_id = habit_identifier
+
+        django_completion.date = completion.completion_date
+        django_completion.count = _value(completion.count)
+        django_completion.notes = completion.notes
+        django_completion.experience_gained = _value(
+            completion.experience_gained
+        )
+        django_completion.save()
+
+        return self._to_domain(django_completion)
+
+    def get_habit_completions(
+        self,
+        habit_id: HabitId | int | str,
+        start_date: date | None = None,
+        end_date: date | None = None,
+    ) -> list[DomainHabitCompletion]:
+        """Return completions for a habit, optionally filtered by an inclusive date range."""
+
+        if start_date is None and end_date is None:
+            return self.get_by_habit_id(habit_id, limit=None)
+
+        if start_date is None or end_date is None:
+            raise ValueError(
+                "Both start_date and end_date must be provided when filtering by range"
+            )
+
+        return self.get_by_date_range(habit_id, start_date, end_date)
+
+    def get_completion_count(
+        self, habit_id: HabitId, target_date: date
+    ) -> int:
+        """Return the number of completions recorded for a habit on a specific date."""
+
+        try:
+            return DjangoHabitCompletion.objects.filter(
+                habit_id=_habit_id_as_int(habit_id), date=target_date
+            ).count()
+        except ValueError:
+            return 0
+
+    def get_latest_completion(
+        self, habit_id: HabitId
+    ) -> DomainHabitCompletion | None:
+        """Return the most recent completion for the given habit."""
+
+        try:
+            django_completion = (
+                DjangoHabitCompletion.objects.select_related("habit__user")
+                .filter(habit_id=_habit_id_as_int(habit_id))
+                .order_by("-date", "-id")
+                .first()
+            )
+        except ValueError:
+            return None
+
+        return self._to_domain(django_completion) if django_completion else None
 
     def get_by_habit_id(
         self, habit_id: HabitId | int | str, limit: int | None = 100
