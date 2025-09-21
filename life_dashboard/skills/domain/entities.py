@@ -78,6 +78,12 @@ class Skill:
 
     def __post_init__(self):
         """Validate skill data after initialization"""
+        if self.created_at.tzinfo is None:
+            self.created_at = self.created_at.replace(tzinfo=timezone.utc)
+
+        if self.last_practiced and self.last_practiced.tzinfo is None:
+            self.last_practiced = self.last_practiced.replace(tzinfo=timezone.utc)
+
         if len(self.description) > 1000:
             raise ValueError("Skill description cannot exceed 1000 characters")
 
@@ -270,7 +276,16 @@ class Skill:
             return True
 
         reference_time = current_time or datetime.now(timezone.utc)
-        days_since_practice = (reference_time - self.last_practiced).days
+        if reference_time.tzinfo is None:
+            reference_time = reference_time.replace(tzinfo=timezone.utc)
+
+        last_practiced = (
+            self.last_practiced
+            if self.last_practiced.tzinfo is not None
+            else self.last_practiced.replace(tzinfo=timezone.utc)
+        )
+
+        days_since_practice = (reference_time - last_practiced).days
         return days_since_practice > days_threshold
 
     def get_milestone_levels(self) -> list[int]:
