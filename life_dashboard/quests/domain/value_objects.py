@@ -7,6 +7,17 @@ No Django dependencies allowed in this module.
 
 from dataclasses import dataclass
 
+from life_dashboard.common.value_objects import (
+    ExperienceReward as _SharedExperienceReward,
+    UserId as _SharedUserId,
+)
+
+# Re-export shared value objects within the quests context so domain entities and
+# tests can import them from the local module while keeping the canonical
+# definitions in the common package.
+ExperienceReward = _SharedExperienceReward
+UserId = _SharedUserId
+
 
 @dataclass(frozen=True)
 class QuestId:

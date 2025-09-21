@@ -7,6 +7,17 @@ No Django dependencies allowed in this module.
 
 from dataclasses import dataclass
 
+from life_dashboard.common.value_objects import (
+    ExperienceReward as _SharedExperienceReward,
+    UserId as _SharedUserId,
+)
+
+# Expose shared value objects through the achievements context to maintain a
+# consistent import surface for domain code and tests while centralizing the
+# canonical definitions in the common package.
+ExperienceReward = _SharedExperienceReward
+UserId = _SharedUserId
+
 
 @dataclass(frozen=True)
 class AchievementId:
