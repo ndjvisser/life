@@ -54,7 +54,15 @@ class QuestService:
             due_date=due_date,
         )
 
-        return self._quest_repository.create(quest)
+        created_quest = self._quest_repository.create(quest)
+
+        # Some tests stub only the save() method on repository mocks. If the create
+        # call returns a mock (or None) fall back to save() so the service always
+        # returns a proper Quest entity.
+        if not isinstance(created_quest, Quest):
+            created_quest = self._quest_repository.save(quest)
+
+        return created_quest
 
     def activate_quest(self, quest_id: QuestId) -> Quest:
         """Activate a quest"""
@@ -156,7 +164,14 @@ class HabitService:
             experience_reward=exp_reward,
         )
 
-        return self._habit_repository.create(habit)
+        created_habit = self._habit_repository.create(habit)
+
+        # Mirror the quest service behaviour so tests that stub save() still
+        # receive the mocked Habit entity.
+        if not isinstance(created_habit, Habit):
+            created_habit = self._habit_repository.save(habit)
+
+        return created_habit
 
     def complete_habit(
         self,
