@@ -1,87 +1,86 @@
 # life_dashboard/life_dashboard/celery.py
+import importlib.util
 import os
+from collections.abc import Callable
+from typing import Any
 
-try:
-    from celery import Celery
-except ImportError:
-    # Celery is optional - create a dummy class for development
-    class Celery:
-        def __init__(self, *args, **kwargs):
-            """
-            No-op initializer for the dummy Celery class.
 
-            Accepts any positional and keyword arguments for compatibility with the real Celery API but performs no initialization or side effects.
-            """
-            pass
+def _create_sync_decorator(
+    bind: bool = False, *, with_retry: bool = False
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    """Create a synchronous stand-in decorator for Celery task registration."""
 
-        def config_from_object(self, *args, **kwargs):
-            """
-            No-op fallback for Celery's config_from_object used when Celery is not installed.
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        def wrapped(*args: Any, **kwargs: Any) -> Any:
+            if bind:
+                request_attrs: dict[str, Any] = {}
+                if with_retry:
+                    request_attrs["retries"] = 0
+                request = type("R", (), request_attrs)()
 
-            Accepts any arguments and keyword arguments and performs no action. Keeps call sites safe so code can invoke the same configuration call whether the real Celery library is present or not.
-            """
-            pass
+                class _TaskSelf:
+                    request = request
 
-        def autodiscover_tasks(self, *args, **kwargs):
-            """
-            No-op replacement for Celery's `autodiscover_tasks` used when Celery is unavailable.
-
-            This method accepts any positional and keyword arguments for compatibility with the real
-            Celery API but performs no action. It exists so calling code can invoke `autodiscover_tasks`
-            without conditional checks when running in environments where the `celery` package is not installed.
-            """
-            pass
-
-        def task(self, bind: bool = False, **kwargs):
-            """Dummy task decorator for when Celery is not installed."""
-
-            def decorator(func):
-                def wrapped(*args, **kw):
-                    if bind:
-
-                        class _Self:
-                            # minimal task-like object
-                            request = type("R", (), {})()
-
-                        return func(_Self(), *args, **kw)
-                    return func(*args, **kw)
-
-                # Synchronous fallbacks
-                wrapped.delay = lambda *a, **k: wrapped(*a, **k)
-                wrapped.apply_async = lambda args=None, kwargs=None, **opts: wrapped(
-                    *(args or ()), **(kwargs or {})
-                )
-                return wrapped
-
-            return decorator
-
-    def shared_task(bind: bool = False, **kwargs):
-        """Dummy shared_task decorator for when Celery is not installed."""
-
-        def decorator(func):
-            def wrapped(*args, **kw):
-                if bind:
-
-                    class _Self:
-                        # minimal task-like object with request and retry method
-                        request = type("R", (), {"retries": 0})()
-
-                        def retry(self, exc=None, countdown=None, **retry_kwargs):
-                            # In no-celery mode, just re-raise the exception
-                            if exc:
+                    if with_retry:
+                        def retry(
+                            self,
+                            exc: Exception | None = None,
+                            _countdown: int | None = None,
+                            **_retry_kwargs: Any,
+                        ) -> None:
+                            if exc is not None:
                                 raise exc
 
-                    return func(_Self(), *args, **kw)
-                return func(*args, **kw)
+                call_args = (_TaskSelf(), *args)
+            else:
+                call_args = args
 
-            # Synchronous fallbacks
-            wrapped.delay = lambda *a, **k: wrapped(*a, **k)
-            wrapped.apply_async = lambda args=None, kwargs=None, **opts: wrapped(
+            return func(*call_args, **kwargs)
+
+        wrapped.delay = lambda *a, **k: wrapped(*a, **k)
+        wrapped.apply_async = (
+            lambda args=None, kwargs=None, **_opts: wrapped(
                 *(args or ()), **(kwargs or {})
             )
-            return wrapped
+        )
+        return wrapped
 
-        return decorator
+    return decorator
+
+
+celery_spec = importlib.util.find_spec("celery")
+
+if celery_spec is None:
+    class Celery:
+        """Development fallback when Celery isn't installed."""
+
+        def __init__(self, *args: Any, **kwargs: Any) -> None:  # noqa: D401
+            """Accept arbitrary arguments without side effects."""
+
+        def config_from_object(self, *args: Any, **kwargs: Any) -> None:
+            """No-op configuration hook."""
+
+        def autodiscover_tasks(self, *args: Any, **kwargs: Any) -> None:
+            """No-op task discovery hook."""
+
+        def task(
+            self, bind: bool = False, **kwargs: Any
+        ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+            return _create_sync_decorator(bind=bind, with_retry=False)
+
+        def shared_task(
+            self, bind: bool = False, **kwargs: Any
+        ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+            return _create_sync_decorator(bind=bind, with_retry=True)
+
+    def shared_task(
+        bind: bool = False, **kwargs: Any
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+        """Module-level stand-in for Celery's shared_task decorator."""
+
+        return _create_sync_decorator(bind=bind, with_retry=True)
+else:
+    from celery import Celery, shared_task
 
 
 # Set the default Django settings module for the 'celery' program.
@@ -90,13 +89,6 @@ os.environ.setdefault(
 )
 
 app = Celery("life_dashboard")
-
-# Make shared_task available at module level when Celery is not installed
-try:
-    from celery import shared_task
-except ImportError:
-    # Use the dummy shared_task from our Celery class
-    shared_task = app.shared_task
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.
@@ -111,3 +103,6 @@ app.autodiscover_tasks()
 @app.task(bind=True, ignore_result=True)
 def debug_task(self):
     print(f"Request: {self.request!r}")
+
+
+__all__ = ["app", "shared_task"]
