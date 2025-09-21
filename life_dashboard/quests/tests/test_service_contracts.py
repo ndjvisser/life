@@ -431,7 +431,7 @@ class TestHabitServiceContracts:
             longest_streak=StreakCount(0),
             experience_reward=ExperienceReward(25),
         )
-        self.mock_habit_repository.save.return_value = mock_habit
+        self.mock_habit_repository.create.return_value = mock_habit
 
         # Create habit through service
         result = self.habit_service.create_habit(
@@ -462,6 +462,24 @@ class TestHabitServiceContracts:
         response = HabitResponse(**response_data)
         assert response.habit_id == 1
         assert response.name == "Exercise"
+
+    def test_habit_service_create_raises_for_invalid_repository_response(self):
+        """Habit creation should surface repository contract violations."""
+
+        self.mock_habit_repository.create.return_value = object()
+
+        with pytest.raises(TypeError) as exc_info:
+            self.habit_service.create_habit(
+                user_id=UserId(1),
+                name="Exercise",
+                description="Daily workout routine",
+                frequency="daily",
+                target_count=1,
+                experience_reward=25,
+            )
+
+        assert "HabitRepository must return Habit instances" in str(exc_info.value)
+        self.mock_habit_repository.save.assert_not_called()
 
     def test_complete_habit_returns_valid_completion_response(self):
         """Test that habit completion returns valid response contract"""

@@ -275,7 +275,7 @@ class TestHabitAPISnapshots:
             created_at=datetime(2024, 1, 1, 10, 0, 0),
             updated_at=datetime(2024, 1, 1, 10, 0, 0),
         )
-        self.mock_habit_repository.save.return_value = mock_habit
+        self.mock_habit_repository.create.return_value = mock_habit
 
         # Create habit through service
         result = self.habit_service.create_habit(
