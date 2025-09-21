@@ -812,22 +812,6 @@ class QuestChainService:
         """
         created_quests: list[Quest] = []
 
-        for quest_data in child_quests:
-            quest_payload = self._sanitize_child_quest_data(quest_data)
-
-            quest_identifier_value = quest_payload.get("quest_id")
-            if isinstance(quest_identifier_value, QuestId):
-                quest_identifier = quest_identifier_value
-            elif quest_identifier_value is None:
-                quest_identifier = QuestId(_generate_positive_identifier())
-            else:
-                try:
-                    quest_identifier = QuestId(int(quest_identifier_value))
-                except (TypeError, ValueError) as err:
-                    raise ValueError(
-                        f"Invalid quest_id value in quest chain payload: {quest_identifier_value}"
-                    ) from err
-
         quest_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
         parent_identifier = (
             None if parent_quest_id is None else str(parent_quest_id).strip() or None
@@ -837,11 +821,17 @@ class QuestChainService:
             sanitized = self._sanitize_child_quest_data(quest_data)
 
             raw_identifier = sanitized.pop("quest_id")
-            quest_identifier = (
-                raw_identifier
-                if isinstance(raw_identifier, QuestId)
-                else QuestId(raw_identifier)
-            )
+            if isinstance(raw_identifier, QuestId):
+                quest_identifier = raw_identifier
+            elif raw_identifier is None:
+                quest_identifier = QuestId(_generate_positive_identifier())
+            else:
+                try:
+                    quest_identifier = QuestId(int(raw_identifier))
+                except (TypeError, ValueError) as err:
+                    raise ValueError(
+                        f"Invalid quest_id value in quest chain payload: {raw_identifier}"
+                    ) from err
 
             title_value = sanitized.pop("title")
             quest_title = (
@@ -857,14 +847,14 @@ class QuestChainService:
                 else QuestDescription(str(description_value).strip())
             )
 
-            difficulty_value = quest_payload.get("difficulty", QuestDifficulty.MEDIUM)
+            difficulty_value = sanitized.pop("difficulty", QuestDifficulty.MEDIUM)
             if isinstance(difficulty_value, str):
                 difficulty_key = difficulty_value.upper()
                 if difficulty_key not in QuestDifficulty.__members__:
                     raise ValueError(f"Invalid difficulty: {difficulty_value}")
                 difficulty_value = QuestDifficulty[difficulty_key]
 
-            quest_type_value = quest_payload.get("quest_type", QuestType.SIDE)
+            quest_type_value = sanitized.pop("quest_type", QuestType.SIDE)
             if isinstance(quest_type_value, str):
                 quest_type_key = quest_type_value.upper()
                 quest_type_value = (
@@ -873,7 +863,7 @@ class QuestChainService:
                     else QuestType.SIDE
                 )
 
-            status_value = quest_payload.get("status", QuestStatus.DRAFT)
+            status_value = sanitized.pop("status", QuestStatus.DRAFT)
             if isinstance(status_value, str):
                 status_key = status_value.upper()
                 status_value = (
@@ -882,7 +872,7 @@ class QuestChainService:
                     else QuestStatus.DRAFT
                 )
 
-            experience_value = quest_payload.get("experience_reward", 0)
+            experience_value = sanitized.pop("experience_reward", 0)
             if isinstance(experience_value, ExperienceReward):
                 quest_experience = experience_value
             else:
@@ -891,24 +881,29 @@ class QuestChainService:
                 except (TypeError, ValueError) as err:
                     raise ValueError("experience_reward must be an integer") from err
 
-            sanitized.pop("experience_reward", None)
-
+            progress_value = sanitized.pop("progress", None)
+            progress_amount = progress_value if progress_value is not None else 0.0
             timestamp = datetime.utcnow()
+
+            prerequisite_values = sanitized.pop("prerequisite_quest_ids", None)
+            prerequisite_ids = (
+                prerequisite_values if prerequisite_values is not None else []
+            )
 
             quest = Quest(
                 quest_id=quest_identifier,
                 user_id=quest_user_id,
                 title=quest_title,
                 description=quest_description,
-                quest_type=sanitized.pop("quest_type"),
-                difficulty=sanitized.pop("difficulty"),
-                status=sanitized.pop("status"),
+                quest_type=quest_type_value,
+                difficulty=difficulty_value,
+                status=status_value,
                 experience_reward=quest_experience,
-                progress=sanitized.pop("progress", 0.0),
+                progress=progress_amount,
                 start_date=sanitized.pop("start_date", None),
                 due_date=sanitized.pop("due_date", None),
                 completed_at=sanitized.pop("completed_at", None),
-                prerequisite_quest_ids=sanitized.pop("prerequisite_quest_ids", []),
+                prerequisite_quest_ids=prerequisite_ids,
                 parent_quest_id=parent_identifier,
                 created_at=timestamp,
                 updated_at=timestamp,
@@ -921,16 +916,12 @@ class QuestChainService:
                     f"Unsupported quest fields provided after sanitization: {unexpected_keys}"
                 )
 
-            if "progress" in quest_payload:
-                quest.progress = quest_payload["progress"]
             if parent_quest_id is not None:
                 quest.parent_quest_id = (
                     str(parent_quest_id.value)
                     if isinstance(parent_quest_id, QuestId)
                     else str(parent_quest_id)
                 )
-            if "prerequisite_quest_ids" in quest_payload:
-                quest.prerequisite_quest_ids = quest_payload["prerequisite_quest_ids"]
             created_quest = self.quest_repo.create(quest)
             created_quests.append(created_quest)
 

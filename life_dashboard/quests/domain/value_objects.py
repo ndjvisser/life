@@ -39,6 +39,9 @@ class QuestId:
         if isinstance(value, QuestId):
             return value.value
 
+        if isinstance(value, bool):
+            raise ValueError("Quest ID cannot be a boolean value")
+
         if isinstance(value, int):
             if value <= 0:
                 raise ValueError("Quest ID must be positive")
@@ -62,7 +65,7 @@ class QuestId:
     def __eq__(self, other: object) -> bool:  # pragma: no cover - simple delegation
         if isinstance(other, QuestId):
             return self.value == other.value
-        if isinstance(other, (int, str)):
+        if isinstance(other, int | str):
             try:
                 return self.value == self._normalize(other)
             except ValueError:
@@ -109,8 +112,8 @@ class QuestDescription:
     value: str
 
     def __post_init__(self) -> None:
-        if len(self.value) > 2000:
-            raise ValueError("Quest description cannot exceed 2000 characters")
+        if len(self.value) > 1000:
+            raise ValueError("Quest description cannot exceed 1000 characters")
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - simple comparison
         if isinstance(other, QuestDescription):
@@ -133,6 +136,8 @@ class HabitId:
     value: int
 
     def __post_init__(self):
+        if isinstance(self.value, bool):
+            raise ValueError("Habit ID cannot be a boolean value")
         if self.value <= 0:
             raise ValueError("Habit ID must be positive")
 
@@ -157,6 +162,8 @@ class StreakCount:
     value: int
 
     def __post_init__(self):
+        if isinstance(self.value, bool):
+            raise ValueError("Streak count cannot be a boolean value")
         if self.value < 0:
             raise ValueError("Streak count cannot be negative")
         if self.value > 10000:  # Reasonable upper limit
@@ -170,6 +177,8 @@ class CompletionCount:
     value: int
 
     def __post_init__(self):
+        if isinstance(self.value, bool):
+            raise ValueError("Completion count cannot be a boolean value")
         if self.value < 0:
             raise ValueError("Completion count cannot be negative")
         if self.value > 1000:  # Reasonable daily limit
