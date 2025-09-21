@@ -100,8 +100,13 @@ class SkillService:
         # Calculate days since last practice
         days_since_practice = 0
         if skill.last_practiced:
+            last_practiced = (
+                skill.last_practiced
+                if skill.last_practiced.tzinfo is not None
+                else skill.last_practiced.replace(tzinfo=timezone.utc)
+            )
             days_since_practice = (
-                datetime.now(timezone.utc) - skill.last_practiced
+                datetime.now(timezone.utc) - last_practiced
             ).days
 
         # Calculate practice efficiency
@@ -170,6 +175,8 @@ class SkillService:
 
         # Use provided time for deterministic calculations when needed
         reference_time = current_time or datetime.now(timezone.utc)
+        if reference_time.tzinfo is None:
+            reference_time = reference_time.replace(tzinfo=timezone.utc)
 
         # Calculate statistics
         total_skills = len(user_skills)
@@ -231,7 +238,14 @@ class SkillService:
                 {
                     "name": skill.name.value,
                     "level": skill.level.value,
-                    "days_since_practice": (reference_time - skill.last_practiced).days
+                    "days_since_practice": (
+                        reference_time
+                        - (
+                            skill.last_practiced
+                            if skill.last_practiced.tzinfo is not None
+                            else skill.last_practiced.replace(tzinfo=timezone.utc)
+                        )
+                    ).days
                     if skill.last_practiced
                     else None,
                 }
