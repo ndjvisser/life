@@ -265,9 +265,7 @@ class TestVerificationMethodFix:
 
         self.request_repo.get_by_id.return_value = mock_request
         self.request_repo.mark_processing_if_pending.return_value = mock_request
-        self.service._collect_user_data = MagicMock(
-            side_effect=RuntimeError("boom")
-        )
+        self.service._collect_user_data = MagicMock(side_effect=RuntimeError("boom"))
 
         with pytest.raises(RuntimeError, match="boom"):
             self.service.process_export_request("export-fail", 21)
@@ -298,9 +296,7 @@ class TestVerificationMethodFix:
 
         self.request_repo.get_by_id.return_value = mock_request
         self.request_repo.mark_processing_if_pending.return_value = mock_request
-        self.service._delete_user_data = MagicMock(
-            side_effect=RuntimeError("kaboom")
-        )
+        self.service._delete_user_data = MagicMock(side_effect=RuntimeError("kaboom"))
 
         with pytest.raises(RuntimeError, match="kaboom"):
             self.service.process_deletion_request("delete-fail", 33)
