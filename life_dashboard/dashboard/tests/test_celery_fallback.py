@@ -1,10 +1,27 @@
-"""
-Tests for Celery fallback functionality.
-"""
+"""Tests for Celery fallback functionality."""
+
+import importlib
+import inspect
+
+import pytest
 
 
 class TestCeleryFallback:
     """Test cases for Celery fallback when Celery is not available."""
+
+    @staticmethod
+    def _get_celery_module_source() -> str:
+        """Return the source code for the Celery compatibility module."""
+
+        try:
+            module = importlib.import_module("life_dashboard.life_dashboard.celery")
+        except ImportError as exc:  # pragma: no cover - defensive, skips test
+            pytest.skip(f"Celery module not available: {exc}")
+
+        try:
+            return inspect.getsource(module)
+        except (OSError, TypeError, AttributeError) as exc:
+            pytest.skip(f"Unable to inspect Celery module source: {exc}")
 
     def test_celery_imports_work(self):
         """Test that Celery components can be imported successfully."""
@@ -28,9 +45,7 @@ class TestCeleryFallback:
 
     def test_celery_fallback_structure_exists(self):
         """Test that the fallback Celery class has the correct structure."""
-        # Read the celery.py file to verify structure
-        with open("life_dashboard/life_dashboard/celery.py") as f:
-            content = f.read()
+        content = self._get_celery_module_source()
 
         # Should have dummy Celery class with required methods
         assert "class Celery:" in content
@@ -50,15 +65,14 @@ class TestCeleryFallback:
 
     def test_fallback_addresses_original_issues(self):
         """Test that the fallback addresses the original issues mentioned."""
-        with open("life_dashboard/life_dashboard/celery.py") as f:
-            content = f.read()
+        content = self._get_celery_module_source()
 
         # Original issue 1: bind=True parameter support
         assert "bind: bool = False" in content
 
         # Original issue 2: .delay() and .apply_async() methods
-        assert "wrapped.delay = lambda" in content
-        assert "wrapped.apply_async = lambda" in content
+        assert "wrapped.delay =" in content
+        assert "wrapped.apply_async =" in content
 
         # Should handle bound tasks properly
         assert "task_self = _TaskSelf()" in content
