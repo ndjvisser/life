@@ -6,6 +6,7 @@ No Django dependencies allowed in this module.
 """
 
 from dataclasses import dataclass
+from typing import Tuple
 
 from life_dashboard.common.value_objects import ExperienceReward, UserId
 
@@ -19,6 +20,7 @@ __all__ = [
     "CompletionCount",
     "ExperienceReward",
     "UserId",
+    "QuestProgress",
 ]
 
 
@@ -183,3 +185,57 @@ class CompletionCount:
             raise ValueError("Completion count cannot be negative")
         if self.value > 1000:  # Reasonable daily limit
             raise ValueError("Completion count cannot exceed 1000")
+
+
+@dataclass(frozen=True)
+class QuestProgress:
+    """Value object for quest progress tracking."""
+
+    completion_percentage: float
+    milestones_completed: Tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not 0 <= self.completion_percentage <= 100:
+            raise ValueError("Completion percentage must be between 0 and 100")
+        object.__setattr__(self, "milestones_completed", tuple(self.milestones_completed))
+
+    def is_complete(self) -> bool:
+        """Check if quest is complete."""
+
+        return self.completion_percentage >= 100.0
+
+    def update_progress(self, new_percentage: float) -> "QuestProgress":
+        """Create new progress with updated percentage."""
+
+        if not 0 <= new_percentage <= 100:
+            raise ValueError("Completion percentage must be between 0 and 100")
+
+        return self.__class__(
+            completion_percentage=new_percentage,
+            milestones_completed=self.milestones_completed,
+        )
+
+    def add_milestone(self, milestone: str) -> "QuestProgress":
+        """Create new progress with added milestone."""
+
+        if milestone in self.milestones_completed:
+            return self  # Milestone already exists
+
+        return self.__class__(
+            completion_percentage=self.completion_percentage,
+            milestones_completed=self.milestones_completed + (milestone,),
+        )
+
+    def get_progress_level(self) -> str:
+        """Get descriptive progress level."""
+
+        if self.completion_percentage >= 100:
+            return "complete"
+        elif self.completion_percentage >= 75:
+            return "nearly_complete"
+        elif self.completion_percentage >= 50:
+            return "halfway"
+        elif self.completion_percentage >= 25:
+            return "started"
+        else:
+            return "not_started"
