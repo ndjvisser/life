@@ -141,7 +141,7 @@
                 }
             }));
             // Update the TOTAL_FORMS form count.
-            const forms = $("." + options.formCssClass);
+            const forms = inlineGroup.find("." + options.formCssClass);
             $("#id_" + options.prefix + "-TOTAL_FORMS").val(forms.length);
             // Show add button again once below maximum number.
             if ((maxForms.val() === '') || (maxForms.val() - forms.length) > 0) {
