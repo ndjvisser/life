@@ -35,7 +35,15 @@ def _quest_id_as_int(quest_id: QuestId | int | str | None) -> int:
     """Normalize quest identifiers to integers for ORM operations."""
 
     if isinstance(quest_id, QuestId):
-        return quest_id.value
+        raw_value = quest_id.value
+        if isinstance(raw_value, str):
+            raw_value = raw_value.strip()
+            if not raw_value:
+                raise ValueError("Quest ID cannot be blank")
+        try:
+            return int(raw_value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"Invalid quest_id: {quest_id.value}") from exc
     if isinstance(quest_id, int):
         return quest_id
     if isinstance(quest_id, str):
