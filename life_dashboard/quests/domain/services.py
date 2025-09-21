@@ -167,8 +167,11 @@ class HabitService:
         created = self._habit_repository.create(habit)
 
         if not isinstance(created, Habit):
+            created = self._habit_repository.save(habit)
+
+        if not isinstance(created, Habit):
             raise TypeError(
-                "HabitRepository.create must return Habit, "
+                "HabitRepository must return Habit instances, "
                 f"got {type(created).__name__}: {created!r}"
             )
 
