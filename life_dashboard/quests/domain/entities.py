@@ -8,7 +8,6 @@ No Django dependencies allowed in this module.
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
-from typing import Optional
 from uuid import uuid4
 
 from .value_objects import (
@@ -78,7 +77,7 @@ class Quest:
     quest_type: QuestType
     status: QuestStatus
     experience_reward: ExperienceReward
-    quest_id: Optional[QuestId] = None
+    quest_id: QuestId | None = None
     parent_quest_id: str | None = None
     prerequisite_quest_ids: list[str] = field(default_factory=list)
     progress: float = 0.0
@@ -223,7 +222,7 @@ class Habit:
     current_streak: StreakCount
     longest_streak: StreakCount
     experience_reward: ExperienceReward
-    habit_id: Optional[HabitId] = None
+    habit_id: HabitId | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     updated_at: datetime = field(default_factory=datetime.utcnow)
 

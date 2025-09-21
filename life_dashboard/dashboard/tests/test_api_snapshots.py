@@ -8,11 +8,10 @@ import pytest
 
 pytest.importorskip("pytest_snapshot")
 
-from tests.snapshot_utils import assert_json_snapshot
-
 from life_dashboard.dashboard.domain.entities import UserProfile
 from life_dashboard.dashboard.domain.state_machines import OnboardingStateMachine
 from life_dashboard.dashboard.domain.value_objects import OnboardingState
+from tests.snapshot_utils import assert_json_snapshot
 
 
 @pytest.mark.snapshot

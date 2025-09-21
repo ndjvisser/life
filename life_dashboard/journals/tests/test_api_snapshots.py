@@ -6,13 +6,12 @@ import pytest
 
 pytest.importorskip("pytest_snapshot")
 
-from tests.snapshot_utils import assert_json_snapshot
-
 from life_dashboard.journals.domain.entities import EntryType
 from life_dashboard.journals.domain.services import JournalService
 from life_dashboard.journals.tests.test_service_contracts import (
     MockJournalEntryRepository,
 )
+from tests.snapshot_utils import assert_json_snapshot
 
 
 @pytest.mark.snapshot

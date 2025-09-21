@@ -11,8 +11,6 @@ import pytest
 
 pytest.importorskip("pytest_snapshot")
 
-from tests.snapshot_utils import assert_json_snapshot
-
 from life_dashboard.quests.domain.entities import (
     Habit,
     HabitCompletion,
@@ -34,6 +32,7 @@ from life_dashboard.quests.domain.value_objects import (
     StreakCount,
     UserId,
 )
+from tests.snapshot_utils import assert_json_snapshot
 
 
 class TestQuestAPISnapshots:
