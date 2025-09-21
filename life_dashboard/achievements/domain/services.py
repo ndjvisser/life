@@ -156,9 +156,13 @@ class AchievementService:
         # Unlock eligible achievements
         for achievement in eligible_achievements:
             try:
+                # We know achievement_id is not None because of the filter in the list comprehension
+                achievement_id = achievement.achievement_id
+                assert achievement_id is not None, "Achievement ID cannot be None"
+
                 user_achievement, experience = self.unlock_achievement(
                     user_id,
-                    achievement.achievement_id,
+                    achievement_id,
                     notes="Auto-unlocked based on user progress",
                     unlock_context={"auto_unlock": True, "user_stats": user_stats},
                 )
