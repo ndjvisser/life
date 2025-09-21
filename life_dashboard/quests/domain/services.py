@@ -7,9 +7,11 @@ No Django dependencies allowed in this module.
 
 from datetime import date, datetime, timedelta, timezone
 
+from life_dashboard.common.value_objects import ExperienceReward
+
 from .entities import Habit, HabitCompletion, Quest, QuestStatus, QuestType
 from .repositories import HabitCompletionRepository, HabitRepository, QuestRepository
-from .value_objects import CompletionCount, ExperienceReward, HabitId, QuestId, UserId
+from .value_objects import CompletionCount, HabitId, QuestId, UserId
 
 
 class QuestService:
@@ -31,7 +33,7 @@ class QuestService:
     ) -> Quest:
         """Create a new quest with validation"""
         from .entities import QuestDifficulty
-        from .value_objects import ExperienceReward, QuestDescription, QuestTitle
+        from .value_objects import QuestDescription, QuestTitle
 
         # Convert string enums to domain enums
         difficulty_enum = QuestDifficulty(difficulty)
@@ -56,11 +58,11 @@ class QuestService:
 
         created_quest = self._quest_repository.create(quest)
 
-        # Some tests stub only the save() method on repository mocks. If the create
-        # call returns a mock (or None) fall back to save() so the service always
-        # returns a proper Quest entity.
         if not isinstance(created_quest, Quest):
-            created_quest = self._quest_repository.save(quest)
+            raise TypeError(
+                "QuestRepository.create must return a Quest instance; "
+                f"received {type(created_quest).__name__}: {created_quest!r}"
+            )
 
         return created_quest
 
@@ -140,12 +142,7 @@ class HabitService:
     ) -> Habit:
         """Create a new habit with validation"""
         from .entities import HabitFrequency
-        from .value_objects import (
-            CompletionCount,
-            ExperienceReward,
-            HabitName,
-            StreakCount,
-        )
+        from .value_objects import CompletionCount, HabitName, StreakCount
 
         # Convert and validate inputs
         frequency_enum = HabitFrequency(frequency)
@@ -212,19 +209,20 @@ class HabitService:
         # Calculate experience with streak bonus
         experience_gained = habit.calculate_experience_reward(completion_count)
 
-        # Create completion record
-        completion = HabitCompletion(
-            completion_id="",  # Will be generated in __post_init__
+        # Create completion record using the domain factory
+        completion = HabitCompletion.create(
             habit_id=habit_id,
             count=CompletionCount(completion_count),
             completion_date=completion_date,
             notes=notes,
             experience_gained=ExperienceReward(experience_gained),
+            user_id=habit.user_id,
+            streak_at_completion=habit.current_streak,
         )
 
         # Save both habit and completion
         self._habit_repository.save(habit)
-        saved_completion = self._completion_repository.save(completion)
+        saved_completion = self._completion_repository.create(completion)
 
         return saved_completion, experience_gained
 
@@ -241,14 +239,15 @@ class HabitService:
             habit_id, start_date, end_date
         )
 
-        # Calculate expected completions based on frequency
-        expected_completions = self._calculate_expected_completions(habit, days)
+        # Calculate expected completions based on frequency and target count
+        expected_occurrences = self._calculate_expected_completions(habit, days)
+        expected_units = expected_occurrences * habit.target_count.value
 
-        if expected_completions == 0:
+        if expected_units == 0:
             return 0.0
 
-        actual_completions = len(completions)
-        return min(actual_completions / expected_completions, 1.0)
+        actual_units = sum(completion.count.value for completion in completions)
+        return min(actual_units / expected_units, 1.0)
 
     def _calculate_expected_completions(self, habit: Habit, days: int) -> int:
         """Calculate expected number of completions based on habit frequency"""
