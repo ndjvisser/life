@@ -42,7 +42,7 @@ class TestQuestChainService:
 
         child_quests = [
             {
-                "quest_id": "child-123",
+                "quest_id": "123",
                 "title": "  Quest Title  ",
                 "description": "desc",
                 "quest_type": "side",
@@ -67,15 +67,16 @@ class TestQuestChainService:
         assert len(created) == 1
         quest = created[0]
 
-        assert quest.user_id == 1
+        assert quest.user_id.value == 1
         assert quest.parent_quest_id == "parent-1"
-        assert quest.quest_id == "child-123"
-        assert quest.title == "Quest Title"
-        assert quest.description == "desc"
+        assert quest.quest_id is not None
+        assert quest.quest_id.value == 123
+        assert quest.title.value == "Quest Title"
+        assert quest.description.value == "desc"
         assert quest.quest_type == QuestType.SIDE
         assert quest.difficulty == QuestDifficulty.HARD
         assert quest.status == QuestStatus.COMPLETED
-        assert quest.experience_reward == 50
+        assert quest.experience_reward.value == 50
         assert quest.progress == pytest.approx(42.5)
         assert quest.start_date == date(2024, 2, 1)
         assert quest.due_date == date(2024, 2, 10)
@@ -91,7 +92,7 @@ class TestQuestChainService:
 
         child_quests = [
             {
-                "quest_id": "child-123",
+                "quest_id": "123",
                 "experience_reward": 10,
             }
         ]
@@ -106,7 +107,7 @@ class TestQuestChainService:
 
         child_quests = [
             {
-                "quest_id": "child-123",
+                "quest_id": "123",
                 "title": "Quest Title",
                 "experience_reward": 10,
                 "difficulty": "impossible",

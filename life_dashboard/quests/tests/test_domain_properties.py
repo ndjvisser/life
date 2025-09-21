@@ -410,7 +410,9 @@ class TestHabitProperties:
 
         # Increase streak and check bonus
         if current_streak.value < 10000:  # Avoid overflow
-            habit.current_streak = StreakCount(current_streak.value + 50)
+            habit.current_streak = StreakCount(
+                min(current_streak.value + 50, 10000)
+            )
             new_bonus = habit.calculate_streak_bonus()
 
             # Bonus should be greater or equal (never decrease)
