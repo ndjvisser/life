@@ -15,30 +15,39 @@
     - [x] Integration test directories
     - [x] Test utilities
 
-- [⚠] 1.1.2 Shared Kernel
-  - [x] Common interfaces
+- [ ] 1.1.2 Shared Kernel
+  - [ ] Common interfaces
+    - [ ] Define core domain interfaces
+    - [ ] Add interface contracts
+    - [ ] Interface compliance tests
   - [ ] Base entity/value-object abstractions
     - [ ] Implementation
     - [ ] Unit tests
+    - [ ] Validation rules
   - [ ] Repository patterns
-    - [ ] Implementation
+    - [ ] Base repository interface
+    - [ ] Generic repository implementation
     - [ ] Integration tests
   - [ ] Unit of Work implementation
-    - [ ] Implementation
+    - [ ] Transaction management
+    - [ ] Atomic operation support
     - [ ] Transaction tests
   - _Dependencies: 1.1.1_
 
 ### 1.2 Cross-Cutting Concerns
-- [x] 1.2.1 Domain Events
-  - [x] Event bus implementation
-    - [x] Core implementation
-    - [x] Unit tests
-  - [x] Event handler registration
-    - [x] Implementation
-    - [x] Integration tests
-  - [x] Transactional outbox pattern
-    - [x] Implementation
-    - [x] Failure recovery tests
+- [⚠] 1.2.1 Domain Events
+  - [x] Basic event bus implementation
+    - [x] In-memory event log
+    - [x] Synchronous publishing
+    - [ ] Unit tests
+  - [ ] Event handler registration
+    - [ ] Implementation
+    - [ ] Integration tests
+  - [ ] Transactional outbox pattern
+    - [ ] Async publishing support
+    - [ ] Outbox table schema
+    - [ ] Failure recovery implementation
+    - [ ] Recovery tests
   - _Dependencies: 1.1.2_
 
 - [x] 1.2.2 Boundary Control
@@ -55,16 +64,18 @@
   - _Dependencies: 1.1.1_
 
 ### 1.3 Quests Context (Example Implementation)
-- [x] 1.3.1 Domain Layer
-  - [x] Core entities ([Quest](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:362:0-388:50), [Habit](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:417:0-443:50))
-    - [x] Implementation
-    - [x] Unit tests
-  - [x] Value objects
-    - [x] Implementation
-    - [x] Validation tests
-  - [x] Domain events
-    - [x] Event definitions
-    - [x] Event handler tests
+- [⚠] 1.3.1 Domain Layer
+  - [x] Core entities
+    - [x] [Quest](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:362:0-388:50) implementation
+    - [x] [Habit](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:417:0-443:50) implementation
+    - [ ] Task entity (missing)
+    - [ ] Entity unit tests
+  - [ ] Value objects
+    - [ ] Implementation
+    - [ ] Validation tests
+  - [ ] Domain events
+    - [ ] Event definitions
+    - [ ] Event handler tests
   - _Dependencies: 1.1.2_
 
 - [⚠] 1.3.2 Application Layer
@@ -79,16 +90,17 @@
     - [ ] Integration tests
   - _Dependencies: 1.3.1_
 
-- [x] 1.3.3 Infrastructure
-  - [x] ORM repositories
-    - [x] Implementation
-    - [x] Integration tests
-  - [x] Data mappers
-    - [x] Mapping logic
-    - [x] Test coverage
-  - [x] Database migrations
+- [⚠] 1.3.3 Infrastructure
+  - [ ] ORM repositories
+    - [ ] Implementation
+    - [ ] Integration tests
+  - [ ] Data mappers
+    - [ ] Mapping logic
+    - [ ] Test coverage
+  - [ ] Database migrations
     - [x] Migration scripts
-    - [x] Rollback tests
+    - [ ] Rollback tests (missing)
+    - [ ] Migration test coverage
   - _Dependencies: 1.3.2_
 
 ### 1.4 Cross-Context Communication
@@ -103,6 +115,37 @@
     - [ ] Query optimization
     - [ ] Performance tests
   - _Dependencies: 1.2.1, 1.3.3_
+
+### 1.5 Missing Contexts
+- [ ] 1.5.1 Analytics Context
+  - [ ] Create base structure
+    - [ ] Directory layout
+    - [ ] Test structure
+    - [ ] CI/CD integration
+  - [ ] Define analytics domain models
+    - [ ] Core entities
+    - [ ] Value objects
+    - [ ] Unit tests
+  - [ ] Set up data aggregation services
+    - [ ] Aggregation logic
+    - [ ] Performance tests
+    - [ ] Integration tests
+  - _Dependencies: 1.1.1_
+
+- [ ] 1.5.2 Integrations Context
+  - [ ] Create base structure
+    - [ ] Adapter interfaces
+    - [ ] Test harness
+    - [ ] Mock services
+  - [ ] Define integration points
+    - [ ] API contracts
+    - [ ] Error handling
+    - [ ] Contract tests
+  - [ ] Implement adapter pattern
+    - [ ] Adapter implementations
+    - [ ] Circuit breakers
+    - [ ] Integration tests
+  - _Dependencies: 1.1.1_
 
 ## Phase 2: Core Domain Implementation
 
