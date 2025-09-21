@@ -64,17 +64,12 @@
     {% if messages %}
     <div class="container mt-3">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show
-            {% if message.tags == 'success' %}
-                {% if 'profile' in message.extra_tags %}profile-updated
-                {% elif 'quest' in message.extra_tags %}quest-updated
-                {% elif 'habit' in message.extra_tags %}habit-updated
-                {% elif 'level' in message.extra_tags %}level-up-notification
-                {% else %}completion-success{% endif %}
-            {% endif %}">
+        {% with extra_tags=message.extra_tags|default:'' %}
+        <div class="alert alert-{{ message.level_tag }} alert-dismissible fade show{% if message.level_tag == 'success' %}{% if 'profile' in extra_tags %} profile-updated{% elif 'quest' in extra_tags %} quest-updated{% elif 'habit' in extra_tags %} habit-updated{% elif 'level' in extra_tags %} level-up-notification{% else %} completion-success{% endif %}{% endif %}">
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+        {% endwith %}
         {% endfor %}
     </div>
     {% endif %}
@@ -82,19 +77,6 @@
     <!-- Main Content -->
     <main class="flex-shrink-0 pt-4">
         <div class="container">
-            {% if messages %}
-            <div class="row mt-3">
-                <div class="col-12">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
             {% block content %}{% endblock %}
         </div>
     </main>

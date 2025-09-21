@@ -6,7 +6,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 
 ## Requirements
 
-### Requirement 1
+### Requirement 1 (CORE-001)
 
 **User Story:** As a user, I want to view and manage my RPG-style core stats, so that I can track my fundamental attributes and see my overall character development.
 
@@ -18,7 +18,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN core stats are updated THEN the system SHALL maintain the existing CoreStat model structure with automatic level calculation
 5. IF a user has not initialized core stats THEN the system SHALL create default CoreStat record with base values
 
-### Requirement 2
+### Requirement 2 (LIFE-002)
 
 **User Story:** As a user, I want to track my life stats across health, wealth, and relationships categories, so that I can monitor my progress in key life areas.
 
@@ -31,7 +31,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 5. WHEN a user updates any life stat THEN the system SHALL record the timestamp and maintain historical tracking data
 6. WHEN life stats reach significant milestones THEN the system SHALL integrate with achievement system for recognition
 
-### Requirement 3
+### Requirement 3 (QUEST-003)
 
 **User Story:** As a user, I want to create and manage quests at different levels, so that I can organize my goals from daily tasks to life-long aspirations.
 
@@ -43,7 +43,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN a quest has a due_date THEN the system SHALL show time remaining and provide visual indicators for approaching deadlines
 5. IF a quest is overdue THEN the system SHALL highlight it with appropriate visual styling based on status
 
-### Requirement 4
+### Requirement 4 (HABIT-004)
 
 **User Story:** As a user, I want to track recurring behaviors as habits, so that I can build consistency in important daily, weekly, or monthly activities.
 
@@ -55,7 +55,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN calculating streaks THEN the system SHALL use HabitCompletion records to determine consecutive completion patterns
 5. WHEN a habit reaches milestone streaks THEN the system SHALL integrate with achievement system for recognition
 
-### Requirement 5
+### Requirement 5 (SKILL-005)
 
 **User Story:** As a user, I want to track my skills development across different life areas, so that I can see my growth and identify areas for improvement.
 
@@ -67,7 +67,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN a skill reaches a new level THEN the system SHALL use existing level_up logic with progressive experience requirements
 5. WHEN skills are practiced THEN the system SHALL update last_practiced field for activity tracking
 
-### Requirement 6
+### Requirement 6 (ACHV-006)
 
 **User Story:** As a user, I want to earn achievements and titles based on my progress, so that I feel recognized and motivated to continue my personal development journey.
 
@@ -79,7 +79,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN achievements are earned THEN the system SHALL award experience_reward to UserProfile and provide notifications
 5. WHEN checking achievement eligibility THEN the system SHALL evaluate required_level, required_quest_completions, and other criteria
 
-### Requirement 7
+### Requirement 7 (JRNL-007)
 
 **User Story:** As a user, I want to maintain a personal journal with daily reflections and milestone entries, so that I can reflect on my progress and gain insights into my development.
 
@@ -91,7 +91,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN significant events occur THEN the system SHALL allow linking entries to related_quest or related_achievement
 5. WHEN creating entries THEN the system SHALL support comma-separated tags for organization and searchability
 
-### Requirement 8
+### Requirement 8 (OVVW-008)
 
 **User Story:** As a user, I want to see overview pages for health, wealth, and relationships, so that I can quickly understand my current status and trends in each major life area.
 
@@ -103,7 +103,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN viewing any overview THEN the system SHALL provide drill-down capabilities to detailed metrics
 5. IF trends show concerning patterns THEN the system SHALL highlight areas needing attention
 
-### Requirement 9
+### Requirement 9 (DASH-009)
 
 **User Story:** As a user, I want a central home page that serves as my dashboard hub, so that I can quickly access all key information and take common actions.
 
@@ -115,7 +115,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN a user has pending tasks THEN the system SHALL highlight them prominently on the dashboard
 5. IF the user is new THEN the system SHALL provide onboarding guidance and setup prompts
 
-### Requirement 10
+### Requirement 10 (AUTH-010)
 
 **User Story:** As a user, I want secure authentication and personalized access, so that my personal development data remains private and accessible only to me.
 
@@ -127,7 +127,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN a user logs out THEN the system SHALL clear their session and redirect to the login page
 5. IF a user forgets their password THEN the system SHALL provide secure password reset functionality
 
-### Requirement 11
+### Requirement 11 (ARCH-011)
 
 **User Story:** As a developer, I want a modular monolith architecture with clear domain boundaries, so that the system remains maintainable, testable, and can evolve without tight coupling between contexts.
 
@@ -139,7 +139,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN exposing functionality THEN the system SHALL use service layers that orchestrate domain logic and maintain anti-corruption layers at context boundaries
 5. WHEN testing THEN the system SHALL support testing at domain (pure Python), application (service layer), integration (Django views/ORM), and feature (BDD scenarios) levels
 
-### Requirement 12
+### Requirement 12 (INTG-012)
 
 **User Story:** As a user, I want the system to integrate with external data sources, so that my stats are automatically updated from real-world activities rather than requiring manual entry.
 
@@ -151,7 +151,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN integration data is received THEN the system SHALL validate and transform it according to domain rules before updating stats
 5. IF external integrations fail THEN the system SHALL gracefully degrade to manual entry mode while logging errors
 
-### Requirement 13
+### Requirement 13 (INSG-013)
 
 **User Story:** As a user, I want the system to generate insights and detect patterns, so that I can understand correlations between different areas of my life and make better decisions.
 
@@ -163,7 +163,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN milestones are achieved THEN the system SHALL suggest next-level goals and progression paths
 5. IF data indicates concerning patterns THEN the system SHALL provide early warning notifications and recommended actions
 
-### Requirement 14
+### Requirement 14 (TEST-014)
 
 **User Story:** As a developer, I want comprehensive behavior-driven testing capabilities, so that complex user journeys and integration scenarios are thoroughly validated and documented.
 
@@ -175,7 +175,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN scenarios involve multiple contexts THEN the system SHALL test cross-context event flows and data consistency
 5. WHEN integration failures occur THEN the system SHALL test graceful degradation and error recovery scenarios through BDD tests
 
-### Requirement 15
+### Requirement 15 (PERF-015)
 
 **User Story:** As a user, I want the system to perform reliably and responsively, so that my daily interactions are smooth and my data is always accessible.
 
@@ -187,9 +187,9 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN storing data THEN the system SHALL handle up to 10,000 data points per user without performance impact
 5. IF system load increases THEN the system SHALL maintain response times through horizontal scaling capabilities
 
-### Requirement 16
+### Requirement 16 (PRIV-016)
 
-**User Story:** As a user, I want my personal data to be secure and private, so that I can trust the system with sensitive life information.
+**User Story:** As a user, I want my personal data to be secure and private with granular control over how it's used, so that I can trust the system with sensitive life information while maintaining full autonomy over my data.
 
 #### Acceptance Criteria
 
@@ -198,8 +198,13 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 3. WHEN a user requests data export THEN the system SHALL provide complete data export in JSON format within 24 hours
 4. WHEN a user requests account deletion THEN the system SHALL permanently delete all personal data within 30 days
 5. WHEN accessing external APIs THEN the system SHALL use OAuth2 flows and never store plain-text passwords
+6. WHEN collecting personal data THEN the system SHALL implement explicit consent mechanisms with clear purpose statements
+7. WHEN processing behavioral data THEN the system SHALL provide granular privacy controls for analytics, AI features, and social sharing
+8. WHEN generating insights THEN the system SHALL allow users to opt-out of AI analysis while maintaining core functionality
+9. WHEN sharing data socially THEN the system SHALL default to private and require explicit consent for each sharing action
+10. WHEN using data for ML training THEN the system SHALL anonymize personal identifiers and provide opt-out mechanisms
 
-### Requirement 17
+### Requirement 17 (UI-017)
 
 **User Story:** As a user, I want an intuitive and engaging interface, so that managing my life feels enjoyable rather than burdensome.
 
@@ -211,7 +216,7 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 4. WHEN navigating between sections THEN the system SHALL maintain consistent UI patterns and terminology
 5. WHEN completing actions THEN the system SHALL provide clear confirmation and next-step guidance
 
-### Requirement 18
+### Requirement 18 (OPS-018)
 
 **User Story:** As a system administrator, I want comprehensive monitoring and operational capabilities, so that the system remains reliable and issues can be quickly resolved.
 
@@ -222,6 +227,40 @@ The Personal Life Dashboard is a modular monolith, RPG-inspired web application 
 3. WHEN deploying updates THEN the system SHALL support zero-downtime deployments with rollback capabilities
 4. WHEN data needs protection THEN the system SHALL perform automated daily backups with point-in-time recovery
 5. WHEN monitoring system health THEN the system SHALL provide dashboards for performance, errors, and user engagement metrics
+
+### Requirement 19 (PRIV-019)
+
+**User Story:** As a user, I want comprehensive privacy controls and transparency, so that I understand exactly how my data is being used and can control every aspect of data processing.
+
+#### Acceptance Criteria
+
+1. WHEN registering THEN the system SHALL present a privacy dashboard with granular consent options for different data uses
+2. WHEN using AI features THEN the system SHALL clearly explain what data is analyzed and allow per-feature opt-out
+3. WHEN data is processed for insights THEN the system SHALL maintain an audit log of all data access and processing activities
+4. WHEN third-party integrations are connected THEN the system SHALL display exactly what data is shared and allow selective permissions
+5. WHEN social features are used THEN the system SHALL provide fine-grained visibility controls (private, friends, public) for each data type
+6. WHEN ML models are trained THEN the system SHALL use differential privacy techniques to prevent individual data reconstruction
+7. WHEN data retention occurs THEN the system SHALL automatically delete personal data after user-defined retention periods
+8. WHEN analytics are performed THEN the system SHALL provide users with copies of all insights generated about them
+9. WHEN consent is withdrawn THEN the system SHALL immediately stop processing and delete related derived data
+10. WHEN data breaches occur THEN the system SHALL notify affected users within 72 hours with detailed impact assessment
+
+### Requirement 20 (ETH-020)
+
+**User Story:** As a user, I want ethical AI and social features that prioritize my wellbeing, so that technology enhances rather than manipulates my personal development journey.
+
+#### Acceptance Criteria
+
+1. WHEN AI generates recommendations THEN the system SHALL prioritize user wellbeing over engagement metrics
+2. WHEN social comparisons are shown THEN the system SHALL focus on personal progress rather than competitive rankings
+3. WHEN predictive analytics are used THEN the system SHALL avoid creating anxiety or pressure through predictions
+4. WHEN coaching suggestions are made THEN the system SHALL encourage sustainable habits rather than extreme behaviors
+5. WHEN community features are implemented THEN the system SHALL include mental health safeguards and support resources
+6. WHEN data patterns indicate concerning behaviors THEN the system SHALL suggest professional resources rather than automated interventions
+7. WHEN gamification is applied THEN the system SHALL avoid addictive design patterns and include healthy usage limits
+8. WHEN AI insights are presented THEN the system SHALL clearly distinguish between data-driven observations and subjective interpretations
+9. WHEN social features are used THEN the system SHALL implement anti-harassment measures and community guidelines
+10. WHEN vulnerable users are detected THEN the system SHALL provide additional privacy protections and support resources
 
 ## Implementation Phases
 

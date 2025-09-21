@@ -1,0 +1,26 @@
+{
+  "completion_rewards": {
+    "unlocked_features": [
+      "dashboard_access",
+      "quest_creation",
+      "achievement_tracking",
+      "journal_entries"
+    ],
+    "welcome_achievement": {
+      "description": "Successfully completed the onboarding process",
+      "id": "onboarding_complete",
+      "name": "Welcome to LIFE!"
+    },
+    "welcome_bonus_experience": 100
+  },
+  "completion_timestamp": "2023-01-01T12:00:00",
+  "current_state": "dashboard",
+  "is_complete": true,
+  "next_recommended_actions": [
+    "create_first_quest",
+    "set_initial_goals",
+    "explore_dashboard"
+  ],
+  "next_step": null,
+  "progress_percentage": 100.0
+}

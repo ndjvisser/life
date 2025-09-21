@@ -1,37 +1,48 @@
-from django.db import connection
-from django.db.migrations.executor import MigrationExecutor
-from django.db.migrations.loader import MigrationLoader
+"""Utility helpers for the dashboard app."""
+
+import os
+from contextlib import contextmanager
+
+from django.conf import settings
+from django.core.management import call_command
+from django.db import DEFAULT_DB_ALIAS, connections
 
 
-def reset_database():
-    """Reset the database by dropping all tables and clearing migrations."""
-    with connection.cursor() as cursor:
-        try:
-            # Get all table names and their dependencies
-            cursor.execute(
-                """
-                SELECT name, sql
-                FROM sqlite_master
-                WHERE type='table'
-                AND name NOT IN ('sqlite_sequence', 'django_migrations');
-            """
-            )
-            tables = cursor.fetchall()
+@contextmanager
+def _sqlite_foreign_keys_disabled(connection):
+    cursor = connection.cursor()
+    try:
+        cursor.execute("PRAGMA foreign_keys = OFF;")
+        yield
+    finally:
+        cursor.execute("PRAGMA foreign_keys = ON;")
+        cursor.close()
 
-            # First disable foreign key constraints
-            cursor.execute("PRAGMA foreign_keys = OFF;")
 
-            # Drop tables in reverse dependency order
-            for table in tables:
-                table_name = table[0]
-                cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
+def reset_database(*, database: str = DEFAULT_DB_ALIAS) -> None:
+    """Safely reset the configured database.
 
-            # Reset the database by clearing migrations
-            MigrationLoader(connection).reset()
-            MigrationExecutor(connection).migrate([])
+    The reset operation is only permitted when DEBUG is enabled and the
+    ``DJANGO_ENV`` environment variable does not point at a production-like
+    environment. The command runs ``flush`` followed by ``migrate`` to rebuild
+    schema state without dropping the entire database. For SQLite the routine
+    temporarily disables foreign key enforcement to avoid constraint leaks.
+    """
 
-            # Re-enable foreign key constraints
-            cursor.execute("PRAGMA foreign_keys = ON;")
+    if not settings.DEBUG:
+        raise RuntimeError("Database reset is only allowed when DEBUG is True.")
 
-        except Exception as e:
-            raise Exception(f"Error resetting database: {str(e)}") from e
+    environment = os.getenv("DJANGO_ENV", "").lower()
+    if environment in {"production", "prod", "staging"}:
+        raise RuntimeError("Database reset is blocked in production-like environments.")
+
+    connection = connections[database]
+    flush_kwargs = {"database": database, "interactive": False, "verbosity": 0}
+
+    if connection.vendor == "sqlite":
+        with _sqlite_foreign_keys_disabled(connection):
+            call_command("flush", **flush_kwargs)
+    else:
+        call_command("flush", **flush_kwargs)
+
+    call_command("migrate", database=database, interactive=False, verbosity=0)

@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -9,16 +10,22 @@ class Quest(models.Model):
         ("easy", "Easy"),
         ("medium", "Medium"),
         ("hard", "Hard"),
+        ("legendary", "Legendary"),
     )
     QUEST_TYPES = [
+        ("life_goal", "Life Goal"),
+        ("annual_goal", "Annual Goal"),
         ("main", "Main Quest"),
         ("side", "Side Quest"),
+        ("weekly", "Weekly Quest"),
         ("daily", "Daily Quest"),
     ]
     STATUS_CHOICES = [
+        ("draft", "Draft"),
         ("active", "Active"),
         ("completed", "Completed"),
         ("failed", "Failed"),
+        ("paused", "Paused"),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -27,8 +34,8 @@ class Quest(models.Model):
     difficulty = models.CharField(
         max_length=10, choices=DIFFICULTY_CHOICES, default="medium"
     )
-    quest_type = models.CharField(max_length=10, choices=QUEST_TYPES, default="main")
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="active")
+    quest_type = models.CharField(max_length=15, choices=QUEST_TYPES, default="main")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="draft")
     experience_reward = models.PositiveIntegerField(default=10)
     start_date = models.DateField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
@@ -55,6 +62,7 @@ class Habit(models.Model):
         ("daily", "Daily"),
         ("weekly", "Weekly"),
         ("monthly", "Monthly"),
+        ("custom", "Custom"),
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -89,7 +97,7 @@ class HabitCompletion(models.Model):
     habit = models.ForeignKey(
         Habit, on_delete=models.CASCADE, related_name="completions"
     )
-    count = models.IntegerField(default=1)
+    count = models.IntegerField(default=1, validators=[MinValueValidator(1)])
     date = models.DateField(default=date.today)
     notes = models.TextField(blank=True)
     experience_gained = models.IntegerField(default=0)

@@ -1,0 +1,43 @@
+{
+  "failed": 1,
+  "operation": "bulk_update_stats",
+  "request_id": "req_bulk_001",
+  "results": [
+    {
+      "id": 1,
+      "message": "CoreStat updated",
+      "status": "success"
+    },
+    {
+      "id": 2,
+      "message": "CoreStat updated",
+      "status": "success"
+    },
+    {
+      "id": 3,
+      "message": "CoreStat updated",
+      "status": "success"
+    },
+    {
+      "id": 4,
+      "message": "CoreStat updated",
+      "status": "success"
+    },
+    {
+      "error_code": "VALIDATION_ERROR",
+      "id": 5,
+      "message": "Invalid stat value",
+      "status": "error"
+    }
+  ],
+  "successful": 4,
+  "summary": {
+    "errors_by_type": {
+      "VALIDATION_ERROR": 1
+    },
+    "processing_time_ms": 150,
+    "success_rate": 0.8
+  },
+  "timestamp": "2024-01-15T10:30:00Z",
+  "total_requested": 5
+}

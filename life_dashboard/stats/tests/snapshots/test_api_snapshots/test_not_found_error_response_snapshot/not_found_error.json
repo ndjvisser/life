@@ -1,0 +1,10 @@
+{
+  "details": {
+    "resource": "CoreStat",
+    "user_id": 999
+  },
+  "error": "NotFound",
+  "message": "CoreStat not found for user",
+  "request_id": "req_987654321",
+  "timestamp": "2024-01-15T10:30:00Z"
+}

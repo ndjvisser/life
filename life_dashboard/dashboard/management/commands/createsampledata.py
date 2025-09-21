@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from quests.models import Habit, Quest
@@ -13,6 +13,7 @@ class Command(BaseCommand):
         self.stdout.write("Creating sample data...")
 
         # Get or create the test user
+        User = get_user_model()
         try:
             user = User.objects.get(username="test")
         except User.DoesNotExist:

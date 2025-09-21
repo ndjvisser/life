@@ -1,0 +1,12 @@
+{
+  "change_amount": 0.0,
+  "change_reason": "Stat review - no change",
+  "is_decrease": false,
+  "is_increase": false,
+  "new_value": 20.0,
+  "old_value": 20.0,
+  "percentage_change": 0.0,
+  "stat_name": "intelligence",
+  "stat_type": "core",
+  "user_id": 1
+}

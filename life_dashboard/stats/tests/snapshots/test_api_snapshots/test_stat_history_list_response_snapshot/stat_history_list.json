@@ -1,0 +1,38 @@
+[
+  {
+    "change_amount": 3.0,
+    "change_reason": "Training quest completed",
+    "is_decrease": false,
+    "is_increase": true,
+    "new_value": 18.0,
+    "old_value": 15.0,
+    "percentage_change": 20.0,
+    "stat_name": "strength",
+    "stat_type": "core",
+    "user_id": 1
+  },
+  {
+    "change_amount": -1.5,
+    "change_reason": "Diet progress",
+    "is_decrease": true,
+    "is_increase": false,
+    "new_value": 70.5,
+    "old_value": 72.0,
+    "percentage_change": -2.0833333333333335,
+    "stat_name": "weight",
+    "stat_type": "life",
+    "user_id": 1
+  },
+  {
+    "change_amount": 2.0,
+    "change_reason": "Social interaction quest",
+    "is_decrease": false,
+    "is_increase": true,
+    "new_value": 14.0,
+    "old_value": 12.0,
+    "percentage_change": 16.666666666666668,
+    "stat_name": "charisma",
+    "stat_type": "core",
+    "user_id": 1
+  }
+]

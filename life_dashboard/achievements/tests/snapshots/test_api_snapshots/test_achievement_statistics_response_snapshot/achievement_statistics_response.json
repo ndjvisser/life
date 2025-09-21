@@ -1,0 +1,82 @@
+{
+  "achievement_statistics": {
+    "average_unlock_rate_per_month": 2.0,
+    "category_breakdown": {
+      "exploration": {
+        "percentage": 0,
+        "total": 0,
+        "unlocked": 0
+      },
+      "milestone": {
+        "percentage": 0.0,
+        "total": 1,
+        "unlocked": 0
+      },
+      "progression": {
+        "percentage": 0,
+        "total": 0,
+        "unlocked": 0
+      },
+      "quest_completion": {
+        "percentage": 50.0,
+        "total": 2,
+        "unlocked": 1
+      },
+      "skill_mastery": {
+        "percentage": 100.0,
+        "total": 1,
+        "unlocked": 1
+      },
+      "social": {
+        "percentage": 0,
+        "total": 0,
+        "unlocked": 0
+      },
+      "streak": {
+        "percentage": 0,
+        "total": 0,
+        "unlocked": 0
+      }
+    },
+    "completion_percentage": 50.0,
+    "recent_achievements_count": 1,
+    "tier_breakdown": {
+      "BRONZE": {
+        "percentage": 100.0,
+        "total": 1,
+        "unlocked": 1
+      },
+      "GOLD": {
+        "percentage": 0.0,
+        "total": 1,
+        "unlocked": 0
+      },
+      "PLATINUM": {
+        "percentage": 0.0,
+        "total": 1,
+        "unlocked": 0
+      },
+      "SILVER": {
+        "percentage": 100.0,
+        "total": 1,
+        "unlocked": 1
+      }
+    },
+    "total_achievements": 4,
+    "total_experience_from_achievements": 850,
+    "unlocked_achievements": 2
+  },
+  "progress_insights": {
+    "achievements_this_month": 1,
+    "completion_level": "Making Progress",
+    "next_tier_focus": "SILVER",
+    "strongest_category": "skill_mastery"
+  },
+  "recommendations": [
+    "Focus on quest completion to unlock more bronze achievements",
+    "Work on skill development to unlock silver tier achievements",
+    "You're making great progress - keep it up!"
+  ],
+  "statistics_generated_at": "2024-01-25T18:00:00+00:00",
+  "user_id": 1
+}

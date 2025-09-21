@@ -1,14 +1,52 @@
 # LIFE - Level Up Your Life
 
-LIFE is a web application that helps you level up your life by tracking quests and habits. It uses RPG mechanics to make personal development more engaging and fun.
+LIFE is a comprehensive, RPG-inspired personal life dashboard that helps you "level up your life" through gamified tracking and development. The platform provides a holistic view of personal growth across health, wealth, and relationships using engaging RPG mechanics.
 
 ## Features
 
-- **Quests**: Create and track one-time and recurring quests
-- **Habits**: Build and maintain daily, weekly, or monthly habits
-- **Experience Points**: Earn XP by completing quests and maintaining habits
-- **Streaks**: Track your progress with habit streaks
-- **User Authentication**: Secure login and registration system
+### Core RPG System
+- **Core Stats**: Strength, Endurance, Agility, Intelligence, Wisdom, Charisma
+- **Experience Points**: Progression system with leveling
+- **Achievements & Titles**: Bronze, Silver, Gold, Platinum badges with custom titles
+
+### Life Tracking
+- **Life Stats**: Comprehensive tracking across Health, Wealth, and Relationships
+- **Quests**: Multi-level goals (Life Goals, Annual, Main/Side/Weekly/Daily)
+- **Habits**: Daily, weekly, monthly routines with streak tracking
+- **Skills**: Categorized skill development with leveling system
+
+### Reflection & Insights
+- **Journals**: Daily reflections, weekly reviews, milestone entries
+- **Overview Dashboards**: Health, Wealth, and Relationships trend analysis
+- **Progress Tracking**: Visual indicators and historical data
+
+## Architecture
+
+LIFE follows a **Modular Monolith** architecture with strict bounded context boundaries:
+
+- **Dashboard** - User management, authentication, central coordination
+- **Stats** - Core RPG stats and life metrics tracking
+- **Quests** - Goal management, quests, and habits
+- **Skills** - Skill tracking and development
+- **Achievements** - Achievement and milestone tracking
+- **Journals** - Personal reflection and journaling
+
+Each context follows Domain-Driven Design (DDD) principles with layered architecture.
+
+### Quick Architecture Check
+
+```bash
+# Check architecture boundaries
+make check-architecture
+
+# Generate architecture report
+make architecture-report
+
+# Full development workflow
+make dev
+```
+
+See [`docs/architecture/`](docs/architecture/) for detailed architecture documentation.
 
 ## Installation
 
@@ -24,9 +62,13 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install the dependencies:
+3. Install the project in development mode with all dependencies:
 ```bash
-pip install -r requirements.txt
+# Install the project in development mode with all dependencies
+pip install -e ".[dev]"
+
+# Generate the constraints file (used for reproducible builds)
+make generate-constraints
 ```
 
 4. Create a .env file in the project root with the following content:
@@ -34,6 +76,11 @@ pip install -r requirements.txt
 DEBUG=True
 SECRET_KEY=your-secret-key-here
 ALLOWED_HOSTS=localhost,127.0.0.1
+```
+
+5. (Optional) For production, you can install with production-only dependencies:
+```bash
+pip install -e .
 ```
 
 5. Set up the database:
@@ -63,23 +110,74 @@ python manage.py runserver
 
 ## Development
 
-### Available Management Commands
+### Quick Start
 
-- `python manage.py setup`: Sets up the project by running all necessary commands
-- `python manage.py resetdb`: Resets the database by dropping all tables and recreating them
-- `python manage.py createsuperuser`: Creates a superuser
-- `python manage.py createsampledata`: Creates sample data for testing
+```bash
+# Install development dependencies
+make dev-install
+
+# Set up project
+make setup
+
+# Run development server
+make runserver
+
+# Run all checks
+make dev
+```
+
+### Available Commands
+
+```bash
+# Setup & Installation
+make install          # Install production dependencies
+make dev-install      # Install development dependencies
+make setup           # Initial project setup
+
+# Development
+make runserver       # Run development server
+make test           # Run all tests
+make lint           # Run linting
+make format         # Format code
+make check-architecture  # Check architecture boundaries
+
+# Database
+make migrate        # Run migrations
+make resetdb        # Reset database
+make setup-sample-data  # Create sample data
+
+# Architecture
+make check-boundaries    # Check bounded context boundaries
+make architecture-report # Generate architecture report
+make dependency-graph   # Generate dependency graph
+```
 
 ### Project Structure
 
 ```
 life_dashboard/
-├── dashboard/          # Main dashboard app
-├── quests/            # Quests and habits app
-├── templates/         # Project-wide templates
-├── static/           # Project-wide static files
-└── life_dashboard/   # Project settings
+├── dashboard/          # Dashboard context (user management, auth)
+│   ├── domain/        # Pure business logic
+│   ├── application/   # Use case orchestration
+│   ├── infrastructure/ # Django ORM implementations
+│   └── interfaces/    # Views, serializers
+├── stats/             # Stats context (RPG stats, life metrics)
+├── quests/            # Quests context (goals, habits)
+├── skills/            # Skills context (skill development)
+├── achievements/      # Achievements context (badges, titles)
+├── journals/          # Journals context (reflection, insights)
+├── shared/            # Cross-context utilities
+└── life_dashboard/    # Project settings
 ```
+
+### Architecture Principles
+
+1. **Bounded Context Independence** - Each context is independent
+2. **Pure Domain Layers** - No Django imports in domain logic
+3. **Layered Architecture** - Dependencies flow toward domain core
+4. **Cross-Context Queries** - Use shared query layer for data access
+
+See [`docs/architecture/bounded-contexts.md`](docs/architecture/bounded-contexts.md) for detailed rules.
 
 ## Contributing
 

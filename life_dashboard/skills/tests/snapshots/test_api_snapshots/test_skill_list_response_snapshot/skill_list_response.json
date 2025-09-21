@@ -1,0 +1,68 @@
+{
+  "average_level": 45.0,
+  "highest_level_skill": {
+    "level": 75,
+    "name": "Data Science"
+  },
+  "mastery_breakdown": {
+    "apprentice": 0,
+    "expert": 1,
+    "journeyman": 1,
+    "master": 0,
+    "novice": 1
+  },
+  "skills": [
+    {
+      "category_id": 1,
+      "created_at": "2024-01-01T10:00:00+00:00",
+      "description": "Python development",
+      "experience_points": 500,
+      "experience_to_next_level": 1000,
+      "is_stagnant": true,
+      "last_practiced": "2024-01-14T10:00:00+00:00",
+      "level": 18,
+      "mastery_level": "novice",
+      "name": "Python Programming",
+      "next_milestone": 20,
+      "progress_percentage": 9.908838684106223,
+      "skill_id": 1,
+      "skill_rank": "Improving",
+      "user_id": 1
+    },
+    {
+      "category_id": 1,
+      "created_at": "2024-01-02T11:00:00+00:00",
+      "description": "JS development",
+      "experience_points": 2800,
+      "experience_to_next_level": 3500,
+      "is_stagnant": true,
+      "last_practiced": "2024-01-13T15:30:00+00:00",
+      "level": 42,
+      "mastery_level": "journeyman",
+      "name": "JavaScript",
+      "next_milestone": 50,
+      "progress_percentage": 5.638454258039832,
+      "skill_id": 2,
+      "skill_rank": "Journeyman",
+      "user_id": 1
+    },
+    {
+      "category_id": 2,
+      "created_at": "2024-01-03T09:00:00+00:00",
+      "description": "Data analysis and ML",
+      "experience_points": 8500,
+      "experience_to_next_level": 12000,
+      "is_stagnant": true,
+      "last_practiced": "2024-01-15T14:00:00+00:00",
+      "level": 75,
+      "mastery_level": "expert",
+      "name": "Data Science",
+      "next_milestone": 80,
+      "progress_percentage": 0.73705833946826,
+      "skill_id": 3,
+      "skill_rank": "Advanced Expert",
+      "user_id": 1
+    }
+  ],
+  "total_count": 3
+}

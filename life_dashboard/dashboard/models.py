@@ -31,9 +31,41 @@ class UserProfile(models.Model):
 
     @property
     def email(self):
+        """
+        Return the email address of the associated User.
+
+        This read-only convenience property proxies to self.user.email and may be an empty string if the User has no email set.
+
+        Returns:
+            str: The user's email address.
+        """
         return self.user.email
 
+    # Business logic moved to domain layer - use UserService.add_experience() instead
+    # This method is deprecated and will be removed
     def add_experience(self, points):
+        """
+        Deprecated: Add experience points to the profile; use UserService.add_experience() instead.
+
+        Emits a DeprecationWarning and, for backward compatibility, validates and applies the given positive integer
+        `points` to this profile's `experience_points`, capping at 2**31 - 1. Recomputes `level` as max(1, (experience_points // 1000) + 1)
+        (1000 XP per level, minimum level 1) and saves the model.
+
+        Parameters:
+            points (int): Number of experience points to add; must be a positive integer.
+
+        Raises:
+            ValueError: If `points` is not a positive integer.
+        """
+        import warnings
+
+        warnings.warn(
+            "UserProfile.add_experience() is deprecated. Use UserService.add_experience() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        # Temporary implementation for backward compatibility
         if not isinstance(points, int) or points <= 0:
             raise ValueError("Experience points must be a positive integer.")
         max_experience = 2**31 - 1

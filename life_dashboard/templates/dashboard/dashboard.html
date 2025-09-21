@@ -82,7 +82,7 @@
                     {% if active_quests %}
                     <div class="list-group list-group-flush">
                         {% for quest in active_quests %}
-                        <a href="{% url 'quest_detail' quest.pk %}" class="list-group-item list-group-item-action">
+                        <a href="{% url 'quests:quest_detail' quest.pk %}" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
                                 <h6 class="mb-1">{{ quest.title }}</h6>
                                 <small class="text-muted">{{ quest.due_date|timeuntil }} left</small>

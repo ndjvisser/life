@@ -1,6 +1,6 @@
 import os
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 
 
@@ -13,8 +13,7 @@ class Command(BaseCommand):
             dest="username",
             default=os.getenv("DJANGO_SUPERUSER_USERNAME"),
             help=(
-                "Default superuser username (or set DJANGO_SUPERUSER_USERNAME "
-                "env var)"
+                "Default superuser username (or set DJANGO_SUPERUSER_USERNAME env var)"
             ),
         )
         parser.add_argument(
@@ -28,8 +27,7 @@ class Command(BaseCommand):
             dest="password",
             default=os.getenv("DJANGO_SUPERUSER_PASSWORD"),
             help=(
-                "Default superuser password (or set DJANGO_SUPERUSER_PASSWORD "
-                "env var)"
+                "Default superuser password (or set DJANGO_SUPERUSER_PASSWORD env var)"
             ),
         )
 
@@ -47,6 +45,7 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Attempting to create default admin user '{username}'...")
 
+        User = get_user_model()
         if not User.objects.filter(username=username).exists():
             try:
                 User.objects.create_superuser(username, email, password)

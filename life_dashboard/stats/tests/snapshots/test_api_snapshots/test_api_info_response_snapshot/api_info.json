@@ -1,0 +1,22 @@
+{
+  "api": {
+    "description": "RPG-inspired personal life dashboard statistics API",
+    "name": "Life Dashboard Stats API",
+    "version": "1.0.0"
+  },
+  "features": {
+    "achievements": true,
+    "core_stats": true,
+    "integrations": false,
+    "life_stats": true,
+    "stat_history": true
+  },
+  "limits": {
+    "max_history_entries": 10000,
+    "max_stats_per_user": 1000,
+    "rate_limit_per_minute": 100
+  },
+  "status": "healthy",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "uptime_seconds": 86400
+}

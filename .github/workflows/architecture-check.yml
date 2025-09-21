@@ -1,0 +1,169 @@
+name: Architecture Boundary Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop, 'feature/**' ]
+
+jobs:
+  architecture-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        set -euo pipefail
+        python -m pip install --upgrade pip
+        pip install import-linter mypy django-stubs
+        pip install django>=5.1.1 django-crispy-forms crispy-bootstrap5 pydantic python-dotenv
+
+    - name: Check import boundaries
+      run: |
+        set -euo pipefail
+        python scripts/run-import-linter.py
+
+    - name: Type check domain layers
+      run: |
+        set -euo pipefail
+        mypy life_dashboard/dashboard/domain/ --config-file pyproject.toml || true
+        mypy life_dashboard/stats/domain/ --config-file pyproject.toml || true
+        mypy life_dashboard/quests/domain/ --config-file pyproject.toml || true
+        mypy life_dashboard/skills/domain/ --config-file pyproject.toml || true
+        mypy life_dashboard/achievements/domain/ --config-file pyproject.toml || true
+        mypy life_dashboard/journals/domain/ --config-file pyproject.toml || true
+
+    - name: Check for Django imports in domain layers
+      run: |
+        set -euo pipefail
+        echo "Checking for Django imports in domain layers..."
+        if grep -rE "from[[:space:]]+django" life_dashboard/*/domain/ 2>/dev/null; then
+          echo "❌ Found Django imports in domain layer!"
+          exit 1
+        fi
+        if grep -rE "import[[:space:]]+django" life_dashboard/*/domain/ 2>/dev/null; then
+          echo "❌ Found Django imports in domain layer!"
+          exit 1
+        fi
+        echo "✅ No Django imports found in domain layers"
+
+    - name: Check for cross-context imports
+      run: |
+        set -euo pipefail
+        echo "Checking for cross-context imports..."
+
+        # Check dashboard context
+        if grep -rE "(from|import)[[:space:]]+life_dashboard\.(stats|quests|skills|achievements|journals)" life_dashboard/dashboard/domain/ 2>/dev/null; then
+          echo "❌ Found cross-context imports in dashboard domain!"
+          exit 1
+        fi
+
+        # Check stats context
+        if grep -rE "(from|import)[[:space:]]+life_dashboard\.(dashboard|quests|skills|achievements|journals)" life_dashboard/stats/domain/ 2>/dev/null; then
+          echo "❌ Found cross-context imports in stats domain!"
+          exit 1
+        fi
+
+        # Check quests context
+        if grep -rE "(from|import)[[:space:]]+life_dashboard\.(dashboard|stats|skills|achievements|journals)" life_dashboard/quests/domain/ 2>/dev/null; then
+          echo "❌ Found cross-context imports in quests domain!"
+          exit 1
+        fi
+
+        # Check skills context
+        if grep -rE "(from|import)[[:space:]]+life_dashboard\.(dashboard|stats|quests|achievements|journals)" life_dashboard/skills/domain/ 2>/dev/null; then
+          echo "❌ Found cross-context imports in skills domain!"
+          exit 1
+        fi
+
+        # Check achievements context
+        if grep -rE "(from|import)[[:space:]]+life_dashboard\.(dashboard|stats|quests|skills|journals)" life_dashboard/achievements/domain/ 2>/dev/null; then
+          echo "❌ Found cross-context imports in achievements domain!"
+          exit 1
+        fi
+
+        # Check journals context
+        if grep -rE "(from|import)[[:space:]]+life_dashboard\.(dashboard|stats|quests|skills|achievements)" life_dashboard/journals/domain/ 2>/dev/null; then
+          echo "❌ Found cross-context imports in journals domain!"
+          exit 1
+        fi
+
+        echo "✅ No cross-context imports found in domain layers"
+
+    - name: Validate bounded context structure
+      run: |
+        set -euo pipefail
+        echo "Validating bounded context structure..."
+
+        contexts=("dashboard" "stats" "quests" "skills" "achievements" "journals" "privacy")
+
+        for context in "${contexts[@]}"; do
+          echo "Checking $context context structure..."
+
+          # Check if domain layer exists
+          if [ ! -d "life_dashboard/$context/domain" ]; then
+            echo "⚠️  Missing domain layer in $context context"
+          else
+            echo "✅ Domain layer exists in $context"
+          fi
+
+          # Check if application layer exists
+          if [ ! -d "life_dashboard/$context/application" ]; then
+            echo "⚠️  Missing application layer in $context context"
+          else
+            echo "✅ Application layer exists in $context"
+          fi
+
+          # Check if infrastructure layer exists
+          if [ ! -d "life_dashboard/$context/infrastructure" ]; then
+            echo "⚠️  Missing infrastructure layer in $context context"
+          else
+            echo "✅ Infrastructure layer exists in $context"
+          fi
+        done
+
+    - name: Check for proper layering
+      run: |
+        python scripts/check-layering.py
+
+    - name: Run Domain Tests for Architecture Validation
+      run: |
+        # Run fast domain tests to ensure architecture doesn't break functionality
+        python scripts/run-domain-tests.py --domain-only --profile dev
+
+  dependency-graph:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install pydeps
+      run: |
+        set -euo pipefail
+        python -m pip install --upgrade pip
+        pip install pydeps
+
+    - name: Generate dependency graph
+      run: |
+        set -euo pipefail
+        mkdir -p architecture-docs
+        pydeps life_dashboard --max-bacon=2 --cluster --rankdir=TB -o architecture-docs/dependency-graph.svg || true
+
+    - name: Upload dependency graph
+      uses: actions/upload-artifact@v4
+      with:
+        name: dependency-graph
+        path: architecture-docs/dependency-graph.svg

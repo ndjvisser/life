@@ -1,0 +1,16 @@
+{
+  "bio": "Updated bio with more details about my experience.",
+  "email": "john.doe@example.com",
+  "first_name": "John",
+  "full_name": "John Doe",
+  "last_name": "Doe",
+  "location": "New York, NY",
+  "update_timestamp": "2023-01-15T14:30:00",
+  "updated_fields": [
+    "bio",
+    "location"
+  ],
+  "user_id": 1,
+  "username": "johndoe",
+  "validation_status": "success"
+}

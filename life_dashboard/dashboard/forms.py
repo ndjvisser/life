@@ -67,27 +67,35 @@ class UserProfileForm(forms.ModelForm):
 
 
 class ProfileUpdateForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=150, required=False)
+    last_name = forms.CharField(max_length=150, required=False)
+    email = forms.EmailField(required=False)
+
     class Meta:
         model = UserProfile
-        fields = []  # Remove fields that do not belong to UserProfile
+        fields = ["bio", "location", "birth_date"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.user:
-            self.fields["first_name"].initial = self.instance.user.first_name
-            self.fields["last_name"].initial = self.instance.user.last_name
-            self.fields["email"].initial = self.instance.user.email
+            user = self.instance.user
+            for form_field, user_attr in (
+                ("first_name", "first_name"),
+                ("last_name", "last_name"),
+                ("email", "email"),
+            ):
+                field = self.fields.get(form_field)
+                if field is not None:
+                    field.initial = getattr(user, user_attr, "")
 
     def save(self, commit=True):
         profile = super().save(commit=False)
         if commit:
             user = profile.user
-            if self.cleaned_data.get("first_name"):
-                user.first_name = self.cleaned_data["first_name"]
-            if self.cleaned_data.get("last_name"):
-                user.last_name = self.cleaned_data["last_name"]
-            if self.cleaned_data.get("email"):
-                user.email = self.cleaned_data["email"]
+            for field_name in ("first_name", "last_name", "email"):
+                value = self.cleaned_data.get(field_name)
+                if value is not None:
+                    setattr(user, field_name, value)
             user.save()
             profile.save()
         return profile

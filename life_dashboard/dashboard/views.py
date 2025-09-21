@@ -8,7 +8,6 @@ from django.db import transaction
 from django.shortcuts import redirect, render
 
 from life_dashboard.achievements.models import UserAchievement
-from life_dashboard.core_stats.models import CoreStat
 from life_dashboard.dashboard.forms import (
     UserProfileForm,
     UserRegistrationForm,
@@ -16,6 +15,13 @@ from life_dashboard.dashboard.forms import (
 from life_dashboard.dashboard.models import UserProfile
 from life_dashboard.journals.models import JournalEntry
 from life_dashboard.quests.models import Habit, Quest
+from life_dashboard.stats.infrastructure.models import CoreStatModel
+
+from .domain.value_objects import ProfileUpdateData
+from .queries.profile_queries import ProfileQueries
+
+# Import new service layer
+from .services import get_user_service
 
 logger = logging.getLogger(__name__)
 
@@ -37,30 +43,59 @@ def dashboard(request):
 
 @transaction.atomic
 def register(request):
+    """
+    Handle user registration: display the registration form on GET and process form submissions on POST.
+
+    On POST, validates a UserRegistrationForm; if valid, delegates user creation to the user service (get_user_service().register_user), logs the new user in, and redirects to the dashboard. If the service call fails an error message is added and the form is re-rendered. If the form is invalid, validation errors are added to the messages framework and the form is re-rendered. On GET, renders an empty registration form.
+
+    Parameters:
+        request (HttpRequest): Django request object for the current request/response cycle.
+
+    Returns:
+        HttpResponse: Renders the registration template or redirects to the dashboard after successful registration.
+    """
     if request.method == "POST":
-        logger.debug("Registration POST data: %s", request.POST)
+        logger.debug("Registration POST received")
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             logger.debug("Form is valid, creating user")
             try:
-                # Create user first
-                user = form.save()
-                logger.debug("User created: %s", user.username)
-
-                # Ensure user profile exists (signals may already create it)
-                _, _created = UserProfile.objects.get_or_create(user=user)
-                logger.debug(
-                    "User profile %s",
-                    "created" if _created else "already existed",
+                # Use service layer for user registration
+                user_service = get_user_service()
+                user_id, profile = user_service.register_user(
+                    username=form.cleaned_data["username"],
+                    email=form.cleaned_data["email"],
+                    password=form.cleaned_data["password1"],
+                    first_name=form.cleaned_data.get("first_name", ""),
+                    last_name=form.cleaned_data.get("last_name", ""),
                 )
+                logger.debug("User created via service: %s", profile.username)
+                # Authenticate to attach backend, then log in
+                user = authenticate(
+                    username=form.cleaned_data["username"],
+                    password=form.cleaned_data["password1"],
+                )
+                if not user:
+                    raise ValueError("Authentication failed after registration")
+                login(request, user)
 
-                # Log in the user
+                # Get Django user for login
+                from django.contrib.auth import get_user_model
+
+                User = get_user_model()
+                user = User.objects.get(id=user_id)
                 login(request, user)
 
                 return redirect("dashboard:dashboard")
-            except Exception as e:
-                logger.error("Error during user creation: %s", str(e))
-                messages.error(request, f"Error during registration: {str(e)}")
+            except Exception:
+                logger.exception(
+                    "Error during user registration for username: %s",
+                    form.cleaned_data.get("username", "unknown"),
+                )
+                messages.error(
+                    request,
+                    "An error occurred during registration. Please try again or contact support.",
+                )
                 # Let the atomic block handle rollback implicitly by
                 # re-rendering the form
         else:
@@ -101,14 +136,35 @@ def logout_view(request):
 
 @login_required
 def profile(request):
+    """
+    Render and handle the user profile page.
+
+    On GET: fetches a structured profile summary via ProfileQueries, ensures the user's CoreStat and UserProfile exist, loads recent achievements and journal entries, and returns the profile page with a UserProfileForm populated from the user's profile.
+
+    On POST: builds a ProfileUpdateData from submitted form fields and delegates the update to the user service (get_user_service().update_profile). On successful update redirects back to the profile page with a success message; on failure records an error message and re-renders the page.
+
+    Behavior notes:
+    - If ProfileQueries.get_profile_summary returns no data, the view adds an error message and redirects to the dashboard.
+    - CoreStat is created if missing.
+    - Uses Django messages for user feedback and relies on the service layer for profile mutations.
+    Parameters:
+        request (HttpRequest): Django request object for the current user/session.
+    Returns:
+        HttpResponse: rendered profile page or a redirect response.
+    """
     user = request.user
-    user_profile, created = UserProfile.objects.get_or_create(user=user)
+
+    # Use queries for read-only data
+    profile_data = ProfileQueries.get_profile_summary(user.id)
+    if not profile_data:
+        messages.error(request, "Profile not found")
+        return redirect("dashboard:dashboard")
 
     # Safely get or create core stats
     try:
         core_stats = user.core_stats
-    except CoreStat.DoesNotExist:
-        core_stats, created = CoreStat.objects.get_or_create(user=user)
+    except CoreStatModel.DoesNotExist:
+        core_stats, created = CoreStatModel.objects.get_or_create(user=user)
 
     achievements = UserAchievement.objects.filter(user=user).select_related(
         "achievement"
@@ -117,22 +173,39 @@ def profile(request):
 
     if request.method == "POST":
         logger.debug("Processing profile update POST request")
-        # Update User model fields - single source of truth
-        user.first_name = request.POST.get("first_name", user.first_name)
-        user.last_name = request.POST.get("last_name", user.last_name)
-        user.email = request.POST.get("email", user.email)
-        user.save()
-        logger.debug("Updated User model: %s %s", user.first_name, user.last_name)
+        try:
+            # Use service layer for profile updates
+            user_service = get_user_service()
+            update_data = ProfileUpdateData(
+                first_name=request.POST.get("first_name"),
+                last_name=request.POST.get("last_name"),
+                email=request.POST.get("email"),
+                bio=request.POST.get("bio", ""),
+                location=request.POST.get("location", ""),
+            )
 
-        messages.success(request, "Profile updated successfully", extra_tags="profile")
-        return redirect("dashboard:profile")
+            updated_profile = user_service.update_profile(user.id, update_data)
+            logger.debug("Updated profile via service: %s", updated_profile.username)
 
-    # Create form with initial data
+            messages.success(
+                request, "Profile updated successfully", extra_tags="profile"
+            )
+            return redirect("dashboard:profile")
+        except Exception:
+            logger.exception("Error updating profile for user %s", user.username)
+            messages.error(
+                request,
+                "An error occurred while updating your profile. Please try again or contact support.",
+            )
+
+    # Create form with initial data (still using Django form for now)
+    user_profile, _ = UserProfile.objects.get_or_create(user=user)
     form = UserProfileForm(instance=user_profile)
 
     context = {
         "user": user,
         "user_profile": user_profile,
+        "profile_data": profile_data,  # Add structured profile data
         "core_stats": core_stats,
         "achievements": achievements,
         "recent_entries": recent_entries,

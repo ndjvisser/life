@@ -115,10 +115,17 @@ function showAlert(message, type = 'success') {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
     alertDiv.role = 'alert';
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
+
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = String(message);
+    alertDiv.appendChild(messageSpan);
+
+    const dismissButton = document.createElement('button');
+    dismissButton.type = 'button';
+    dismissButton.className = 'btn-close';
+    dismissButton.setAttribute('data-bs-dismiss', 'alert');
+    dismissButton.setAttribute('aria-label', 'Close');
+    alertDiv.appendChild(dismissButton);
 
     // Try to find a container element
     const container = document.querySelector('.container');

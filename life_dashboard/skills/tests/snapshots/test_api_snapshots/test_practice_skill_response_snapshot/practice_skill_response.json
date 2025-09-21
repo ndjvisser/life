@@ -1,0 +1,26 @@
+{
+  "level_up_occurred": false,
+  "levels_gained": [],
+  "practice_session": {
+    "base_experience": 900,
+    "duration_minutes": 90,
+    "efficiency_multiplier": 0.8,
+    "experience_gained": 450,
+    "practice_notes": "Built a React application with Node.js backend"
+  },
+  "skill": {
+    "category_id": 1,
+    "created_at": "2024-01-01T10:00:00+00:00",
+    "description": "Frontend and backend JavaScript development",
+    "experience_points": 2040,
+    "experience_to_next_level": 2000,
+    "last_practiced": "2024-01-15T16:30:00+00:00",
+    "level": 25,
+    "mastery_level": "apprentice",
+    "name": "JavaScript Development",
+    "progress_percentage": 20.754908942924,
+    "skill_id": 1,
+    "skill_rank": "Apprentice",
+    "user_id": 1
+  }
+}

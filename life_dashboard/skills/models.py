@@ -44,12 +44,41 @@ class Skill(models.Model):
         ordering = ["-level", "-experience_points"]
 
     def __str__(self):
+        """Return a human-readable representation of the skill as "<name> (Level <level>)".
+
+        Provides a concise summary used in admin interfaces and logs.
+        """
         return f"{self.name} (Level {self.level})"
 
+    # Business logic moved to domain layer - use SkillService instead
+    # These methods are deprecated and will be removed
     def add_experience(self, amount):
-        """Add experience points and handle leveling up"""
-        if amount < 0:
-            raise ValidationError("Experience amount cannot be negative")
+        """
+        Deprecated backward-compatible method to add experience to this Skill.
+
+        Emits a DeprecationWarning advising use of SkillService.add_experience(), then:
+        - Validates that `amount` is positive (raises ValidationError if <= 0).
+        - Increments `experience_points`, capped at MAX_EXPERIENCE to avoid overflow.
+        - Repeatedly calls level_up() while experience_points >= experience_to_next_level and level < MAX_LEVEL.
+        - Persists changes by saving the model instance.
+
+        Parameters:
+            amount (int): Number of experience points to add.
+
+        Raises:
+            ValidationError: If `amount` is not positive (<= 0).
+        """
+        import warnings
+
+        warnings.warn(
+            "Skill.add_experience() is deprecated. Use SkillService.add_experience() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+        # Temporary implementation for backward compatibility
+        if amount <= 0:
+            raise ValidationError("Experience amount must be positive")
 
         # Cap experience points to prevent overflow
         new_experience = min(self.experience_points + amount, MAX_EXPERIENCE)
@@ -65,7 +94,16 @@ class Skill(models.Model):
         self.save()
 
     def level_up(self):
-        """Handle leveling up logic"""
+        """
+        DEPRECATED: Performs an in-place level up on this Skill instance.
+
+        If the current level is below MAX_LEVEL, increments the skill's level by 1,
+        reduces experience_points by the current experience_to_next_level, and increases
+        experience_to_next_level by 10% (capped at MAX_EXPERIENCE). Does not persist
+        the model (caller must save if required).
+
+        Use SkillService.level_up (domain layer) instead.
+        """
         if self.level >= MAX_LEVEL:
             return
 

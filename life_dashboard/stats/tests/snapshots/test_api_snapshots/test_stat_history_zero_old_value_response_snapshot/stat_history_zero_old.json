@@ -1,0 +1,12 @@
+{
+  "change_amount": 1000.0,
+  "change_reason": "First savings deposit",
+  "is_decrease": false,
+  "is_increase": true,
+  "new_value": 1000.0,
+  "old_value": 0.0,
+  "percentage_change": null,
+  "stat_name": "savings",
+  "stat_type": "life",
+  "user_id": 1
+}

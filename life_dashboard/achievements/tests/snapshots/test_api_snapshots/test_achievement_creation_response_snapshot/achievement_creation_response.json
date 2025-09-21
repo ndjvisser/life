@@ -1,0 +1,18 @@
+{
+  "achievement_id": 1,
+  "category": "skill_mastery",
+  "created_at": "2024-01-01T10:00:00+00:00",
+  "description": "Reach level 50 in any skill and complete 25 quests to demonstrate mastery",
+  "difficulty_rating": "Very Hard",
+  "experience_reward": 2500,
+  "final_experience_reward": 5000,
+  "icon": "master-crown",
+  "is_hidden": false,
+  "is_repeatable": false,
+  "name": "Master of Skills",
+  "required_level": 25,
+  "required_quest_completions": 25,
+  "required_skill_level": 50,
+  "tier": "GOLD",
+  "tier_multiplier": 2.0
+}

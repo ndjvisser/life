@@ -1,0 +1,80 @@
+{
+  "health": [
+    {
+      "category": "health",
+      "distance_to_target": null,
+      "is_target_achieved": false,
+      "name": "weight",
+      "notes": "",
+      "progress_percentage": 0.0,
+      "target": null,
+      "unit": "kg",
+      "user_id": 1,
+      "value": 70.5
+    },
+    {
+      "category": "health",
+      "distance_to_target": null,
+      "is_target_achieved": false,
+      "name": "steps",
+      "notes": "",
+      "progress_percentage": 0.0,
+      "target": null,
+      "unit": "steps/day",
+      "user_id": 1,
+      "value": 10000.0
+    },
+    {
+      "category": "health",
+      "distance_to_target": null,
+      "is_target_achieved": false,
+      "name": "sleep",
+      "notes": "",
+      "progress_percentage": 0.0,
+      "target": null,
+      "unit": "hours",
+      "user_id": 1,
+      "value": 7.5
+    }
+  ],
+  "relationships": [
+    {
+      "category": "relationships",
+      "distance_to_target": null,
+      "is_target_achieved": false,
+      "name": "family_time",
+      "notes": "",
+      "progress_percentage": 0.0,
+      "target": null,
+      "unit": "hours/week",
+      "user_id": 1,
+      "value": 10.0
+    }
+  ],
+  "wealth": [
+    {
+      "category": "wealth",
+      "distance_to_target": null,
+      "is_target_achieved": false,
+      "name": "savings",
+      "notes": "",
+      "progress_percentage": 0.0,
+      "target": null,
+      "unit": "USD",
+      "user_id": 1,
+      "value": 25000.0
+    },
+    {
+      "category": "wealth",
+      "distance_to_target": null,
+      "is_target_achieved": false,
+      "name": "investments",
+      "notes": "",
+      "progress_percentage": 0.0,
+      "target": null,
+      "unit": "USD",
+      "user_id": 1,
+      "value": 15000.0
+    }
+  ]
+}

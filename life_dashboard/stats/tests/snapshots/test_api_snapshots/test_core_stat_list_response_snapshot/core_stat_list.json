@@ -1,0 +1,41 @@
+[
+  {
+    "agility": 10,
+    "charisma": 10,
+    "endurance": 10,
+    "experience_points": 1500,
+    "intelligence": 10,
+    "level": 2,
+    "stat_average": 10.833333333333334,
+    "stat_total": 65,
+    "strength": 15,
+    "user_id": 1,
+    "wisdom": 10
+  },
+  {
+    "agility": 10,
+    "charisma": 10,
+    "endurance": 10,
+    "experience_points": 3000,
+    "intelligence": 25,
+    "level": 4,
+    "stat_average": 14.166666666666666,
+    "stat_total": 85,
+    "strength": 20,
+    "user_id": 2,
+    "wisdom": 10
+  },
+  {
+    "agility": 10,
+    "charisma": 30,
+    "endurance": 10,
+    "experience_points": 500,
+    "intelligence": 10,
+    "level": 1,
+    "stat_average": 14.666666666666666,
+    "stat_total": 88,
+    "strength": 10,
+    "user_id": 3,
+    "wisdom": 18
+  }
+]

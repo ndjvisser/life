@@ -1,0 +1,24 @@
+{
+  "experience_gained": 500,
+  "level_up_occurred": true,
+  "levels_gained": [
+    16
+  ],
+  "new_mastery_level": "novice",
+  "new_skill_rank": "Improving",
+  "skill": {
+    "category_id": 1,
+    "created_at": "2024-01-01T10:00:00+00:00",
+    "description": "Advanced Python development",
+    "experience_points": 300,
+    "experience_to_next_level": 1100,
+    "last_practiced": "2024-01-15T14:30:00+00:00",
+    "level": 16,
+    "mastery_level": "novice",
+    "name": "Python Programming",
+    "progress_percentage": 7.192519779429393,
+    "skill_id": 1,
+    "skill_rank": "Improving",
+    "user_id": 1
+  }
+}

@@ -50,11 +50,11 @@ class AuthTests(SeleniumTestCase):
         assert response.status_code == 302
 
     def test_signup_page_selenium(self):
-        self.driver.get(f'{self.live_server_url}{reverse("dashboard:register")}')
+        self.driver.get(f"{self.live_server_url}{reverse('dashboard:register')}")
         assert "Register" in self.driver.page_source
 
     def test_login_page_selenium(self):
-        self.driver.get(f'{self.live_server_url}{reverse("dashboard:login")}')
+        self.driver.get(f"{self.live_server_url}{reverse('dashboard:login')}")
         assert "Login" in self.driver.page_source
 
     def fill_registration_form(self, username, email, password):
@@ -115,16 +115,16 @@ class AuthTests(SeleniumTestCase):
         password,
     ):
         """Verify that form fields contain the expected values."""
-        assert (
-            username_input.get_attribute("value") == username
-        ), "Username not set correctly"
+        assert username_input.get_attribute("value") == username, (
+            "Username not set correctly"
+        )
         assert email_input.get_attribute("value") == email, "Email not set correctly"
-        assert (
-            password1_input.get_attribute("value") == password
-        ), "Password1 not set correctly"
-        assert (
-            password2_input.get_attribute("value") == password
-        ), "Password2 not set correctly"
+        assert password1_input.get_attribute("value") == password, (
+            "Password1 not set correctly"
+        )
+        assert password2_input.get_attribute("value") == password, (
+            "Password2 not set correctly"
+        )
 
     def check_javascript_errors(self):
         """Check for any JavaScript errors in the browser console."""
@@ -173,7 +173,7 @@ class AuthTests(SeleniumTestCase):
 
     def test_register_user_selenium(self):
         """Test the complete user registration flow."""
-        self.driver.get(f'{self.live_server_url}{reverse("dashboard:register")}')
+        self.driver.get(f"{self.live_server_url}{reverse('dashboard:register')}")
         username = "newuser_selenium"
         email = "new@example.com"
         password = "testpass123"
@@ -218,7 +218,7 @@ class AuthTests(SeleniumTestCase):
         self.verify_user_creation(username)
 
     def test_login_user_selenium(self):
-        self.driver.get(f'{self.live_server_url}{reverse("dashboard:login")}')
+        self.driver.get(f"{self.live_server_url}{reverse('dashboard:login')}")
         username = "testuser"
         password = "testpass123"
 
@@ -234,8 +234,8 @@ class AuthTests(SeleniumTestCase):
         assert "Welcome" in self.driver.page_source
 
     def test_logout_selenium(self):
-        self.driver.get(f'{self.live_server_url}{reverse("dashboard:logout")}')
+        self.driver.get(f"{self.live_server_url}{reverse('dashboard:logout')}")
         assert (
             self.driver.current_url
-            == f'{self.live_server_url}{reverse("dashboard:login")}'
+            == f"{self.live_server_url}{reverse('dashboard:login')}"
         )

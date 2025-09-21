@@ -54,17 +54,17 @@ class TestDashboard:
 @pytest.mark.django_db
 class DashboardTests(SeleniumTestCase):
     def test_dashboard_page(self):
-        self.driver.get(f'{self.live_server_url}{reverse("dashboard:dashboard")}')
+        self.driver.get(f"{self.live_server_url}{reverse('dashboard:dashboard')}")
         assert "Welcome" in self.driver.page_source
 
     def test_level_up_flow(self):
-        self.driver.get(f'{self.live_server_url}{reverse("dashboard:dashboard")}')
+        self.driver.get(f"{self.live_server_url}{reverse('dashboard:dashboard')}")
         initial_level = self.user.stats.level
 
         # Complete a quest to gain experience
         quest = self.create_test_quest()
         self.driver.get(
-            f'{self.live_server_url}{reverse("quests:quest_detail", args=[quest.pk])}'
+            f"{self.live_server_url}{reverse('quests:quest_detail', args=[quest.pk])}"
         )
         self.driver.find_element(By.CSS_SELECTOR, "button.complete-quest").click()
 
@@ -77,7 +77,7 @@ class DashboardTests(SeleniumTestCase):
         assert self.user.stats.level > initial_level
 
     def test_profile_update_flow(self):
-        self.driver.get(f'{self.live_server_url}{reverse("dashboard:profile")}')
+        self.driver.get(f"{self.live_server_url}{reverse('dashboard:profile')}")
 
         # Fill out the form
         first_name_input = self.driver.find_element(By.ID, "id_first_name")
@@ -128,7 +128,7 @@ class DashboardTests(SeleniumTestCase):
         self.assertIn("Profile updated successfully", success_message.text)
 
     def test_quest_creation(self):
-        self.driver.get(f'{self.live_server_url}{reverse("quests:quest_create")}')
+        self.driver.get(f"{self.live_server_url}{reverse('quests:quest_create')}")
         self.driver.find_element(By.NAME, "title").send_keys("New Quest")
         self.driver.find_element(By.NAME, "description").send_keys("Test Description")
         self.driver.find_element(By.NAME, "difficulty").send_keys("easy")
