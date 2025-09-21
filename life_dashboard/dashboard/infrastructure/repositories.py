@@ -130,8 +130,9 @@ class DjangoUserRepository(UserRepository):
                     continue
 
                 if field == "password":
-                    user.set_password(value)
-                    needs_save = True
+                    if isinstance(value, str) and value.strip():
+                        user.set_password(value)
+                        needs_save = True
                 elif hasattr(user, field):
                     setattr(user, field, value)
                     needs_save = True
