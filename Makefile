@@ -262,8 +262,8 @@ reset: clean resetdb
 
 # CI/CD helpers
 ci-install:
-	pip install import-linter mypy django-stubs ruff
-	pip install django pydantic
+	pip install -r requirements.txt
+	pip install -e ".[dev]"
 
 ci-check: lint type-check-strict check-architecture
 	@echo "✅ CI checks passed"
