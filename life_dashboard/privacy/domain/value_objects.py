@@ -135,19 +135,23 @@ class PrivacyImpactLevel:
         """
         Validate the PrivacyImpactLevel fields after initialization.
 
-        Ensures `score` is within the absolute range 1–10 and that the numeric `score` falls within the expected range for the textual `level`. Known level ranges are:
+        Ensures `score` is within the absolute range 1–10 and that the numeric `score` falls within the expected range for the
+        textual `level`. Known level ranges are:
         - "low": 1–3
         - "medium": 4–6
         - "high": 7–8
         - "critical": 9–10
 
-        If `level` is unrecognized it is treated as allowing the full 1–10 range.
-
         Raises:
-            ValueError: If `score` is outside 1–10, or if `score` does not fall within the range associated with `level`.
+            ValueError: If `score` is outside 1–10, if `level` is not one of the accepted values, or if `score` does not fall
+            within the range associated with `level`.
         """
-        if not 1 <= self.score <= 10:
-            raise ValueError("Privacy impact score must be between 1 and 10")
+
+        allowed_levels = {"low", "medium", "high", "critical"}
+        normalized_level = self.level.lower()
+        if normalized_level not in allowed_levels:
+            raise ValueError(f"Invalid privacy impact level: {self.level}")
+        object.__setattr__(self, "level", normalized_level)
 
         level_map = {
             "low": (1, 3),
@@ -156,9 +160,9 @@ class PrivacyImpactLevel:
             "critical": (9, 10),
         }
 
-        min_score, max_score = level_map.get(self.level, (1, 10))
+        min_score, max_score = level_map[normalized_level]
         if not min_score <= self.score <= max_score:
-            raise ValueError(f"Score {self.score} doesn't match level {self.level}")
+            raise ValueError(f"Score {self.score} doesn't match level {normalized_level}")
 
     def requires_dpo_review(self) -> bool:
         """
