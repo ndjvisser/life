@@ -217,7 +217,7 @@ class ConsentRecord:
             else None,
             "expires_at": self.expires_at.isoformat() if self.expires_at else None,
             "version": self.version,
-            "is_valid": self.is_valid(),
+            "is_valid": self.is_valid_readonly(),
             "is_expired": self.is_expired(),
         }
 
