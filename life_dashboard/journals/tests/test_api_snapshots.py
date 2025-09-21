@@ -2,11 +2,11 @@
 Snapshot tests for journals API responses - preventing breaking changes.
 """
 
-import json
-
 import pytest
 
 pytest.importorskip("pytest_snapshot")
+
+from tests.snapshot_utils import assert_json_snapshot
 
 from life_dashboard.journals.domain.entities import EntryType
 from life_dashboard.journals.domain.services import JournalService
@@ -45,10 +45,7 @@ class TestJournalAPISnapshots:
         response_data["created_at"] = "2023-01-01T12:00:00.000000"
         response_data["updated_at"] = "2023-01-01T12:00:00.000000"
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "journal_entry_creation.json",
-        )
+        assert_json_snapshot(snapshot, response_data, "journal_entry_creation.json")
 
     def test_journal_entry_update_response_snapshot(self, snapshot):
         """Test journal entry update response structure."""
@@ -72,10 +69,7 @@ class TestJournalAPISnapshots:
         response_data["created_at"] = "2023-01-01T12:00:00.000000"
         response_data["updated_at"] = "2023-01-01T13:00:00.000000"
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "journal_entry_update.json",
-        )
+        assert_json_snapshot(snapshot, response_data, "journal_entry_update.json")
 
     def test_mood_statistics_response_snapshot(self, snapshot):
         """Test mood statistics response structure."""
@@ -103,9 +97,7 @@ class TestJournalAPISnapshots:
         if stats["average_mood"] is not None:
             stats["average_mood"] = round(stats["average_mood"], 2)
 
-        snapshot.assert_match(
-            json.dumps(stats, indent=2, sort_keys=True), "mood_statistics.json"
-        )
+        assert_json_snapshot(snapshot, stats, "mood_statistics.json")
 
     def test_journal_entries_list_response_snapshot(self, snapshot):
         """Test journal entries list response structure."""
@@ -161,10 +153,7 @@ class TestJournalAPISnapshots:
         # Sort by entry_id for consistent ordering
         response_data.sort(key=lambda x: x["entry_id"])
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "journal_entries_list.json",
-        )
+        assert_json_snapshot(snapshot, response_data, "journal_entries_list.json")
 
     def test_journal_entry_search_response_snapshot(self, snapshot):
         """Test journal entry search response structure."""
@@ -211,7 +200,4 @@ class TestJournalAPISnapshots:
         # Sort by title for consistent ordering
         response_data.sort(key=lambda x: x["title"])
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "journal_search_results.json",
-        )
+        assert_json_snapshot(snapshot, response_data, "journal_search_results.json")

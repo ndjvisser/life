@@ -2,12 +2,13 @@
 Snapshot tests for dashboard API responses - preventing breaking changes.
 """
 
-import json
 from datetime import date, datetime
 
 import pytest
 
 pytest.importorskip("pytest_snapshot")
+
+from tests.snapshot_utils import assert_json_snapshot
 
 from life_dashboard.dashboard.domain.entities import UserProfile
 from life_dashboard.dashboard.domain.state_machines import OnboardingStateMachine
@@ -56,10 +57,7 @@ class TestDashboardAPISnapshots:
             "updated_at": "2023-01-15T14:30:00",
         }
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "user_profile_response.json",
-        )
+        assert_json_snapshot(snapshot, response_data, "user_profile_response.json")
 
     def test_experience_update_response_snapshot(self, snapshot):
         """Test experience update response structure."""
@@ -82,10 +80,7 @@ class TestDashboardAPISnapshots:
             },
         }
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "experience_update_response.json",
-        )
+        assert_json_snapshot(snapshot, response_data, "experience_update_response.json")
 
     def test_onboarding_status_response_snapshot(self, snapshot):
         """Test onboarding status response structure."""
@@ -106,10 +101,7 @@ class TestDashboardAPISnapshots:
             },
         }
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "onboarding_status_response.json",
-        )
+        assert_json_snapshot(snapshot, response_data, "onboarding_status_response.json")
 
     def test_profile_update_response_snapshot(self, snapshot):
         """Test profile update response structure."""
@@ -142,10 +134,7 @@ class TestDashboardAPISnapshots:
             "validation_status": "success",
         }
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "profile_update_response.json",
-        )
+        assert_json_snapshot(snapshot, response_data, "profile_update_response.json")
 
     def test_onboarding_completion_response_snapshot(self, snapshot):
         """Test onboarding completion response structure."""
@@ -184,9 +173,8 @@ class TestDashboardAPISnapshots:
             ],
         }
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "onboarding_completion_response.json",
+        assert_json_snapshot(
+            snapshot, response_data, "onboarding_completion_response.json"
         )
 
     def test_user_statistics_response_snapshot(self, snapshot):
@@ -237,7 +225,4 @@ class TestDashboardAPISnapshots:
             },
         }
 
-        snapshot.assert_match(
-            json.dumps(response_data, indent=2, sort_keys=True),
-            "user_statistics_response.json",
-        )
+        assert_json_snapshot(snapshot, response_data, "user_statistics_response.json")

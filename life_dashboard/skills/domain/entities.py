@@ -259,12 +259,15 @@ class Skill:
         else:
             return 0.5  # Minimum efficiency
 
-    def is_stagnant(self, days_threshold: int = 30) -> bool:
+    def is_stagnant(
+        self, days_threshold: int = 30, current_time: datetime | None = None
+    ) -> bool:
         """Check if skill has been stagnant (not practiced recently)"""
         if not self.last_practiced:
             return True
 
-        days_since_practice = (datetime.utcnow() - self.last_practiced).days
+        reference_time = current_time or datetime.utcnow()
+        days_since_practice = (reference_time - self.last_practiced).days
         return days_since_practice > days_threshold
 
     def get_milestone_levels(self) -> list[int]:

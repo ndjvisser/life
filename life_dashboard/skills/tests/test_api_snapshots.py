@@ -4,13 +4,14 @@ Snapshot tests for Skills API responses.
 These tests capture API response structures to prevent breaking changes.
 """
 
-import json
 from datetime import datetime
 from unittest.mock import Mock
 
 import pytest
 
 pytest.importorskip("pytest_snapshot")
+
+from tests.snapshot_utils import assert_json_snapshot
 
 from life_dashboard.skills.domain.entities import (
     Skill,
@@ -66,9 +67,8 @@ class TestSkillCategoryAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "category_creation_response.json",
+        assert_json_snapshot(
+            snapshot, api_response, "category_creation_response.json"
         )
 
 
@@ -140,10 +140,7 @@ class TestSkillAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "skill_creation_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "skill_creation_response.json")
 
     def test_add_experience_response_snapshot(self, snapshot):
         """Test add experience API response structure"""
@@ -210,10 +207,7 @@ class TestSkillAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "add_experience_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "add_experience_response.json")
 
     def test_practice_skill_response_snapshot(self, snapshot):
         """Test practice skill API response structure"""
@@ -291,10 +285,7 @@ class TestSkillAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "practice_skill_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "practice_skill_response.json")
 
     def test_skill_progress_summary_response_snapshot(self, snapshot):
         """Test skill progress summary API response structure"""
@@ -360,7 +351,9 @@ class TestSkillAPISnapshots:
         self.mock_skill_repository.get_user_skills.return_value = mock_skills
 
         # Get progress summary
-        summary = self.skill_service.get_skill_progress_summary(UserId(1))
+        summary = self.skill_service.get_skill_progress_summary(
+            UserId(1), current_time=datetime(2024, 1, 15, 18, 0, 0)
+        )
 
         # Convert to API response format (summary is already in the right format)
         api_response = {
@@ -382,9 +375,8 @@ class TestSkillAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "skill_progress_summary_response.json",
+        assert_json_snapshot(
+            snapshot, api_response, "skill_progress_summary_response.json"
         )
 
     def test_skill_list_response_snapshot(self, snapshot):
@@ -502,7 +494,4 @@ class TestSkillAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "skill_list_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "skill_list_response.json")

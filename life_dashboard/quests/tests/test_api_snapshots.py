@@ -4,13 +4,14 @@ Snapshot tests for Quest API responses.
 These tests capture API response structures to prevent breaking changes.
 """
 
-import json
 from datetime import date, datetime
 from unittest.mock import Mock
 
 import pytest
 
 pytest.importorskip("pytest_snapshot")
+
+from tests.snapshot_utils import assert_json_snapshot
 
 from life_dashboard.quests.domain.entities import (
     Habit,
@@ -99,10 +100,7 @@ class TestQuestAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "quest_creation_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "quest_creation_response.json")
 
     def test_quest_completion_response_snapshot(self, snapshot):
         """Test quest completion API response structure"""
@@ -176,10 +174,7 @@ class TestQuestAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "quest_completion_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "quest_completion_response.json")
 
     def test_quest_list_response_snapshot(self, snapshot):
         """Test quest list API response structure"""
@@ -251,10 +246,7 @@ class TestQuestAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "quest_list_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "quest_list_response.json")
 
 
 class TestHabitAPISnapshots:
@@ -314,10 +306,7 @@ class TestHabitAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "habit_creation_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "habit_creation_response.json")
 
     def test_habit_completion_response_snapshot(self, snapshot):
         """Test habit completion API response structure"""
@@ -380,10 +369,7 @@ class TestHabitAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "habit_completion_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "habit_completion_response.json")
 
     def test_habit_analytics_response_snapshot(self, snapshot):
         """Test habit analytics API response structure"""
@@ -448,7 +434,4 @@ class TestHabitAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "habit_analytics_response.json",
-        )
+        assert_json_snapshot(snapshot, api_response, "habit_analytics_response.json")
