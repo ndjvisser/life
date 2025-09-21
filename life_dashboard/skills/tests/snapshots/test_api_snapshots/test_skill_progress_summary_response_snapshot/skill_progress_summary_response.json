@@ -30,13 +30,13 @@
       {
         "current_level": 28,
         "next_milestone": 30,
-        "progress_percentage": 11.467013225288586,
+        "progress_percentage": 13.760415870346304,
         "skill_name": "JavaScript Development"
       },
       {
         "current_level": 35,
         "next_milestone": 40,
-        "progress_percentage": 4.7086521483225425,
+        "progress_percentage": 9.809691975671964,
         "skill_name": "Python Programming"
       },
       {
@@ -53,16 +53,6 @@
       }
     ],
     "stagnant_skills": [
-      {
-        "days_since_practice": 45,
-        "level": 35,
-        "name": "Python Programming"
-      },
-      {
-        "days_since_practice": 45,
-        "level": 28,
-        "name": "JavaScript Development"
-      },
       {
         "days_since_practice": 45,
         "level": 12,
@@ -101,7 +91,7 @@
         "rank": "Developing"
       }
     ],
-    "total_experience": 34743624,
+    "total_experience": 34745224,
     "total_skills": 5
   },
   "summary_generated_at": "2024-01-15T18:00:00",
