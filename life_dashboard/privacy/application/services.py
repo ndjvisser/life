@@ -447,9 +447,21 @@ class DataSubjectService:
             request.verify_identity(verification_method)
             self.request_repo.save(request)  # Persist verification status
 
-        # Now that identity is verified, start processing
-        request.start_processing(processor_id)
-        self.request_repo.save(request)
+        claimed_request = self.request_repo.mark_processing_if_pending(
+            request.request_id, processor_id
+        )
+
+        if not claimed_request:
+            latest_state = self.request_repo.get_by_id(request_id)
+            if latest_state and latest_state.status in {"completed", "rejected"}:
+                raise ValueError(
+                    f"Request {request_id} has already been resolved with status {latest_state.status}"
+                )
+            raise ValueError(
+                f"Request {request_id} is already being processed and cannot be processed twice"
+            )
+
+        request = claimed_request
 
         self.activity_repo.log_activity(
             DataProcessingActivity(
@@ -463,8 +475,26 @@ class DataSubjectService:
             )
         )
 
-        # Collect user data
-        user_data = self._collect_user_data(request.user_id, request.data_categories)
+        try:
+            user_data = self._collect_user_data(
+                request.user_id, request.data_categories
+            )
+        except Exception as exc:
+            request.reject_request(f"Data export failed: {exc}")
+            self.request_repo.save(request)
+            self.activity_repo.log_activity(
+                DataProcessingActivity(
+                    user_id=request.user_id,
+                    purpose=DataProcessingPurpose.CORE_FUNCTIONALITY,
+                    data_categories=request.data_categories,
+                    processing_type="dsar_export_failed",
+                    context="data_subject_service:export",
+                    request_id=request.request_id,
+                    legal_basis="legal_obligation",
+                    details={"error": str(exc)},
+                )
+            )
+            raise
 
         request.complete_request("Data export completed")
         self.request_repo.save(request)
@@ -530,9 +560,21 @@ class DataSubjectService:
             request.verify_identity(verification_method)
             self.request_repo.save(request)  # Persist verification status
 
-        # Now that identity is verified, start processing
-        request.start_processing(processor_id)
-        self.request_repo.save(request)
+        claimed_request = self.request_repo.mark_processing_if_pending(
+            request.request_id, processor_id
+        )
+
+        if not claimed_request:
+            latest_state = self.request_repo.get_by_id(request_id)
+            if latest_state and latest_state.status in {"completed", "rejected"}:
+                raise ValueError(
+                    f"Request {request_id} has already been resolved with status {latest_state.status}"
+                )
+            raise ValueError(
+                f"Request {request_id} is already being processed and cannot be processed twice"
+            )
+
+        request = claimed_request
 
         self.activity_repo.log_activity(
             DataProcessingActivity(
@@ -546,10 +588,26 @@ class DataSubjectService:
             )
         )
 
-        # Delete user data
-        deleted_count = self._delete_user_data(
-            request.user_id, delete_activities=self.delete_activity_logs_on_deletion
-        )
+        try:
+            deleted_count = self._delete_user_data(
+                request.user_id, delete_activities=self.delete_activity_logs_on_deletion
+            )
+        except Exception as exc:
+            request.reject_request(f"Data deletion failed: {exc}")
+            self.request_repo.save(request)
+            self.activity_repo.log_activity(
+                DataProcessingActivity(
+                    user_id=request.user_id,
+                    purpose=DataProcessingPurpose.CORE_FUNCTIONALITY,
+                    data_categories=request.data_categories,
+                    processing_type="dsar_deletion_failed",
+                    context="data_subject_service:deletion",
+                    request_id=request.request_id,
+                    legal_basis="legal_obligation",
+                    details={"error": str(exc)},
+                )
+            )
+            raise
 
         request.complete_request(f"Deleted {deleted_count} records")
         self.request_repo.save(request)

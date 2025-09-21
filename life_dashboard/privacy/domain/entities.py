@@ -5,6 +5,7 @@ Privacy domain entities - pure Python privacy and consent management logic.
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from enum import Enum
+from typing import Any
 from uuid import uuid4
 
 
@@ -241,6 +242,7 @@ class DataProcessingActivity:
     # Legal basis
     legal_basis: str = "consent"  # consent, legitimate_interest, contract, etc.
     consent_id: str | None = None
+    details: dict[str, Any] | None = None
 
     def __post_init__(self):
         """
@@ -275,6 +277,7 @@ class DataProcessingActivity:
             "session_id": self.session_id,
             "legal_basis": self.legal_basis,
             "consent_id": self.consent_id,
+            "details": self.details,
         }
 
 

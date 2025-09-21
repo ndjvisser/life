@@ -303,6 +303,25 @@ class DataSubjectRequestRepository(ABC):
         pass
 
     @abstractmethod
+    def mark_processing_if_pending(
+        self, request_id: str, processor_id: int
+    ) -> DataSubjectRequest | None:
+        """Atomically transition a pending request into processing and return it.
+
+        Attempt to set the request identified by `request_id` to status "processing"
+        while recording the `processor_id`. The transition must occur atomically in
+        the persistence layer so that only a single worker can claim the request. If
+        the request is no longer pending, the method returns None without modifying
+        state.
+
+        Returns:
+            Optional[DataSubjectRequest]: The updated request marked as processing when
+            the transition succeeds; otherwise None when another processor has already
+            claimed or resolved the request.
+        """
+        pass
+
+    @abstractmethod
     def get_pending_requests(self) -> list[DataSubjectRequest]:
         """Get all pending requests."""
         pass
