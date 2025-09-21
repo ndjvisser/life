@@ -4,7 +4,6 @@ Snapshot tests for Achievements API responses.
 These tests capture API response structures to prevent breaking changes.
 """
 
-import json
 from datetime import datetime, timezone
 from unittest.mock import Mock
 
@@ -13,6 +12,8 @@ import pytest
 pytest.importorskip("pytest_snapshot")
 pytest.importorskip("freezegun")
 from freezegun import freeze_time
+
+from tests.snapshot_utils import assert_json_snapshot
 
 from life_dashboard.achievements.domain.entities import (
     Achievement,
@@ -108,9 +109,8 @@ class TestAchievementAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "achievement_creation_response.json",
+        assert_json_snapshot(
+            snapshot, api_response, "achievement_creation_response.json"
         )
 
     @freeze_time("2024-01-15 14:30:00", tz_offset=0)
@@ -183,9 +183,8 @@ class TestAchievementAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "unlock_achievement_response.json",
+        assert_json_snapshot(
+            snapshot, api_response, "unlock_achievement_response.json"
         )
 
     def test_achievement_statistics_response_snapshot(self, snapshot):
@@ -306,9 +305,8 @@ class TestAchievementAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "achievement_statistics_response.json",
+        assert_json_snapshot(
+            snapshot, api_response, "achievement_statistics_response.json"
         )
 
     def test_achievement_progress_response_snapshot(self, snapshot):
@@ -412,7 +410,6 @@ class TestAchievementAPISnapshots:
         }
 
         # Snapshot the response structure
-        snapshot.assert_match(
-            json.dumps(api_response, indent=2, sort_keys=True),
-            "achievement_progress_response.json",
+        assert_json_snapshot(
+            snapshot, api_response, "achievement_progress_response.json"
         )

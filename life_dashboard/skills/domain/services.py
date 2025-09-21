@@ -149,7 +149,9 @@ class SkillService:
 
         return distribution
 
-    def get_skill_progress_summary(self, user_id: UserId) -> dict[str, Any]:
+    def get_skill_progress_summary(
+        self, user_id: UserId, *, current_time: datetime | None = None
+    ) -> dict[str, Any]:
         """Get comprehensive skill progress summary for a user"""
         user_skills = self._skill_repository.get_user_skills(user_id)
 
@@ -163,6 +165,9 @@ class SkillService:
                 "stagnant_skills": [],
                 "next_milestones": [],
             }
+
+        # Use provided time for deterministic calculations when needed
+        reference_time = current_time or datetime.utcnow()
 
         # Calculate statistics
         total_skills = len(user_skills)
@@ -180,7 +185,9 @@ class SkillService:
         top_skills = sorted(user_skills, key=lambda s: s.level.value, reverse=True)[:5]
 
         # Get stagnant skills
-        stagnant_skills = [skill for skill in user_skills if skill.is_stagnant(30)]
+        stagnant_skills = [
+            skill for skill in user_skills if skill.is_stagnant(30, current_time=reference_time)
+        ]
 
         # Get next milestones
         next_milestones = []
@@ -221,7 +228,7 @@ class SkillService:
                     "name": skill.name.value,
                     "level": skill.level.value,
                     "days_since_practice": (
-                        datetime.utcnow() - skill.last_practiced
+                        reference_time - skill.last_practiced
                     ).days
                     if skill.last_practiced
                     else None,
