@@ -61,9 +61,7 @@ class QuestId:
 
             return text_value
 
-        raise TypeError(
-            f"Unsupported Quest ID type: {type(value).__name__}"
-        )
+        raise TypeError(f"Unsupported Quest ID type: {type(value).__name__}")
 
     def __eq__(self, other: object) -> bool:  # pragma: no cover - simple delegation
         if isinstance(other, QuestId):
