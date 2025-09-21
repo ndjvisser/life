@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 
+from ..registry import register_skill
 from .value_objects import (
     CategoryName,
     ExperienceAmount,
@@ -31,6 +32,7 @@ class SkillMasteryLevel(Enum):
     MASTER = "master"  # Levels 81-100
 
 
+@register_skill
 @dataclass
 class SkillCategory:
     """
@@ -53,6 +55,7 @@ class SkillCategory:
             raise ValueError("Category icon cannot exceed 50 characters")
 
 
+@register_skill
 @dataclass
 class Skill:
     """
