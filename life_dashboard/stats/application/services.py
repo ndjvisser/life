@@ -2,6 +2,7 @@
 Stats application services - use case orchestration and business workflows.
 """
 
+from dataclasses import dataclass
 from decimal import Decimal
 
 from django.utils import timezone
@@ -252,3 +253,49 @@ class LifeStatService:
     def get_life_stats_by_category(self, user_id: int, category: str) -> list[LifeStat]:
         """Get life stats for a user in a specific category."""
         return self.life_stat_repo.get_by_user_and_main_category(user_id, category)
+
+
+@dataclass(frozen=True)
+class StatChangeSummary:
+    """Aggregated view of a user's recent stat history."""
+
+    user_id: int
+    total_entries: int
+    total_increase: Decimal
+    total_decrease: Decimal
+
+    @property
+    def net_change(self) -> Decimal:
+        """Return the net change across all history entries."""
+
+        return self.total_increase + self.total_decrease
+
+
+class StatAnalyticsService:
+    """High-level analytics derived from stat history entries."""
+
+    def __init__(self, history_repo: StatHistoryRepository):
+        self.history_repo = history_repo
+
+    def summarize_recent_changes(
+        self, user_id: int, limit: int = 100
+    ) -> StatChangeSummary:
+        """Summarize the recent stat history for a user."""
+
+        history_entries = self.history_repo.get_by_user_id(user_id, limit=limit)
+
+        total_increase = Decimal("0")
+        total_decrease = Decimal("0")
+
+        for entry in history_entries:
+            if entry.change_amount >= 0:
+                total_increase += entry.change_amount
+            else:
+                total_decrease += entry.change_amount
+
+        return StatChangeSummary(
+            user_id=user_id,
+            total_entries=len(history_entries),
+            total_increase=total_increase,
+            total_decrease=total_decrease,
+        )

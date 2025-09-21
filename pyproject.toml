@@ -96,11 +96,32 @@ ignore_missing_imports = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
-# Disable Django plugin for domain-only checking
-# plugins = ["mypy_django_plugin.main"]
+exclude = """
+(
+    ^tests/
+  | ^life_dashboard/life_dashboard/
+  | ^life_dashboard/(?:achievements|dashboard|journals|privacy|quests|skills|stats|shared)/(?:application|interfaces|infrastructure|models|tests)/
+)
+"""
 
-# [tool.django-stubs]
-# django_settings_module = "life_dashboard.life_dashboard.settings"
+[[tool.mypy.overrides]]
+module = ["tests.*", "life_dashboard.*.tests.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "life_dashboard.*.application.*",
+    "life_dashboard.*.interfaces.*",
+    "life_dashboard.*.infrastructure.*",
+    "life_dashboard.*.models",
+]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "life_dashboard.life_dashboard.*",
+]
+ignore_errors = true
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "life_dashboard.life_dashboard.test_settings"

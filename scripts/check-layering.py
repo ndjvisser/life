@@ -10,6 +10,17 @@ import ast
 import glob
 import os
 import sys
+from typing import TypedDict
+
+
+class Violation(TypedDict):
+    """Structured representation of a layering violation."""
+
+    file: str
+    line: int
+    content: str
+    forbidden_layer: str
+    import_path: str
 
 
 class ImportAnalyzer(ast.NodeVisitor):
@@ -18,7 +29,7 @@ class ImportAnalyzer(ast.NodeVisitor):
     def __init__(self, file_path: str, forbidden_layers: set[str]):
         self.file_path = file_path
         self.forbidden_layers = forbidden_layers
-        self.violations = []
+        self.violations: list[Violation] = []
 
     def visit_Import(self, node: ast.Import) -> None:
         """Visit import statements (e.g., import foo.bar)."""
@@ -72,7 +83,9 @@ class ImportAnalyzer(ast.NodeVisitor):
                 )
 
 
-def analyze_imports_in_file(file_path: str, forbidden_layers: set[str]) -> list[dict]:
+def analyze_imports_in_file(
+    file_path: str, forbidden_layers: set[str]
+) -> list[Violation]:
     """
     Analyze imports in a Python file using AST parsing.
 
@@ -104,7 +117,7 @@ def analyze_imports_in_file(file_path: str, forbidden_layers: set[str]) -> list[
         return []
 
 
-def check_domain_layer_imports():
+def check_domain_layer_imports() -> list[Violation]:
     """
     Scan all Python files under life_dashboard/*/domain/ and return import violations
     where domain code imports from application, infrastructure, or interfaces layers.
@@ -124,7 +137,7 @@ def check_domain_layer_imports():
             - "forbidden_layer" (str): the layer that was improperly imported
             - "import_path" (str): the full import path
     """
-    violations = []
+    violations: list[Violation] = []
     forbidden_layers = {"application", "infrastructure", "interfaces"}
 
     for domain_dir in glob.glob("life_dashboard/*/domain/"):
@@ -138,7 +151,7 @@ def check_domain_layer_imports():
     return violations
 
 
-def check_application_layer_imports():
+def check_application_layer_imports() -> list[Violation]:
     """
     Scan application-layer Python files under life_dashboard/*/application/ and report
     any import statements that reference an `interfaces` module.

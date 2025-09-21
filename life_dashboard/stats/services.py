@@ -71,6 +71,7 @@ class StatsServiceFactory:
         """
         return StatService(
             core_stat_repo=cls.get_core_stat_repository(),
+            life_stat_repo=cls.get_life_stat_repository(),
             history_repo=cls.get_history_repository(),
         )
 
