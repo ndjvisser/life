@@ -80,7 +80,7 @@ class QuestRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_parent_quest(self, parent_quest_id: QuestId | str) -> list[Quest]:
+    def get_by_parent_quest(self, parent_quest_id: QuestId) -> list[Quest]:
         """Get child quests for a parent quest"""
         raise NotImplementedError
 
@@ -111,11 +111,6 @@ class HabitRepository(ABC):
     @abstractmethod
     def get_by_user_id(self, user_id: UserId) -> list[Habit]:
         """Get habits for a user"""
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_user_habits(self, user_id: UserId) -> list[Habit]:
-        """Get all habits for a user"""
         raise NotImplementedError
 
     @abstractmethod
@@ -159,16 +154,6 @@ class HabitCompletionRepository(ABC):
     @abstractmethod
     def save(self, completion: HabitCompletion) -> HabitCompletion:
         """Save a habit completion"""
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_habit_completions(
-        self,
-        habit_id: HabitId,
-        start_date: date | None = None,
-        end_date: date | None = None,
-    ) -> list[HabitCompletion]:
-        """Get completions for a habit within date range"""
         raise NotImplementedError
 
     @abstractmethod

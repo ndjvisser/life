@@ -891,6 +891,8 @@ class QuestChainService:
                 except (TypeError, ValueError) as err:
                     raise ValueError("experience_reward must be an integer") from err
 
+            sanitized.pop("experience_reward", None)
+
             timestamp = datetime.utcnow()
 
             quest = Quest(
@@ -1134,9 +1136,9 @@ class QuestChainService:
         Returns an empty list if there are no child quests.
         """
         try:
-            quest_identifier: QuestId | str = _coerce_quest_id(parent_quest_id)
+            quest_identifier = _coerce_quest_id(parent_quest_id)
         except ValueError:
-            quest_identifier = str(parent_quest_id)
+            return []
         return self.quest_repo.get_by_parent_quest(quest_identifier)
 
     def check_prerequisites(self, quest_id: QuestId | int | str) -> bool:

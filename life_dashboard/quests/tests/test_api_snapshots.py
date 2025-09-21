@@ -206,7 +206,7 @@ class TestQuestAPISnapshots:
             ),
         ]
 
-        self.mock_repository.get_user_quests.return_value = mock_quests
+        self.mock_repository.get_by_user_id.return_value = mock_quests
 
         # Convert to API response format
         api_response = {
@@ -401,7 +401,7 @@ class TestHabitAPISnapshots:
             )
             for i in range(1, 22)  # 21 completions
         ]
-        self.mock_completion_repository.get_habit_completions.return_value = (
+        self.mock_completion_repository.get_by_date_range.return_value = (
             mock_completions
         )
 
