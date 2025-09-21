@@ -3,7 +3,7 @@ Privacy domain value objects - immutable privacy-related concepts.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 
 
@@ -95,12 +95,12 @@ class DataRetentionPolicy:
         if not self.auto_delete:
             return False
 
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+
         expiry_date = created_at + timedelta(days=self.retention_days)
 
-        if created_at.tzinfo is not None:
-            now = datetime.now(created_at.tzinfo)
-        else:
-            now = datetime.utcnow()
+        now = datetime.now(created_at.tzinfo)
 
         return now > expiry_date
 

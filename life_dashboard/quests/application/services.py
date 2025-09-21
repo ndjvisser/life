@@ -2,7 +2,7 @@
 Quests application services - use case orchestration and business workflows.
 """
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Any
 from uuid import uuid4
 
@@ -161,8 +161,8 @@ class QuestService:
             status=QuestStatus.DRAFT,  # New quests start as draft
             experience_reward=quest_experience,
             due_date=due_date,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
         return self.quest_repo.create(quest)
 
@@ -244,7 +244,7 @@ class QuestService:
         # provided value directly and update the timestamp so repositories can store the
         # change if they support a progress attribute.
         quest.progress = percentage
-        quest.updated_at = datetime.utcnow()
+        quest.updated_at = datetime.now(timezone.utc)
         return self.quest_repo.save(quest)
 
     def pause_quest(self, quest_id: str) -> Quest:
@@ -507,8 +507,8 @@ class HabitService:
             current_streak=StreakCount(0),
             longest_streak=StreakCount(0),
             experience_reward=habit_experience,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
 
         return self.habit_repo.create(habit)
@@ -599,7 +599,7 @@ class HabitService:
             notes=notes,
             experience_gained=completion_experience,
             streak_at_completion=streak_value,
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
         )
 
         saved_completion = self.completion_repo.create(completion)
@@ -883,7 +883,7 @@ class QuestChainService:
 
             progress_value = sanitized.pop("progress", None)
             progress_amount = progress_value if progress_value is not None else 0.0
-            timestamp = datetime.utcnow()
+            timestamp = datetime.now(timezone.utc)
 
             prerequisite_values = sanitized.pop("prerequisite_quest_ids", None)
             prerequisite_ids = (

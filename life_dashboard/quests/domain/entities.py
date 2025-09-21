@@ -6,7 +6,7 @@ No Django dependencies allowed in this module.
 """
 
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from enum import Enum
 from uuid import uuid4
 
@@ -84,8 +84,12 @@ class Quest:
     start_date: date | None = None
     due_date: date | None = None
     completed_at: datetime | None = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     def __post_init__(self):
         """Validate quest data after initialization"""
@@ -151,7 +155,7 @@ class Quest:
         self.status = QuestStatus.ACTIVE
         if not self.start_date:
             self.start_date = date.today()
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def complete(self) -> None:
         """Complete the quest"""
@@ -159,8 +163,8 @@ class Quest:
             raise ValueError(f"Cannot complete quest from {self.status.value} status")
 
         self.status = QuestStatus.COMPLETED
-        self.completed_at = datetime.utcnow()
-        self.updated_at = datetime.utcnow()
+        self.completed_at = datetime.now(timezone.utc)
+        self.updated_at = datetime.now(timezone.utc)
 
     def fail(self) -> None:
         """Mark quest as failed"""
@@ -168,7 +172,7 @@ class Quest:
             raise ValueError(f"Cannot fail quest from {self.status.value} status")
 
         self.status = QuestStatus.FAILED
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def pause(self) -> None:
         """Pause the quest"""
@@ -178,7 +182,7 @@ class Quest:
             raise ValueError(f"Cannot pause quest from {self.status.value} status")
 
         self.status = QuestStatus.PAUSED
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def get_difficulty_multiplier(self) -> float:
         """Get experience multiplier based on difficulty"""
@@ -223,8 +227,12 @@ class Habit:
     longest_streak: StreakCount
     experience_reward: ExperienceReward
     habit_id: HabitId | None = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
-    updated_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     def __post_init__(self):
         """Validate habit data after initialization"""
@@ -265,7 +273,7 @@ class Habit:
         milestone = self.get_streak_milestone_type()
 
         # Ensure timestamps reflect the completion action
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
         return experience_gained, self.current_streak, milestone
 
@@ -300,7 +308,7 @@ class Habit:
                 # Streak broken, reset to 1
                 self.current_streak = StreakCount(1)
 
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def _is_consecutive_completion(self, days_diff: int) -> bool:
         """Check if completion maintains streak based on frequency"""
@@ -316,7 +324,7 @@ class Habit:
     def break_streak(self) -> None:
         """Break the current streak"""
         self.current_streak = StreakCount(0)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def get_streak_milestone_type(self) -> str | None:
         """Get milestone type if current streak hits a milestone"""
@@ -346,7 +354,9 @@ class HabitCompletion:
     experience_gained: ExperienceReward
     user_id: UserId | None = None
     streak_at_completion: StreakCount | None = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     def __post_init__(self):
         """Generate completion ID if not provided"""

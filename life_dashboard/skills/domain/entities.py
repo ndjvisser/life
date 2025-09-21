@@ -6,7 +6,7 @@ No Django dependencies allowed in this module.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from .value_objects import (
@@ -43,7 +43,9 @@ class SkillCategory:
     name: CategoryName
     description: str
     icon: str = ""
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
 
     def __post_init__(self):
         """Validate category data after initialization"""
@@ -70,7 +72,9 @@ class Skill:
     level: SkillLevel
     experience_points: ExperiencePoints
     experience_to_next_level: ExperiencePoints
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
     last_practiced: datetime | None = None
 
     def __post_init__(self):
@@ -188,7 +192,7 @@ class Skill:
                 exp_to_next if current_level < 100 else 0
             ),
             created_at=self.created_at,
-            last_practiced=datetime.utcnow(),
+            last_practiced=datetime.now(timezone.utc),
         )
 
         return updated_skill, levels_gained
@@ -266,7 +270,7 @@ class Skill:
         if not self.last_practiced:
             return True
 
-        reference_time = current_time or datetime.utcnow()
+        reference_time = current_time or datetime.now(timezone.utc)
         days_since_practice = (reference_time - self.last_practiced).days
         return days_since_practice > days_threshold
 

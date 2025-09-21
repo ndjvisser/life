@@ -6,7 +6,7 @@ and all canonical events from the domain events catalog.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from life_dashboard.shared.domain.events import (
     AchievementProgressUpdated,
@@ -181,7 +181,7 @@ class TestCanonicalEvents:
         event = UserRegistered(
             user_id=123,
             email="test@example.com",
-            registration_timestamp=datetime.utcnow(),
+            registration_timestamp=datetime.now(timezone.utc),
         )
 
         assert event.user_id == 123
@@ -236,7 +236,7 @@ class TestCanonicalEvents:
 
     def test_quest_completed_event(self):
         """Test QuestCompleted event schema."""
-        completion_time = datetime.utcnow()
+        completion_time = datetime.now(timezone.utc)
         event = QuestCompleted(
             user_id=123,
             quest_id=456,
@@ -275,7 +275,7 @@ class TestCanonicalEvents:
 
     def test_achievement_unlocked_event(self):
         """Test AchievementUnlocked event schema."""
-        unlock_time = datetime.utcnow()
+        unlock_time = datetime.now(timezone.utc)
         event = AchievementUnlocked(
             user_id=123,
             achievement_id=456,
@@ -316,7 +316,7 @@ class TestCanonicalEvents:
 
     def test_external_data_received_event(self):
         """Test ExternalDataReceived event schema."""
-        sync_time = datetime.utcnow()
+        sync_time = datetime.now(timezone.utc)
         event = ExternalDataReceived(
             user_id=123,
             integration_id=456,
@@ -336,7 +336,7 @@ class TestCanonicalEvents:
 
     def test_balance_score_calculated_event(self):
         """Test BalanceScoreCalculated event schema."""
-        calc_time = datetime.utcnow()
+        calc_time = datetime.now(timezone.utc)
         event = BalanceScoreCalculated(
             user_id=123,
             health_score=0.8,
@@ -356,7 +356,7 @@ class TestCanonicalEvents:
 
     def test_all_events_have_version(self):
         """Test that all canonical events have version field."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         events_to_test = [
             # Core Events
             UserRegistered(
@@ -646,7 +646,7 @@ class TestCanonicalEvents:
 
     def test_all_events_serializable(self):
         """Test that all canonical events can be serialized and deserialized."""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         # Test a representative sample of events (not all to keep test fast)
         events_to_test = [
             UserRegistered(

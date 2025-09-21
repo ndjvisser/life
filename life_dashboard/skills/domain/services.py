@@ -5,7 +5,7 @@ Pure business logic services for skills operations.
 No Django dependencies allowed in this module.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, cast
 
 from .entities import Skill, SkillCategory, SkillMasteryLevel
@@ -100,7 +100,9 @@ class SkillService:
         # Calculate days since last practice
         days_since_practice = 0
         if skill.last_practiced:
-            days_since_practice = (datetime.utcnow() - skill.last_practiced).days
+            days_since_practice = (
+                datetime.now(timezone.utc) - skill.last_practiced
+            ).days
 
         # Calculate practice efficiency
         efficiency = skill.calculate_practice_efficiency(days_since_practice)
@@ -167,7 +169,7 @@ class SkillService:
             }
 
         # Use provided time for deterministic calculations when needed
-        reference_time = current_time or datetime.utcnow()
+        reference_time = current_time or datetime.now(timezone.utc)
 
         # Calculate statistics
         total_skills = len(user_skills)

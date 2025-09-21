@@ -1,6 +1,6 @@
 """Tests for QuestChainService child quest creation sanitization."""
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from unittest.mock import MagicMock
 
 import pytest
@@ -28,12 +28,18 @@ class TestQuestChainService:
     ) -> None:
         """Quest data is sanitized and normalized before persistence."""
 
-        fixed_now = datetime(2024, 1, 1, 12, 0, 0)
+        fixed_now = datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
 
         class FixedDateTime(datetime):
             @classmethod
             def utcnow(cls):  # pragma: no cover - trivial override
                 return fixed_now
+
+            @classmethod
+            def now(cls, tz=None):  # pragma: no cover - trivial override
+                if tz is None:
+                    return fixed_now
+                return fixed_now.astimezone(tz)
 
         monkeypatch.setattr(
             "life_dashboard.quests.application.services.datetime",

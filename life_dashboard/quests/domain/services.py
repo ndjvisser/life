@@ -5,7 +5,7 @@ Pure business logic services for quest and habit operations.
 No Django dependencies allowed in this module.
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from .entities import Habit, HabitCompletion, Quest, QuestStatus, QuestType
 from .repositories import HabitCompletionRepository, HabitRepository, QuestRepository
@@ -100,7 +100,7 @@ class QuestService:
         all_quests = self._quest_repository.get_by_user_id(user_id)
 
         # Filter quests from the last N days
-        cutoff_date = datetime.utcnow().date() - timedelta(days=days)
+        cutoff_date = datetime.now(timezone.utc).date() - timedelta(days=days)
         recent_quests = [
             quest for quest in all_quests if quest.created_at.date() >= cutoff_date
         ]

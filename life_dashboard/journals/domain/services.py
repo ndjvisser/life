@@ -2,7 +2,7 @@
 Journals domain services - business logic orchestration.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from .entities import EntryType, JournalEntry
 from .repositories import JournalEntryRepository
@@ -53,8 +53,8 @@ class JournalService:
             tags=validated_tags,
             related_quest_id=related_quest_id,
             related_achievement_id=related_achievement_id,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
 
         return self.repository.save(entry)
@@ -94,7 +94,7 @@ class JournalService:
                 validated_tags.append(tag_vo.normalized())
             entry.tags = validated_tags
 
-        entry.updated_at = datetime.utcnow()
+        entry.updated_at = datetime.now(timezone.utc)
         return self.repository.save(entry)
 
     def get_user_entries(self, user_id: int) -> list[JournalEntry]:
@@ -135,7 +135,7 @@ class JournalService:
     def get_mood_statistics(self, user_id: int, days: int = 30) -> dict:
         """Get mood statistics for a user over the last N days."""
         user_id_vo = UserId(user_id)
-        end_date = datetime.utcnow()
+        end_date = datetime.now(timezone.utc)
         start_date = end_date - timedelta(days=days)
 
         entries = self.repository.get_by_user_and_date_range(

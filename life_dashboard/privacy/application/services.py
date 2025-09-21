@@ -2,7 +2,7 @@
 Privacy application services - use case orchestration for privacy and consent management.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from ..domain.entities import (
@@ -500,7 +500,7 @@ class DataSubjectService:
         """
         export_data = {
             "user_id": user_id,
-            "export_timestamp": datetime.utcnow().isoformat(),
+            "export_timestamp": datetime.now(timezone.utc).isoformat(),
             "data_categories": [cat.value for cat in data_categories],
             "data": {},
         }

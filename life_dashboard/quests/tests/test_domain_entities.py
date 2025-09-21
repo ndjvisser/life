@@ -4,7 +4,7 @@ Fast unit tests for Quest domain entities.
 These tests run without Django and focus on pure business logic validation.
 """
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
@@ -81,7 +81,7 @@ class TestQuest:
                 quest_type=QuestType.MAIN,
                 status=QuestStatus.ACTIVE,
                 experience_reward=ExperienceReward(50),
-                completed_at=datetime.utcnow(),
+                completed_at=datetime.now(timezone.utc),
             )
 
     def test_daily_quest_cannot_be_paused(self):
@@ -197,7 +197,7 @@ class TestQuest:
             status=QuestStatus.COMPLETED,
             experience_reward=ExperienceReward(50),
             due_date=date.today() - timedelta(days=1),
-            completed_at=datetime.utcnow(),
+            completed_at=datetime.now(timezone.utc),
         )
 
         assert not quest.is_overdue()

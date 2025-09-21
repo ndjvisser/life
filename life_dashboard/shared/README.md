@@ -62,6 +62,8 @@ The domain event system provides a lightweight, type-safe, and version-compatibl
 
 ### Basic Event Publishing
 ```python
+from datetime import datetime, timezone
+
 from shared.domain.events import QuestCompleted
 from shared.domain.event_dispatcher import publish_event
 
@@ -71,7 +73,7 @@ event = QuestCompleted(
     quest_id=456,
     quest_type="daily",
     experience_reward=25,
-    completion_timestamp=datetime.utcnow(),
+    completion_timestamp=datetime.now(timezone.utc),
     auto_completed=False
 )
 

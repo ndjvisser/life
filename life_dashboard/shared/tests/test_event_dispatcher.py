@@ -154,7 +154,7 @@ class TestEventDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
         )
 
@@ -175,7 +175,7 @@ class TestEventDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
             version="1.0.0",
         )
@@ -191,7 +191,7 @@ class TestEventDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
         )
 
@@ -218,7 +218,7 @@ class TestEventDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
         )
 
@@ -236,7 +236,7 @@ class TestEventDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
         )
 
@@ -255,7 +255,7 @@ class TestEventDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
         )
 
@@ -341,7 +341,7 @@ class TestGlobalDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
         )
 
@@ -436,7 +436,7 @@ class TestPrivacyAwareDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
         )
 
@@ -463,7 +463,7 @@ class TestPrivacyAwareDispatcher:
             quest_id=456,
             quest_type="daily",
             experience_reward=25,
-            completion_timestamp=datetime.utcnow(),
+            completion_timestamp=datetime.now(timezone.utc),
             auto_completed=False,
         )
 
