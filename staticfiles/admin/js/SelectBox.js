@@ -46,7 +46,7 @@
             return cache.filter(node => node.displayed === 0).length;
         },
         delete_from_cache: function(id, value) {
-            let delete_index = null;
+            let delete_index = -1;
             const cache = SelectBox.cache[id];
             for (const [i, node] of cache.entries()) {
                 if (node.value === value) {
@@ -54,7 +54,9 @@
                     break;
                 }
             }
-            cache.splice(delete_index, 1);
+            if (delete_index !== -1) {
+                cache.splice(delete_index, 1);
+            }
         },
         add_to_cache: function(id, option) {
             SelectBox.cache[id].push({value: option.value, text: option.text, displayed: 1});
