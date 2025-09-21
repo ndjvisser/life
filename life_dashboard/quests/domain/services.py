@@ -166,16 +166,22 @@ class HabitService:
 
         created = self._habit_repository.create(habit)
 
-        if not isinstance(created, Habit):
-            created = self._habit_repository.save(habit)
-
-        if not isinstance(created, Habit):
+        def ensure_habit(result: Habit | object) -> Habit:
+            if isinstance(result, Habit):
+                return result
             raise TypeError(
                 "HabitRepository must return Habit instances, "
-                f"got {type(created).__name__}: {created!r}"
+                f"got {type(result).__name__}: {result!r}"
             )
 
-        return created
+        try:
+            return ensure_habit(created)
+        except TypeError:
+            if habit.habit_id is None:
+                raise
+
+            fallback = self._habit_repository.save(habit)
+            return ensure_habit(fallback)
 
     def complete_habit(
         self,
