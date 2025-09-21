@@ -38,6 +38,7 @@
     "average_progress": 60.0,
     "close_to_completion": 1,
     "eligible_to_unlock": 0,
+    "highest_potential_reward": 15000,
     "total_tracked": 2
   },
   "user_id": 1
