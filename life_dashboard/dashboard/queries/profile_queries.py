@@ -2,12 +2,25 @@
 Dashboard profile queries - read-only data access for views.
 """
 
-from typing import Any
+from datetime import datetime
+from typing import Any, Protocol, cast
 
 from django.contrib.auth import get_user_model
 from django.db.models import QuerySet
 
 from ..models import UserProfile
+
+
+class _SupportsBasicUserFields(Protocol):
+    """Protocol describing the user fields needed for dashboard queries."""
+
+    id: int
+    username: str
+    email: str
+    first_name: str
+    last_name: str
+    is_active: bool
+    date_joined: datetime
 
 
 class ProfileQueries:
@@ -31,13 +44,14 @@ class ProfileQueries:
         """
         try:
             profile = UserProfile.objects.select_related("user").get(user_id=user_id)
+            user = cast(_SupportsBasicUserFields, profile.user)
             return {
-                "user_id": profile.user.id,
-                "username": profile.user.username,
-                "full_name": f"{profile.user.first_name} {profile.user.last_name}".strip(),
-                "first_name": profile.user.first_name,
-                "last_name": profile.user.last_name,
-                "email": profile.user.email,
+                "user_id": user.id,
+                "username": user.username,
+                "full_name": f"{user.first_name} {user.last_name}".strip(),
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
                 "bio": profile.bio,
                 "location": profile.location,
                 "birth_date": profile.birth_date,
@@ -75,7 +89,7 @@ class ProfileQueries:
         """
         try:
             User = get_user_model()
-            user = User.objects.get(id=user_id)
+            user = cast(_SupportsBasicUserFields, User.objects.get(id=user_id))
             return {
                 "id": user.id,
                 "username": user.username,
