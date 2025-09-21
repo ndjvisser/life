@@ -81,21 +81,28 @@ class DataRetentionPolicy:
         Return True if the retention period has passed for the given creation time.
 
         If auto_delete is False this always returns False. The expiry is computed as
-        created_at + retention_days (days). Comparison is performed against the current
-        UTC time (datetime.utcnow()).
+        created_at + retention_days (days). The current time used for comparison matches
+        the timezone awareness of `created_at` to avoid naive/aware datetime mismatches.
 
         Parameters:
             created_at (datetime): Object creation timestamp. Should represent UTC time
                 (either a naive datetime in UTC or an aware datetime with UTC tzinfo).
 
         Returns:
-            bool: True when current UTC time is strictly after the computed expiry.
+            bool: True when the current time (aligned with `created_at`'s timezone awareness)
+                is strictly after the computed expiry.
         """
         if not self.auto_delete:
             return False
 
         expiry_date = created_at + timedelta(days=self.retention_days)
-        return datetime.utcnow() > expiry_date
+
+        if created_at.tzinfo is not None:
+            now = datetime.now(created_at.tzinfo)
+        else:
+            now = datetime.utcnow()
+
+        return now > expiry_date
 
     def expiry_date(self, created_at: datetime) -> datetime:
         """
