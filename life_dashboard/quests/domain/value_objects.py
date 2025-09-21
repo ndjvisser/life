@@ -7,6 +7,20 @@ No Django dependencies allowed in this module.
 
 from dataclasses import dataclass
 
+from life_dashboard.common.value_objects import ExperienceReward, UserId
+
+__all__ = [
+    "QuestId",
+    "QuestTitle",
+    "QuestDescription",
+    "HabitId",
+    "HabitName",
+    "StreakCount",
+    "CompletionCount",
+    "ExperienceReward",
+    "UserId",
+]
+
 
 @dataclass(frozen=True)
 class QuestId:

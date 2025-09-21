@@ -7,6 +7,21 @@ No Django dependencies allowed in this module.
 
 from dataclasses import dataclass
 
+from life_dashboard.common.value_objects import ExperienceReward, UserId
+
+__all__ = [
+    "AchievementId",
+    "UserAchievementId",
+    "AchievementName",
+    "AchievementDescription",
+    "RequiredLevel",
+    "RequiredSkillLevel",
+    "RequiredQuestCompletions",
+    "AchievementIcon",
+    "ExperienceReward",
+    "UserId",
+]
+
 
 @dataclass(frozen=True)
 class AchievementId:
