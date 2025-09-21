@@ -34,16 +34,19 @@ class TestCeleryFallback:
 
         # Should have dummy Celery class with required methods
         assert "class Celery:" in content
-        assert "def task(self, bind: bool = False, **kwargs):" in content
-        assert "def shared_task(bind: bool = False, **kwargs):" in content
+        assert "def task(" in content
+        assert "self, bind: bool = False, **kwargs: Any" in content
+        assert "def shared_task(" in content
+        assert "bind: bool = False, **kwargs: Any" in content
 
         # Should support bind parameter and async methods
-        assert "class _Self:" in content
+        assert "class _TaskSelf:" in content
         assert "wrapped.delay =" in content
         assert "wrapped.apply_async =" in content
 
         # Should have retry method for bound tasks
-        assert "def retry(self, exc=None, countdown=None, **retry_kwargs):" in content
+        assert "def retry(" in content
+        assert "setattr(_TaskSelf, \"retry\", retry)" in content
 
     def test_fallback_addresses_original_issues(self):
         """Test that the fallback addresses the original issues mentioned."""
@@ -58,4 +61,6 @@ class TestCeleryFallback:
         assert "wrapped.apply_async = lambda" in content
 
         # Should handle bound tasks properly
-        assert "return func(_Self(), *args, **kw)" in content
+        assert "task_self = _TaskSelf()" in content
+        assert "call_args = (task_self, *args)" in content
+        assert "return func(*call_args, **kwargs)" in content

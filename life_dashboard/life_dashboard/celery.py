@@ -19,20 +19,24 @@ def _create_sync_decorator(
                 request = type("R", (), request_attrs)()
 
                 class _TaskSelf:
-                    request = request
+                    """Minimal stand-in for Celery's bound task instance."""
 
-                    if with_retry:
+                task_self = _TaskSelf()
+                task_self.request = request
 
-                        def retry(
-                            self,
-                            exc: Exception | None = None,
-                            _countdown: int | None = None,
-                            **_retry_kwargs: Any,
-                        ) -> None:
-                            if exc is not None:
-                                raise exc
+                if with_retry:
+                    def retry(
+                        self,
+                        exc: Exception | None = None,
+                        _countdown: int | None = None,
+                        **_retry_kwargs: Any,
+                    ) -> None:
+                        if exc is not None:
+                            raise exc
 
-                call_args = (_TaskSelf(), *args)
+                    setattr(_TaskSelf, "retry", retry)
+
+                call_args = (task_self, *args)
             else:
                 call_args = args
 
