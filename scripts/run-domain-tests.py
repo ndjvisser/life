@@ -23,10 +23,207 @@ Options:
 """
 
 import argparse
+import importlib
+import importlib.util
+import inspect
 import os
+import re
 import subprocess
 import sys
 import time
+import traceback
+import types
+from pathlib import Path
+
+
+def ensure_dependency(
+    module_name: str, package_name: str | None = None, *, required: bool = True
+) -> bool:
+    """Ensure that a required dependency is available.
+
+    The domain test runner is expected to work in lightweight environments where
+    only the production requirements might be installed. In CI this meant the
+    script failed immediately because ``pytest`` was missing.  To keep the
+    domain tests useful for architecture validation we attempt to install
+    missing testing dependencies on the fly.
+
+    Args:
+        module_name: The Python module we want to import.
+        package_name: Optional explicit pip package name to install.
+
+    Returns:
+        True when the module is available, False otherwise.
+    """
+
+    try:
+        importlib.import_module(module_name)
+        return True
+    except ModuleNotFoundError:
+        pkg = package_name or module_name
+        if required:
+            print(
+                f"📦 Missing dependency '{pkg}'. Attempting automatic installation for domain tests..."
+            )
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
+            except subprocess.CalledProcessError as exc:
+                print(
+                    "❌ Unable to install required dependency. "
+                    "Please install development dependencies and retry."
+                )
+                print(f"   Details: {exc}")
+                return False
+
+            try:
+                importlib.import_module(module_name)
+                print(f"✅ Successfully installed '{pkg}'.")
+                return True
+            except ModuleNotFoundError:
+                print(
+                    f"❌ Dependency '{pkg}' still unavailable after installation. "
+                    "Check your environment setup."
+                )
+                return False
+
+        return False
+
+
+def create_simple_pytest_module() -> types.ModuleType:
+    """Create a tiny pytest substitute for environments without pytest."""
+
+    module = types.ModuleType("pytest")
+
+    class RaisesContext:
+        def __init__(self, expected_exception: type[BaseException], match: str | None):
+            self.expected_exception = expected_exception
+            self.match = match
+
+        def __enter__(self) -> "RaisesContext":
+            return self
+
+        def __exit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc: BaseException | None,
+            traceback_info,
+        ) -> bool:
+            if exc_type is None:
+                raise AssertionError(
+                    f"Expected exception {self.expected_exception.__name__} to be raised"
+                )
+
+            if not issubclass(exc_type, self.expected_exception):
+                raise AssertionError(
+                    f"Expected {self.expected_exception.__name__}, got {exc_type.__name__}"
+                )
+
+            if self.match and exc and not re.search(self.match, str(exc)):
+                raise AssertionError(
+                    f"Exception message '{exc}' does not match pattern '{self.match}'"
+                )
+
+            return True
+
+    def raises(expected_exception: type[BaseException], match: str | None = None) -> RaisesContext:
+        return RaisesContext(expected_exception, match)
+
+    module.raises = raises  # type: ignore[attr-defined]
+
+    class MarkDecorator:
+        def __getattr__(self, name: str):
+            def decorator(obj):
+                existing_marks = getattr(obj, "_simple_pytest_marks", set())
+                obj._simple_pytest_marks = existing_marks | {name}
+                return obj
+
+            return decorator
+
+    module.mark = MarkDecorator()  # type: ignore[attr-defined]
+
+    class Approx:
+        def __init__(self, value: float, *, abs: float | None = None, rel: float | None = None):
+            self.value = value
+            self.abs = abs
+            self.rel = rel
+
+        def _tolerance(self, other: float) -> float:
+            if self.abs is not None:
+                return self.abs
+            rel = self.rel if self.rel is not None else 1e-12
+            return rel * max(abs(self.value), abs(other))
+
+        def __repr__(self) -> str:  # pragma: no cover - debugging helper
+            return f"approx({self.value})"
+
+        def __eq__(self, other: object) -> bool:
+            if not isinstance(other, int | float):
+                return False
+            return abs(float(other) - float(self.value)) <= self._tolerance(float(other))
+
+    def approx(value: float, *, abs: float | None = None, rel: float | None = None) -> Approx:
+        return Approx(value, abs=abs, rel=rel)
+
+    module.approx = approx  # type: ignore[attr-defined]
+
+    return module
+
+
+def run_simple_tests(test_file: Path) -> tuple[int, list[str]]:
+    """Run a basic test discovery loop for pytest-style tests."""
+
+    if "pytest" not in sys.modules:
+        sys.modules["pytest"] = create_simple_pytest_module()
+
+    project_root = Path.cwd()
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+
+    try:
+        relative_path = test_file.relative_to(project_root)
+    except ValueError:
+        relative_path = test_file
+
+    module_name = ".".join(relative_path.with_suffix("").parts)
+    spec = importlib.util.spec_from_file_location(module_name, test_file)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load test module from {test_file}")
+
+    module = importlib.util.module_from_spec(spec)
+    module.__package__ = module_name.rpartition(".")[0]
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+
+    failures: list[str] = []
+    tests_run = 0
+
+    for attr_name in dir(module):
+        attr = getattr(module, attr_name)
+        if inspect.isfunction(attr) and attr_name.startswith("test_"):
+            tests_run += 1
+            try:
+                attr()
+            except Exception as exc:  # pragma: no cover - only on failure path
+                failures.append(
+                    f"{test_file.name}::{attr_name}\n{''.join(traceback.format_exception(exc))}"
+                )
+        elif inspect.isclass(attr) and attr_name.startswith("Test"):
+            instance = attr()
+            for method_name in dir(attr):
+                if method_name.startswith("test_"):
+                    method = getattr(instance, method_name)
+                    if callable(method):
+                        tests_run += 1
+                        try:
+                            method()
+                        except Exception as exc:  # pragma: no cover - failure path
+                            failures.append(
+                                f"{test_file.name}::{attr_name}.{method_name}\n"
+                                f"{''.join(traceback.format_exception(exc))}"
+                            )
+
+    sys.modules.pop(module_name, None)
+
+    return tests_run, failures
 
 
 def run_command(cmd, description, capture_output=False, cwd=None):
@@ -133,6 +330,24 @@ Examples:
 
     args = parser.parse_args()
 
+    pytest_available = ensure_dependency("pytest", "pytest")
+    using_simple_runner = not pytest_available
+
+    if args.parallel and not using_simple_runner:
+        if not ensure_dependency("xdist", "pytest-xdist"):
+            print("⚠️ pytest-xdist not available; disabling parallel execution.")
+            args.parallel = False
+
+    if args.coverage and not using_simple_runner:
+        if not ensure_dependency("pytest_cov", "pytest-cov"):
+            print("⚠️ pytest-cov not available; disabling coverage reporting.")
+            args.coverage = False
+
+    if (args.with_properties or args.all_unit) and not using_simple_runner:
+        if not ensure_dependency("hypothesis", "hypothesis"):
+            print("❌ Hypothesis is required for property-based tests.")
+            return 1
+
     # Set up environment
     os.environ["HYPOTHESIS_PROFILE"] = args.profile
 
@@ -190,9 +405,18 @@ Examples:
         print("🎯 Including INTEGRATION TESTS (requires Django)")
 
     # For domain tests, use special configuration
-    if args.domain_only or (
+    domain_only_selection = args.domain_only or (
         test_markers and "domain" in test_markers and len(test_markers) == 1
-    ):
+    )
+
+    if using_simple_runner and not domain_only_selection:
+        print(
+            "❌ Pytest is required for the selected test suite. "
+            "Install development dependencies and retry."
+        )
+        return 1
+
+    if domain_only_selection:
         # Use domain-specific pytest configuration
         pytest_cmd.extend(
             [
@@ -209,9 +433,7 @@ Examples:
         pytest_cmd.extend(["-m", marker_expr])
 
     # Add test paths
-    if args.domain_only or (
-        test_markers and "domain" in test_markers and len(test_markers) == 1
-    ):
+    if domain_only_selection:
         # For domain-only tests, specify exact files and ignore Django conftest
         # Also set PYTHONPATH to avoid Django imports
         os.environ["PYTHONPATH"] = "."
@@ -377,9 +599,7 @@ def test_python_imports():
         return 1
 
     # Run the main test suite
-    if args.domain_only or (
-        test_markers and "domain" in test_markers and len(test_markers) == 1
-    ):
+    if domain_only_selection:
         # For domain tests, temporarily move conftest.py to avoid Django imports
         conftest_path = "life_dashboard/conftest.py"
         conftest_backup = "life_dashboard/conftest.py.domain_test_backup"
@@ -390,6 +610,11 @@ def test_python_imports():
                 os.rename(conftest_path, conftest_backup)
                 conftest_moved = True
                 print("🔧 Temporarily moved Django conftest.py for pure domain testing")
+
+            if using_simple_runner:
+                print(
+                    "⚠️ Pytest not available; running domain tests with a minimal built-in runner."
+                )
 
             # Run domain tests from each directory
             test_directories = [
@@ -428,34 +653,52 @@ def test_python_imports():
                 test_path = os.path.join(test_dir, test_file)
                 if os.path.exists(test_path):
                     print(f"\n🔍 Running {test_name}...")
-                    # Run pytest from the test directory
-                    domain_cmd = [
-                        "python",
-                        "-m",
-                        "pytest",
-                        test_file,
-                        "-v",
-                        "-p",
-                        "no:django",
-                        "--tb=short",
-                    ]
-                    if args.coverage:
-                        domain_cmd.extend(["--cov=../../domain", "--cov-append"])
+                    if pytest_available:
+                        # Run pytest from the test directory
+                        domain_cmd = [
+                            "python",
+                            "-m",
+                            "pytest",
+                            test_file,
+                            "-v",
+                            "-p",
+                            "no:django",
+                            "--tb=short",
+                        ]
+                        if args.coverage:
+                            domain_cmd.extend(["--cov=../../domain", "--cov-append"])
 
-                    result = run_command(domain_cmd, f"{test_name}", cwd=test_dir)
-                    if result is None:
-                        all_passed = False
+                        result = run_command(domain_cmd, f"{test_name}", cwd=test_dir)
+                        if result is None:
+                            all_passed = False
+                        else:
+                            # Extract test count from pytest output (rough estimate)
+                            total_tests_run += 36  # We know stats has 36 tests
                     else:
-                        # Extract test count from pytest output (rough estimate)
-                        total_tests_run += 36  # We know stats has 36 tests
+                        tests_run, failures = run_simple_tests(Path(test_path))
+                        total_tests_run += tests_run
+                        if failures:
+                            all_passed = False
+                            print("❌ Failures detected by simple runner:")
+                            for failure in failures:
+                                print(failure)
+                        else:
+                            print(
+                                f"✅ {test_name} passed with simple runner ({tests_run} tests executed)"
+                            )
                 else:
                     print(f"⚠️  {test_name}: {test_path} not found, skipping...")
 
             if all_passed:
                 test_result = "success"
-                print(
-                    f"\n✅ All domain tests passed! {total_tests_run}+ tests run successfully."
-                )
+                if pytest_available:
+                    print(
+                        f"\n✅ All domain tests passed! {total_tests_run}+ tests run successfully."
+                    )
+                else:
+                    print(
+                        f"\n✅ All domain tests passed using simple runner. {total_tests_run} tests executed."
+                    )
             else:
                 test_result = None
                 print("\n❌ Some domain tests failed.")
