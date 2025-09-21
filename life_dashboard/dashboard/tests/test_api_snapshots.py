@@ -14,6 +14,12 @@ from life_dashboard.dashboard.domain.value_objects import OnboardingState
 from tests.snapshot_utils import assert_json_snapshot
 
 
+def resolve_callable(value):
+    """Return the result of calling value if callable, else the value itself."""
+
+    return value() if callable(value) else value
+
+
 @pytest.mark.snapshot
 @pytest.mark.unit
 class TestDashboardAPISnapshots:
@@ -49,9 +55,13 @@ class TestDashboardAPISnapshots:
             else None,
             "experience_points": profile.experience_points,
             "level": profile.level,
-            "full_name": profile.full_name,
-            "experience_to_next_level": profile.experience_to_next_level,
-            "level_progress_percentage": round(profile.level_progress_percentage, 1),
+            "full_name": resolve_callable(profile.full_name),
+            "experience_to_next_level": resolve_callable(
+                profile.experience_to_next_level
+            ),
+            "level_progress_percentage": round(
+                resolve_callable(profile.level_progress_percentage), 1
+            ),
             "created_at": "2023-01-01T12:00:00",
             "updated_at": "2023-01-15T14:30:00",
         }
@@ -70,8 +80,12 @@ class TestDashboardAPISnapshots:
             "new_level": new_level,
             "level_up_occurred": level_up,
             "total_experience": profile.experience_points,
-            "experience_to_next_level": profile.experience_to_next_level,
-            "level_progress_percentage": round(profile.level_progress_percentage, 1),
+            "experience_to_next_level": resolve_callable(
+                profile.experience_to_next_level
+            ),
+            "level_progress_percentage": round(
+                resolve_callable(profile.level_progress_percentage), 1
+            ),
             "level_up_rewards": {
                 "bonus_experience": 0,
                 "unlocked_features": [],
@@ -113,10 +127,16 @@ class TestDashboardAPISnapshots:
         )
 
         # Update profile
-        profile.update_profile(
-            bio="Updated bio with more details about my experience.",
-            location="New York, NY",
-        )
+        update_payload = {
+            "bio": "Updated bio with more details about my experience.",
+            "location": "New York, NY",
+        }
+        profile.update_profile(**update_payload)
+
+        full_name_value = resolve_callable(profile.full_name)
+        updated_fields = list(update_payload.keys())
+        profile.updated_at = datetime(2023, 1, 15, 14, 30, 0)
+        update_timestamp = profile.updated_at.isoformat(timespec="seconds")
 
         # Create predictable response data
         response_data = {
@@ -127,9 +147,9 @@ class TestDashboardAPISnapshots:
             "email": profile.email,
             "bio": profile.bio,
             "location": profile.location,
-            "full_name": profile.full_name,
-            "updated_fields": ["bio", "location"],
-            "update_timestamp": "2023-01-15T14:30:00",
+            "full_name": full_name_value,
+            "updated_fields": updated_fields,
+            "update_timestamp": update_timestamp,
             "validation_status": "success",
         }
 
@@ -198,7 +218,7 @@ class TestDashboardAPISnapshots:
                 "level": profile.level,
                 "experience_points": profile.experience_points,
                 "level_progress_percentage": round(
-                    profile.level_progress_percentage, 1
+                    resolve_callable(profile.level_progress_percentage), 1
                 ),
             },
             "activity_statistics": {
