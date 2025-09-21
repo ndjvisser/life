@@ -137,7 +137,7 @@ class ConsentService:
         if not consent:
             return False
 
-        return consent.is_valid() and consent.covers_data_category(data_category)
+        return consent.is_valid_readonly() and consent.covers_data_category(data_category)
 
     def get_user_consents(self, user_id: int) -> list[ConsentRecord]:
         """Get all consent records for a user."""
@@ -260,15 +260,15 @@ class PrivacyService:
         if not has_consent:
             return False
 
-        # Check privacy settings
-        settings = self.get_or_create_privacy_settings(user_id)
+        # Check privacy settings without mutating state
+        settings = self.settings_repo.get_by_user_id(user_id)
 
-        # Map purposes to settings
+        # Map purposes to settings, defaulting to disabled when settings are absent
         purpose_settings_map = {
-            DataProcessingPurpose.ANALYTICS: settings.analytics_enabled,
-            DataProcessingPurpose.AI_INSIGHTS: settings.ai_insights_enabled,
-            DataProcessingPurpose.SOCIAL_FEATURES: settings.social_features_enabled,
-            DataProcessingPurpose.MARKETING: settings.marketing_enabled,
+            DataProcessingPurpose.ANALYTICS: settings.analytics_enabled if settings else False,
+            DataProcessingPurpose.AI_INSIGHTS: settings.ai_insights_enabled if settings else False,
+            DataProcessingPurpose.SOCIAL_FEATURES: settings.social_features_enabled if settings else False,
+            DataProcessingPurpose.MARKETING: settings.marketing_enabled if settings else False,
         }
 
         # Core functionality is always allowed with consent
@@ -332,16 +332,21 @@ class DataSubjectService:
         settings_repo: PrivacySettingsRepository,
         consent_repo: ConsentRepository,
         activity_repo: ProcessingActivityRepository,
+        delete_activity_logs_on_deletion: bool = False,
     ):
         """
         Initialize the DataSubjectService.
 
-        Stores repository dependencies used to create and process data subject requests, manage privacy settings and consents, and log processing activities.
+        Stores repository dependencies used to create and process data subject requests,
+        manage privacy settings and consents, and log processing activities. A policy
+        toggle controls whether processing activity logs are removed when fulfilling
+        deletion requests.
         """
         self.request_repo = request_repo
         self.settings_repo = settings_repo
         self.consent_repo = consent_repo
         self.activity_repo = activity_repo
+        self.delete_activity_logs_on_deletion = delete_activity_logs_on_deletion
 
     def create_data_export_request(
         self, user_id: int, data_categories: set[DataCategory] | None = None
@@ -410,6 +415,16 @@ class DataSubjectService:
         if not request:
             raise ValueError(f"Request {request_id} not found")
 
+        if request.status in {"completed", "rejected"}:
+            raise ValueError(
+                f"Request {request_id} has already been resolved with status {request.status}"
+            )
+
+        if request.status == "processing":
+            raise ValueError(
+                f"Request {request_id} is already being processed and cannot be processed twice"
+            )
+
         # Ensure identity is verified before processing
         if not request.identity_verified:
             if not verification_method:
@@ -423,11 +438,36 @@ class DataSubjectService:
         request.start_processing(processor_id)
         self.request_repo.save(request)
 
+        self.activity_repo.log_activity(
+            DataProcessingActivity(
+                user_id=request.user_id,
+                purpose=DataProcessingPurpose.CORE_FUNCTIONALITY,
+                data_categories=request.data_categories,
+                processing_type="dsar_export_started",
+                context="data_subject_service:export",
+                request_id=request.request_id,
+                legal_basis="legal_obligation",
+            )
+        )
+
         # Collect user data
         user_data = self._collect_user_data(request.user_id, request.data_categories)
 
         request.complete_request("Data export completed")
         self.request_repo.save(request)
+
+        self.activity_repo.log_activity(
+            DataProcessingActivity(
+                user_id=request.user_id,
+                purpose=DataProcessingPurpose.CORE_FUNCTIONALITY,
+                data_categories=request.data_categories,
+                processing_type="dsar_export_completed",
+                context="data_subject_service:export",
+                request_id=request.request_id,
+                legal_basis="legal_obligation",
+            )
+        )
+
         return user_data
 
     def process_deletion_request(
@@ -455,6 +495,16 @@ class DataSubjectService:
         if not request:
             raise ValueError(f"Request {request_id} not found")
 
+        if request.status in {"completed", "rejected"}:
+            raise ValueError(
+                f"Request {request_id} has already been resolved with status {request.status}"
+            )
+
+        if request.status == "processing":
+            raise ValueError(
+                f"Request {request_id} is already being processed and cannot be processed twice"
+            )
+
         # Ensure identity is verified before processing
         if not request.identity_verified:
             if not verification_method:
@@ -468,11 +518,37 @@ class DataSubjectService:
         request.start_processing(processor_id)
         self.request_repo.save(request)
 
+        self.activity_repo.log_activity(
+            DataProcessingActivity(
+                user_id=request.user_id,
+                purpose=DataProcessingPurpose.CORE_FUNCTIONALITY,
+                data_categories=request.data_categories,
+                processing_type="dsar_deletion_started",
+                context="data_subject_service:deletion",
+                request_id=request.request_id,
+                legal_basis="legal_obligation",
+            )
+        )
+
         # Delete user data
-        deleted_count = self._delete_user_data(request.user_id)
+        deleted_count = self._delete_user_data(
+            request.user_id, delete_activities=self.delete_activity_logs_on_deletion
+        )
 
         request.complete_request(f"Deleted {deleted_count} records")
         self.request_repo.save(request)
+
+        self.activity_repo.log_activity(
+            DataProcessingActivity(
+                user_id=request.user_id,
+                purpose=DataProcessingPurpose.CORE_FUNCTIONALITY,
+                data_categories=request.data_categories,
+                processing_type="dsar_deletion_completed",
+                context="data_subject_service:deletion",
+                request_id=request.request_id,
+                legal_basis="legal_obligation",
+            )
+        )
 
         return True
 
@@ -521,14 +597,17 @@ class DataSubjectService:
 
         return export_data
 
-    def _delete_user_data(self, user_id: int) -> int:
+    def _delete_user_data(self, user_id: int, *, delete_activities: bool = False) -> int:
         """
-        Delete all stored privacy-related data for a user.
+        Delete stored privacy-related data for a user.
 
-        Deletes the user's privacy settings, consent records, and data processing activities via the configured repositories and returns the total number of records/items removed.
+        Deletes the user's privacy settings and consent records, and optionally deletes processing
+        activities when `delete_activities` is True. Returns the total number of records/items removed.
 
         Parameters:
             user_id (int): ID of the user whose data will be deleted.
+            delete_activities (bool): When True, delete processing activities in addition to settings
+                and consents. Defaults to False so audit trails are retained unless explicitly removed.
 
         Returns:
             int: Total count of deleted items across settings, consents, and activities.
@@ -542,8 +621,9 @@ class DataSubjectService:
         # Delete consent records
         deleted_count += self.consent_repo.delete_by_user(user_id)
 
-        # Delete processing activities
-        deleted_count += self.activity_repo.delete_activities_for_user(user_id)
+        # Delete processing activities when explicitly requested
+        if delete_activities:
+            deleted_count += self.activity_repo.delete_activities_for_user(user_id)
 
         return deleted_count
 
