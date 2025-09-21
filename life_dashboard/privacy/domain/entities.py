@@ -147,6 +147,20 @@ class ConsentRecord:
 
         return True
 
+    def is_valid_readonly(self, *, as_of: datetime | None = None) -> bool:
+        """Return True when the consent remains granted and unexpired without mutating state."""
+
+        if as_of is None:
+            as_of = datetime.now(timezone.utc)
+
+        if self.status != ConsentStatus.GRANTED:
+            return False
+
+        if self.expires_at and as_of > self.expires_at:
+            return False
+
+        return True
+
     def is_expired(self) -> bool:
         """
         Return True if the consent has a configured expiration time that is in the past.
