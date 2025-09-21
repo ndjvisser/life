@@ -66,8 +66,8 @@
 ### 1.3 Quests Context (Example Implementation)
 - [⚠] 1.3.1 Domain Layer
   - [x] Core entities
-    - [x] [Quest](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:362:0-388:50) implementation
-    - [x] [Habit](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:417:0-443:50) implementation
+    - [x] [Quest](life_dashboard/quests/domain/entities.py#L66-L209) implementation
+    - [x] [Habit](life_dashboard/quests/domain/entities.py#L210-L320) implementation
     - [ ] Task entity (missing)
     - [ ] Entity unit tests
   - [ ] Value objects
@@ -151,7 +151,7 @@
 
 ### 2.1 Stats Context
 - [⚠] 2.1.1 Domain Layer
-  - [x] Core entities ([CoreStat](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:173:0-199:28), [LifeStat](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:202:0-234:28))
+  - [x] Core entities ([CoreStat](life_dashboard/stats/domain/entities.py#L12-L193), [LifeStat](life_dashboard/stats/domain/entities.py#L197-L355))
     - [x] Implementation
     - [x] Unit tests
   - [x] Stat calculations
@@ -176,7 +176,7 @@
 
 ### 2.2 Quests Context
 - [x] 2.2.1 Domain Layer
-  - [x] Core entities ([Quest](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:362:0-388:50), [Habit](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:417:0-443:50), `Task`)
+  - [x] Core entities ([Quest](life_dashboard/quests/domain/entities.py#L66-L209), [Habit](life_dashboard/quests/domain/entities.py#L210-L320), `Task`)
     - [x] Implementation
     - [x] Unit tests
   - [x] Value objects
@@ -201,7 +201,7 @@
 
 ### 2.3 Skills Context
 - [x] 2.3.1 Domain Layer
-  - [x] Core entities ([Skill](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:533:0-562:32), `SkillCategory`)
+  - [x] Core entities ([Skill](life_dashboard/skills/domain/entities.py#L57-L278), `SkillCategory`)
     - [x] Implementation
     - [x] Unit tests
   - [x] Progression system
@@ -226,7 +226,7 @@
 
 ### 2.4 Achievements Context
 - [x] 2.4.1 Domain Layer
-  - [x] Core entities ([Achievement](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/achievements/domain/entities.py:47:0-233:22), [AchievementTier](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/achievements/domain/entities.py:26:0-32:25))
+  - [x] Core entities ([Achievement](life_dashboard/achievements/domain/entities.py#L48-L234), [AchievementTier](life_dashboard/achievements/domain/entities.py#L27-L33))
     - [x] Implementation
     - [x] Unit tests
   - [x] Reward system
@@ -251,7 +251,7 @@
 
 ### 2.5 Journals Context
 - [x] 2.5.1 Domain Layer
-  - [x] Core entity ([JournalEntry](cci:2://file:///C:/Users/Ndjvi/Documents/Personal/1.%20Projects/life/life_dashboard/shared/domain/events.py:780:0-803:48))
+  - [x] Core entity ([JournalEntry](life_dashboard/journals/domain/entities.py#L22-L130))
     - [x] Implementation
     - [x] Unit tests
   - [ ] Categorization system
