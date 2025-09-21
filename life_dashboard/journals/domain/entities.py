@@ -3,7 +3,7 @@ Journals domain entities - pure Python business logic without Django dependencie
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 from uuid import uuid4
@@ -66,7 +66,7 @@ class JournalEntry:
         """
         self.title = title
         self.content = content
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def add_tag(self, tag: str) -> None:
         """
@@ -76,7 +76,7 @@ class JournalEntry:
         """
         if tag and tag not in self.tags:
             self.tags.append(tag)
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(timezone.utc)
 
     def remove_tag(self, tag: str) -> None:
         """
@@ -87,7 +87,7 @@ class JournalEntry:
         """
         if tag in self.tags:
             self.tags.remove(tag)
-            self.updated_at = datetime.utcnow()
+            self.updated_at = datetime.now(timezone.utc)
 
     def set_mood(self, mood: int) -> None:
         """
@@ -103,7 +103,7 @@ class JournalEntry:
             raise ValueError("Mood rating must be between 1 and 10")
 
         self.mood = mood
-        self.updated_at = datetime.utcnow()
+        self.updated_at = datetime.now(timezone.utc)
 
     def to_dict(self) -> dict[str, Any]:
         """

@@ -7,7 +7,7 @@ with event handlers, version compatibility, and privacy-aware processing.
 
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Add the parent directory to the path so we can import from shared
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -51,7 +51,7 @@ def check_achievements_on_quest_completion(event: QuestCompleted):
             achievement_name="Daily Warrior",
             tier="bronze",
             experience_reward=50,
-            unlock_timestamp=datetime.utcnow(),
+            unlock_timestamp=datetime.now(timezone.utc),
         )
         publish_event(achievement_event)
 
@@ -92,7 +92,7 @@ def demo_event_system():
         quest_id=456,
         quest_type="daily",
         experience_reward=25,
-        completion_timestamp=datetime.utcnow(),
+        completion_timestamp=datetime.now(timezone.utc),
         auto_completed=False,
     )
 

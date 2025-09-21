@@ -2,7 +2,7 @@
 Domain entity tests for journals - pure Python business logic tests.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -23,8 +23,8 @@ class TestJournalEntry:
             entry_type=EntryType.DAILY,
             mood=8,
             tags=["productivity", "goals"],
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
 
         assert entry.user_id == 1
@@ -62,7 +62,7 @@ class TestJournalEntry:
             user_id=1,
             title="Original Title",
             content="Original content",
-            updated_at=datetime.utcnow() - timedelta(hours=1),
+            updated_at=datetime.now(timezone.utc) - timedelta(hours=1),
         )
 
         original_updated_at = entry.updated_at
@@ -80,7 +80,7 @@ class TestJournalEntry:
             title="Test Entry",
             content="Content",
             tags=["existing"],
-            updated_at=datetime.utcnow() - timedelta(hours=1),
+            updated_at=datetime.now(timezone.utc) - timedelta(hours=1),
         )
 
         original_updated_at = entry.updated_at
@@ -106,7 +106,7 @@ class TestJournalEntry:
             title="Test Entry",
             content="Content",
             tags=["tag1", "tag2", "tag3"],
-            updated_at=datetime.utcnow() - timedelta(hours=1),
+            updated_at=datetime.now(timezone.utc) - timedelta(hours=1),
         )
 
         original_updated_at = entry.updated_at
@@ -128,7 +128,7 @@ class TestJournalEntry:
             user_id=1,
             title="Test Entry",
             content="Content",
-            updated_at=datetime.utcnow() - timedelta(hours=1),
+            updated_at=datetime.now(timezone.utc) - timedelta(hours=1),
         )
 
         original_updated_at = entry.updated_at
@@ -147,8 +147,8 @@ class TestJournalEntry:
 
     def test_journal_entry_to_dict(self):
         """Test converting journal entry to dictionary."""
-        created_at = datetime.utcnow()
-        updated_at = datetime.utcnow()
+        created_at = datetime.now(timezone.utc)
+        updated_at = datetime.now(timezone.utc)
 
         entry = JournalEntry(
             entry_id="test-id",

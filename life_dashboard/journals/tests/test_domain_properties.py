@@ -2,7 +2,7 @@
 Property-based tests for journals domain - using Hypothesis for comprehensive validation.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -94,7 +94,7 @@ class TestJournalEntryProperties:
             user_id=1,
             title="Original Title",
             content="Original content",
-            updated_at=datetime.utcnow() - timedelta(hours=1),
+            updated_at=datetime.now(timezone.utc) - timedelta(hours=1),
         )
 
         original_updated_at = entry.updated_at

@@ -4,7 +4,7 @@ Contract tests for Quest domain services using Pydantic models.
 These tests validate service layer APIs and ensure consistent interfaces.
 """
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from unittest.mock import Mock
 
 import pytest
@@ -338,7 +338,7 @@ class TestQuestServiceContracts:
             quest_type=QuestType.MAIN,
             status=QuestStatus.COMPLETED,
             experience_reward=ExperienceReward(100),
-            completed_at=datetime.utcnow(),
+            completed_at=datetime.now(timezone.utc),
         )
 
         self.mock_repository.get_by_id.return_value = mock_quest

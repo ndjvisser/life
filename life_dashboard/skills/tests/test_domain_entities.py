@@ -4,7 +4,7 @@ Fast unit tests for Skills domain entities.
 These tests run without Django and focus on pure business logic validation.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -377,7 +377,7 @@ class TestSkill:
             level=SkillLevel(5),
             experience_points=ExperiencePoints(0),
             experience_to_next_level=ExperiencePoints(1000),
-            last_practiced=datetime.utcnow() - timedelta(days=10),
+            last_practiced=datetime.now(timezone.utc) - timedelta(days=10),
         )
         assert not skill_recent.is_stagnant(30)
 
@@ -391,7 +391,7 @@ class TestSkill:
             level=SkillLevel(5),
             experience_points=ExperiencePoints(0),
             experience_to_next_level=ExperiencePoints(1000),
-            last_practiced=datetime.utcnow() - timedelta(days=45),
+            last_practiced=datetime.now(timezone.utc) - timedelta(days=45),
         )
         assert skill_stagnant.is_stagnant(30)
 
