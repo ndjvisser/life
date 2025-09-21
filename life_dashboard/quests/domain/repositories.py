@@ -48,16 +48,12 @@ class QuestRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_status(
-        self, user_id: UserId | int, status: QuestStatus
-    ) -> list[Quest]:
+    def get_by_status(self, user_id: UserId | int, status: QuestStatus) -> list[Quest]:
         """Get quests filtered by status for a user"""
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_type(
-        self, user_id: UserId | int, quest_type: QuestType
-    ) -> list[Quest]:
+    def get_by_type(self, user_id: UserId | int, quest_type: QuestType) -> list[Quest]:
         """Get quests filtered by type for a user"""
         raise NotImplementedError
 
@@ -72,9 +68,7 @@ class QuestRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_due_soon(
-        self, user_id: UserId | int, days: int = 7
-    ) -> list[Quest]:
+    def get_due_soon(self, user_id: UserId | int, days: int = 7) -> list[Quest]:
         """Get quests due within a window"""
         raise NotImplementedError
 
@@ -86,9 +80,7 @@ class QuestRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_by_parent_quest(
-        self, parent_quest_id: QuestId | str
-    ) -> list[Quest]:
+    def get_by_parent_quest(self, parent_quest_id: QuestId | str) -> list[Quest]:
         """Get child quests for a parent quest"""
         raise NotImplementedError
 
@@ -139,9 +131,7 @@ class HabitRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_active_streaks(
-        self, user_id: UserId, min_streak: int = 7
-    ) -> list[Habit]:
+    def get_active_streaks(self, user_id: UserId, min_streak: int = 7) -> list[Habit]:
         """Get habits with streaks above a minimum"""
         raise NotImplementedError
 

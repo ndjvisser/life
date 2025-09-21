@@ -186,7 +186,9 @@ class SkillService:
 
         # Get stagnant skills
         stagnant_skills = [
-            skill for skill in user_skills if skill.is_stagnant(30, current_time=reference_time)
+            skill
+            for skill in user_skills
+            if skill.is_stagnant(30, current_time=reference_time)
         ]
 
         # Get next milestones
@@ -227,9 +229,7 @@ class SkillService:
                 {
                     "name": skill.name.value,
                     "level": skill.level.value,
-                    "days_since_practice": (
-                        reference_time - skill.last_practiced
-                    ).days
+                    "days_since_practice": (reference_time - skill.last_practiced).days
                     if skill.last_practiced
                     else None,
                 }

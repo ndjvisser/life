@@ -124,7 +124,9 @@ def create_simple_pytest_module() -> types.ModuleType:
 
             return True
 
-    def raises(expected_exception: type[BaseException], match: str | None = None) -> RaisesContext:
+    def raises(
+        expected_exception: type[BaseException], match: str | None = None
+    ) -> RaisesContext:
         return RaisesContext(expected_exception, match)
 
     module.raises = raises  # type: ignore[attr-defined]
@@ -141,7 +143,9 @@ def create_simple_pytest_module() -> types.ModuleType:
     module.mark = MarkDecorator()  # type: ignore[attr-defined]
 
     class Approx:
-        def __init__(self, value: float, *, abs: float | None = None, rel: float | None = None):
+        def __init__(
+            self, value: float, *, abs: float | None = None, rel: float | None = None
+        ):
             self.value = value
             self.abs = abs
             self.rel = rel
@@ -158,9 +162,13 @@ def create_simple_pytest_module() -> types.ModuleType:
         def __eq__(self, other: object) -> bool:
             if not isinstance(other, int | float):
                 return False
-            return abs(float(other) - float(self.value)) <= self._tolerance(float(other))
+            return abs(float(other) - float(self.value)) <= self._tolerance(
+                float(other)
+            )
 
-    def approx(value: float, *, abs: float | None = None, rel: float | None = None) -> Approx:
+    def approx(
+        value: float, *, abs: float | None = None, rel: float | None = None
+    ) -> Approx:
         return Approx(value, abs=abs, rel=rel)
 
     module.approx = approx  # type: ignore[attr-defined]

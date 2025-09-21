@@ -288,9 +288,7 @@ class DjangoQuestRepository(QuestRepository):
         except (DjangoQuest.DoesNotExist, ValueError):
             return False
 
-    def get_overdue_quests(
-        self, user_id: UserId | int | str
-    ) -> list[DomainQuest]:
+    def get_overdue_quests(self, user_id: UserId | int | str) -> list[DomainQuest]:
         """
         Return the user's quests that are past their due date.
 
@@ -695,9 +693,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
         Raises:
             DjangoHabit.DoesNotExist: If no DjangoHabit exists for the given habit_id.
         """
-        habit = DjangoHabit.objects.get(
-            id=_habit_id_as_int(domain_completion.habit_id)
-        )
+        habit = DjangoHabit.objects.get(id=_habit_id_as_int(domain_completion.habit_id))
 
         return DjangoHabitCompletion(
             habit=habit,

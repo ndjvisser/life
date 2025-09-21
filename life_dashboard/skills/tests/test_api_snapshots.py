@@ -11,8 +11,6 @@ import pytest
 
 pytest.importorskip("pytest_snapshot")
 
-from tests.snapshot_utils import assert_json_snapshot
-
 from life_dashboard.skills.domain.entities import (
     Skill,
     SkillCategory,
@@ -28,6 +26,7 @@ from life_dashboard.skills.domain.value_objects import (
     SkillName,
     UserId,
 )
+from tests.snapshot_utils import assert_json_snapshot
 
 
 class TestSkillCategoryAPISnapshots:
@@ -67,9 +66,7 @@ class TestSkillCategoryAPISnapshots:
         }
 
         # Snapshot the response structure
-        assert_json_snapshot(
-            snapshot, api_response, "category_creation_response.json"
-        )
+        assert_json_snapshot(snapshot, api_response, "category_creation_response.json")
 
 
 class TestSkillAPISnapshots:

@@ -13,8 +13,6 @@ pytest.importorskip("pytest_snapshot")
 pytest.importorskip("freezegun")
 from freezegun import freeze_time
 
-from tests.snapshot_utils import assert_json_snapshot
-
 from life_dashboard.achievements.domain.entities import (
     Achievement,
     AchievementCategory,
@@ -35,6 +33,7 @@ from life_dashboard.achievements.domain.value_objects import (
     UserAchievementId,
     UserId,
 )
+from tests.snapshot_utils import assert_json_snapshot
 
 
 class TestAchievementAPISnapshots:
@@ -183,9 +182,7 @@ class TestAchievementAPISnapshots:
         }
 
         # Snapshot the response structure
-        assert_json_snapshot(
-            snapshot, api_response, "unlock_achievement_response.json"
-        )
+        assert_json_snapshot(snapshot, api_response, "unlock_achievement_response.json")
 
     def test_achievement_statistics_response_snapshot(self, snapshot):
         """Test achievement statistics API response structure"""
