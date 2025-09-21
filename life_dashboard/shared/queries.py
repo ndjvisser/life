@@ -6,9 +6,22 @@ without violating bounded context boundaries. Only read-only operations
 are allowed to maintain context independence.
 """
 
-from typing import Any
+from datetime import datetime
+from typing import Any, Protocol, cast
 
 from django.contrib.auth import get_user_model
+
+
+class _SupportsBasicUserFields(Protocol):
+    """Protocol capturing the user attributes required by this module."""
+
+    id: int
+    username: str
+    email: str
+    first_name: str
+    last_name: str
+    is_active: bool
+    date_joined: datetime
 
 
 class CrossContextQueries:
@@ -48,7 +61,7 @@ class CrossContextQueries:
         """
         try:
             User = get_user_model()
-            user = User.objects.get(id=user_id)
+            user = cast(_SupportsBasicUserFields, User.objects.get(id=user_id))
 
             # Get basic user info
             summary = {
@@ -63,37 +76,43 @@ class CrossContextQueries:
 
             # Add profile info if available
             if hasattr(user, "profile"):
+                user_with_profile = cast(Any, user)
+                profile = user_with_profile.profile
                 summary.update(
                     {
-                        "experience_points": user.profile.experience_points,
-                        "level": user.profile.level,
-                        "bio": user.profile.bio,
-                        "location": user.profile.location,
+                        "experience_points": profile.experience_points,
+                        "level": profile.level,
+                        "bio": profile.bio,
+                        "location": profile.location,
                     }
                 )
 
             # Add stats info if available (legacy support)
             if hasattr(user, "stats"):
+                user_with_stats = cast(Any, user)
+                stats = user_with_stats.stats
                 summary.update(
                     {
-                        "legacy_level": user.stats.level,
-                        "legacy_experience": user.stats.experience,
+                        "legacy_level": stats.level,
+                        "legacy_experience": stats.experience,
                     }
                 )
 
             # Add core stats if available
             if hasattr(user, "core_stats"):
+                user_with_core_stats = cast(Any, user)
+                core_stats = user_with_core_stats.core_stats
                 summary.update(
                     {
                         "core_stats": {
-                            "strength": user.core_stats.strength,
-                            "endurance": user.core_stats.endurance,
-                            "agility": user.core_stats.agility,
-                            "intelligence": user.core_stats.intelligence,
-                            "wisdom": user.core_stats.wisdom,
-                            "charisma": user.core_stats.charisma,
-                            "level": user.core_stats.level,
-                            "experience_points": user.core_stats.experience_points,
+                            "strength": core_stats.strength,
+                            "endurance": core_stats.endurance,
+                            "agility": core_stats.agility,
+                            "intelligence": core_stats.intelligence,
+                            "wisdom": core_stats.wisdom,
+                            "charisma": core_stats.charisma,
+                            "level": core_stats.level,
+                            "experience_points": core_stats.experience_points,
                         }
                     }
                 )
