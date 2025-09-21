@@ -105,9 +105,7 @@ class SkillService:
                 if skill.last_practiced.tzinfo is not None
                 else skill.last_practiced.replace(tzinfo=timezone.utc)
             )
-            days_since_practice = (
-                datetime.now(timezone.utc) - last_practiced
-            ).days
+            days_since_practice = (datetime.now(timezone.utc) - last_practiced).days
 
         # Calculate practice efficiency
         efficiency = skill.calculate_practice_efficiency(days_since_practice)
