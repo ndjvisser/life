@@ -425,6 +425,9 @@ class DataSubjectService:
         if not request:
             raise ValueError(f"Request {request_id} not found")
 
+        if getattr(request, "request_type", None) != "export":
+            raise ValueError(f"Request {request_id} is not an export request")
+
         if request.status in {"completed", "rejected"}:
             raise ValueError(
                 f"Request {request_id} has already been resolved with status {request.status}"
@@ -514,6 +517,9 @@ class DataSubjectService:
             raise ValueError(
                 f"Request {request_id} is already being processed and cannot be processed twice"
             )
+
+        if getattr(request, "request_type", None) not in {"delete", "deletion"}:
+            raise ValueError(f"Request {request_id} is not a deletion request")
 
         # Ensure identity is verified before processing
         if not request.identity_verified:

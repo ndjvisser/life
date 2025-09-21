@@ -35,6 +35,7 @@ class TestVerificationMethodFix:
         mock_request.request_id = "req-1"
         mock_request.status = "pending"
         mock_request.identity_verified = False  # Ensure identity needs verification
+        mock_request.request_type = "export"
 
         self.request_repo.get_by_id.return_value = mock_request
         self.service._collect_user_data = MagicMock(return_value={"test": "data"})
@@ -58,6 +59,7 @@ class TestVerificationMethodFix:
         mock_request.request_id = "req-2"
         mock_request.status = "pending"
         mock_request.identity_verified = True
+        mock_request.request_type = "export"
 
         self.request_repo.get_by_id.return_value = mock_request
         self.service._collect_user_data = MagicMock(return_value={"test": "data"})
@@ -78,6 +80,7 @@ class TestVerificationMethodFix:
         mock_request.request_id = "req-3"
         mock_request.status = "pending"
         mock_request.identity_verified = False  # Ensure identity needs verification
+        mock_request.request_type = "delete"
 
         self.request_repo.get_by_id.return_value = mock_request
         self.service._delete_user_data = MagicMock(return_value=42)
@@ -101,6 +104,7 @@ class TestVerificationMethodFix:
         mock_request.request_id = "req-4"
         mock_request.status = "pending"
         mock_request.identity_verified = True
+        mock_request.request_type = "delete"
 
         self.request_repo.get_by_id.return_value = mock_request
         self.service._delete_user_data = MagicMock(return_value=42)
@@ -145,6 +149,28 @@ class TestVerificationMethodFix:
                 "nonexistent", 123, verification_method="email"
             )
 
+    def test_process_export_request_rejects_non_export_type(self):
+        """Processing should fail if the request is not an export type."""
+        mock_request = MagicMock(spec=DataSubjectRequest)
+        mock_request.request_type = "delete"
+        mock_request.status = "pending"
+
+        self.request_repo.get_by_id.return_value = mock_request
+
+        with pytest.raises(ValueError, match="not an export request"):
+            self.service.process_export_request("wrong-type", 1)
+
+    def test_process_deletion_request_rejects_non_deletion_type(self):
+        """Processing should fail if the request is not a deletion type."""
+        mock_request = MagicMock(spec=DataSubjectRequest)
+        mock_request.request_type = "export"
+        mock_request.status = "pending"
+
+        self.request_repo.get_by_id.return_value = mock_request
+
+        with pytest.raises(ValueError, match="not a deletion request"):
+            self.service.process_deletion_request("wrong-type", 1)
+
     def test_process_export_request_logs_audit_events(self):
         """Processing an export request should emit start and completion audit activities."""
         mock_request = MagicMock(spec=DataSubjectRequest)
@@ -153,6 +179,7 @@ class TestVerificationMethodFix:
         mock_request.request_id = "export-1"
         mock_request.status = "pending"
         mock_request.identity_verified = True
+        mock_request.request_type = "export"
 
         self.request_repo.get_by_id.return_value = mock_request
         self.service._collect_user_data = MagicMock(return_value={})
@@ -180,6 +207,7 @@ class TestVerificationMethodFix:
         mock_request.request_id = "delete-1"
         mock_request.status = "pending"
         mock_request.identity_verified = True
+        mock_request.request_type = "delete"
 
         self.request_repo.get_by_id.return_value = mock_request
         self.service._delete_user_data = MagicMock(return_value=5)
@@ -203,6 +231,7 @@ class TestVerificationMethodFix:
         """Requests that are already resolved should raise an error when reprocessed."""
         mock_request = MagicMock(spec=DataSubjectRequest)
         mock_request.status = "completed"
+        mock_request.request_type = "export"
 
         self.request_repo.get_by_id.return_value = mock_request
 
@@ -213,6 +242,7 @@ class TestVerificationMethodFix:
         """Requests already in processing should not be processed again."""
         mock_request = MagicMock(spec=DataSubjectRequest)
         mock_request.status = "processing"
+        mock_request.request_type = "delete"
 
         self.request_repo.get_by_id.return_value = mock_request
 
@@ -235,6 +265,7 @@ class TestVerificationMethodFix:
         mock_request.request_id = "delete-flag"
         mock_request.status = "pending"
         mock_request.identity_verified = True
+        mock_request.request_type = "delete"
 
         self.request_repo.get_by_id.return_value = mock_request
         service._delete_user_data = MagicMock(return_value=0)
