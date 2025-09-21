@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("achievements", "0005_alter_achievement_tier_choices"),
     ]

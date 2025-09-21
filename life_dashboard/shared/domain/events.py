@@ -77,7 +77,9 @@ class BaseEvent:
                     inspect.Parameter.KEYWORD_ONLY,
                 }
             }
-            filtered_data = {key: event_data[key] for key in allowed_keys if key in event_data}
+            filtered_data = {
+                key: event_data[key] for key in allowed_keys if key in event_data
+            }
 
         return cls(**filtered_data)
 
