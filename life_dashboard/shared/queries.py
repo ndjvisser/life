@@ -215,15 +215,17 @@ class CrossContextQueries:
                 ).order_by("-date")[:5]
 
                 for completion in recent_habits:
-                    activities.append(
-                        {
-                            "type": "habit_completed",
-                            "title": completion.habit.name,
-                            "timestamp": completion.date,
-                            "experience_gained": completion.experience_gained,
-                            "context": "quests",
-                        }
-                    )
+                    activity = {
+                        "type": "habit_completed",
+                        "title": completion.habit.name,
+                        "timestamp": completion.date,
+                        "context": "quests",
+                    }
+
+                    if hasattr(completion, "experience_gained"):
+                        activity["experience_gained"] = completion.experience_gained
+
+                    activities.append(activity)
 
             # Recent journal entries
             if hasattr(user, "journal_entries"):

@@ -35,7 +35,7 @@ def _create_sync_decorator(
                         if exc is not None:
                             raise exc
 
-                    _TaskSelf.retry = retry
+                    setattr(_TaskSelf, "retry", retry)
 
                 call_args = (task_self, *args)
             else:
