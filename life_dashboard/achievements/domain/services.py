@@ -72,7 +72,9 @@ class AchievementService:
         exp_reward = ExperienceReward(experience_reward, max_value=50000)
         req_level = RequiredLevel(required_level)
         req_skill_level = (
-            RequiredSkillLevel(required_skill_level) if required_skill_level else None
+            RequiredSkillLevel(required_skill_level)
+            if required_skill_level is not None
+            else None
         )
         req_quest_completions = RequiredQuestCompletions(required_quest_completions)
 
