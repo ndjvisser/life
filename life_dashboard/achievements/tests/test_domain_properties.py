@@ -25,13 +25,12 @@ from life_dashboard.achievements.domain.value_objects import (
     AchievementIcon,
     AchievementId,
     AchievementName,
-    ExperienceReward,
     RequiredLevel,
     RequiredQuestCompletions,
     RequiredSkillLevel,
     UserAchievementId,
-    UserId,
 )
+from life_dashboard.common.value_objects import ExperienceReward, UserId
 
 
 # Custom strategies for domain objects

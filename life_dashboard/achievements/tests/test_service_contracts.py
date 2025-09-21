@@ -25,12 +25,11 @@ from life_dashboard.achievements.domain.value_objects import (
     AchievementIcon,
     AchievementId,
     AchievementName,
-    ExperienceReward,
     RequiredLevel,
     RequiredQuestCompletions,
     UserAchievementId,
-    UserId,
 )
+from life_dashboard.common.value_objects import ExperienceReward, UserId
 
 
 # Pydantic models for API contracts
