@@ -26,13 +26,12 @@ from life_dashboard.achievements.domain.value_objects import (
     AchievementIcon,
     AchievementId,
     AchievementName,
-    ExperienceReward,
     RequiredLevel,
     RequiredQuestCompletions,
     RequiredSkillLevel,
     UserAchievementId,
-    UserId,
 )
+from life_dashboard.common.value_objects import ExperienceReward, UserId
 from tests.snapshot_utils import assert_json_snapshot
 
 
@@ -184,6 +183,7 @@ class TestAchievementAPISnapshots:
         # Snapshot the response structure
         assert_json_snapshot(snapshot, api_response, "unlock_achievement_response.json")
 
+    @freeze_time("2024-01-25 18:00:00", tz_offset=0)
     def test_achievement_statistics_response_snapshot(self, snapshot):
         """Test achievement statistics API response structure"""
         # Mock diverse achievements
