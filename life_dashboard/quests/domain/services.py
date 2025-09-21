@@ -164,14 +164,15 @@ class HabitService:
             experience_reward=exp_reward,
         )
 
-        created_habit = self._habit_repository.create(habit)
+        created = self._habit_repository.create(habit)
 
-        # Mirror the quest service behaviour so tests that stub save() still
-        # receive the mocked Habit entity.
-        if not isinstance(created_habit, Habit):
-            created_habit = self._habit_repository.save(habit)
+        if not isinstance(created, Habit):
+            raise TypeError(
+                "HabitRepository.create must return Habit, "
+                f"got {type(created).__name__}: {created!r}"
+            )
 
-        return created_habit
+        return created
 
     def complete_habit(
         self,
