@@ -7,7 +7,7 @@ from datetime import datetime
 import pytest
 
 pytest.importorskip("pydantic")
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from life_dashboard.journals.domain.entities import EntryType, JournalEntry
 from life_dashboard.journals.domain.repositories import JournalEntryRepository
@@ -158,11 +158,11 @@ class TestJournalServiceContracts:
         assert valid_request.mood == 7
 
         # Invalid request - missing title
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             CreateEntryRequest(user_id=1, title="", content="Test content")
 
         # Invalid request - invalid mood
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             CreateEntryRequest(
                 user_id=1, title="Test Entry", content="Test content", mood=11
             )
@@ -179,7 +179,7 @@ class TestJournalServiceContracts:
         assert valid_request.mood == 5
 
         # Invalid request - empty entry_id
-        with pytest.raises(ValueError):
+        with pytest.raises(ValidationError):
             UpdateEntryRequest(entry_id="", title="Updated Title")
 
     def test_journal_service_create_returns_valid_response(self):
