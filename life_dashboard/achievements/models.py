@@ -32,7 +32,7 @@ class Achievement(models.Model):
         null=True, blank=True, validators=[MinValueValidator(1)]
     )
     required_quest_completions = models.IntegerField(
-        default=1, validators=[MinValueValidator(1)]
+        default=0, validators=[MinValueValidator(0)]
     )
 
     class Meta:
