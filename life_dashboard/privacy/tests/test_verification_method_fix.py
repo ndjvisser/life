@@ -1,6 +1,6 @@
 """Tests for data subject service processing safeguards and verification handling."""
 
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
 import pytest
 

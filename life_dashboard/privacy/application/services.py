@@ -137,7 +137,9 @@ class ConsentService:
         if not consent:
             return False
 
-        return consent.is_valid_readonly() and consent.covers_data_category(data_category)
+        return consent.is_valid_readonly() and consent.covers_data_category(
+            data_category
+        )
 
     def get_user_consents(self, user_id: int) -> list[ConsentRecord]:
         """Get all consent records for a user."""
@@ -265,10 +267,18 @@ class PrivacyService:
 
         # Map purposes to settings, defaulting to disabled when settings are absent
         purpose_settings_map = {
-            DataProcessingPurpose.ANALYTICS: settings.analytics_enabled if settings else False,
-            DataProcessingPurpose.AI_INSIGHTS: settings.ai_insights_enabled if settings else False,
-            DataProcessingPurpose.SOCIAL_FEATURES: settings.social_features_enabled if settings else False,
-            DataProcessingPurpose.MARKETING: settings.marketing_enabled if settings else False,
+            DataProcessingPurpose.ANALYTICS: settings.analytics_enabled
+            if settings
+            else False,
+            DataProcessingPurpose.AI_INSIGHTS: settings.ai_insights_enabled
+            if settings
+            else False,
+            DataProcessingPurpose.SOCIAL_FEATURES: settings.social_features_enabled
+            if settings
+            else False,
+            DataProcessingPurpose.MARKETING: settings.marketing_enabled
+            if settings
+            else False,
         }
 
         # Core functionality is always allowed with consent
@@ -597,7 +607,9 @@ class DataSubjectService:
 
         return export_data
 
-    def _delete_user_data(self, user_id: int, *, delete_activities: bool = False) -> int:
+    def _delete_user_data(
+        self, user_id: int, *, delete_activities: bool = False
+    ) -> int:
         """
         Delete stored privacy-related data for a user.
 

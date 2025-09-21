@@ -9,7 +9,9 @@ class TestQuestProgress:
     def test_milestones_converted_to_tuple(self) -> None:
         """QuestProgress should coerce milestone inputs to an immutable tuple."""
 
-        progress = QuestProgress(completion_percentage=10.0, milestones_completed=["start"])
+        progress = QuestProgress(
+            completion_percentage=10.0, milestones_completed=["start"]
+        )
 
         assert progress.milestones_completed == ("start",)
         assert isinstance(progress.milestones_completed, tuple)
@@ -17,7 +19,9 @@ class TestQuestProgress:
     def test_add_milestone_returns_new_instance(self) -> None:
         """Adding a milestone should return a new QuestProgress instance without mutating the original."""
 
-        progress = QuestProgress(completion_percentage=10.0, milestones_completed=("start",))
+        progress = QuestProgress(
+            completion_percentage=10.0, milestones_completed=("start",)
+        )
 
         updated = progress.add_milestone("week")
 
@@ -30,7 +34,9 @@ class TestQuestProgress:
     def test_update_progress_preserves_milestones(self) -> None:
         """Updating the completion percentage should preserve milestone immutability."""
 
-        progress = QuestProgress(completion_percentage=10.0, milestones_completed=("start",))
+        progress = QuestProgress(
+            completion_percentage=10.0, milestones_completed=("start",)
+        )
 
         updated = progress.update_progress(55.0)
 

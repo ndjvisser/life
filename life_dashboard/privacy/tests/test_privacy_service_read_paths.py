@@ -29,7 +29,9 @@ def test_check_consent_does_not_mutate_expired_record():
 
     consent_repo.get_by_user_and_purpose.return_value = expired_consent
 
-    result = service.check_consent(1, DataProcessingPurpose.ANALYTICS, DataCategory.BEHAVIORAL)
+    result = service.check_consent(
+        1, DataProcessingPurpose.ANALYTICS, DataCategory.BEHAVIORAL
+    )
 
     assert result is False
     assert expired_consent.status == ConsentStatus.GRANTED
@@ -76,4 +78,3 @@ def test_can_process_data_core_functionality_allows_when_consent_present():
 
     assert result is True
     settings_repo.get_by_user_id.assert_called_once_with(3)
-

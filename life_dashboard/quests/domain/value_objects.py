@@ -6,7 +6,6 @@ No Django dependencies allowed in this module.
 """
 
 from dataclasses import dataclass
-from typing import Tuple
 
 from life_dashboard.common.value_objects import ExperienceReward, UserId
 
@@ -192,12 +191,14 @@ class QuestProgress:
     """Value object for quest progress tracking."""
 
     completion_percentage: float
-    milestones_completed: Tuple[str, ...] = ()
+    milestones_completed: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not 0 <= self.completion_percentage <= 100:
             raise ValueError("Completion percentage must be between 0 and 100")
-        object.__setattr__(self, "milestones_completed", tuple(self.milestones_completed))
+        object.__setattr__(
+            self, "milestones_completed", tuple(self.milestones_completed)
+        )
 
     def is_complete(self) -> bool:
         """Check if quest is complete."""

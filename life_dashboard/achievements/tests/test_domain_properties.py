@@ -126,10 +126,7 @@ class TestAchievementProperties:
         required_quest_completions,
     ):
         """Test that achievement creation always succeeds with valid inputs"""
-        if (
-            required_level.value == 1
-            and required_quest_completions.value == 0
-        ):
+        if required_level.value == 1 and required_quest_completions.value == 0:
             with pytest.raises(
                 ValueError, match="Achievement must have at least one requirement"
             ):

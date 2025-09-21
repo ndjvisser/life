@@ -78,4 +78,3 @@ def register_skill(skill_cls: T, *, name: str | None = None) -> T:
 
     skill_registry.register(skill_cls, name=name)
     return skill_cls
-

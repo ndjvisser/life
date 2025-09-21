@@ -162,7 +162,9 @@ class PrivacyImpactLevel:
 
         min_score, max_score = level_map[normalized_level]
         if not min_score <= self.score <= max_score:
-            raise ValueError(f"Score {self.score} doesn't match level {normalized_level}")
+            raise ValueError(
+                f"Score {self.score} doesn't match level {normalized_level}"
+            )
 
     def requires_dpo_review(self) -> bool:
         """
