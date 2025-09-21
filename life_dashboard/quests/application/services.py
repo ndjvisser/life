@@ -703,93 +703,72 @@ class QuestChainService:
         Returns:
             List[Quest]: The list of persisted Quest instances for the created child quests.
         """
-        created_quests = []
+        created_quests: list[Quest] = []
+
+        quest_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
+        parent_identifier = (
+            None if parent_quest_id is None else str(parent_quest_id).strip() or None
+        )
 
         for quest_data in child_quests:
-            quest_payload = quest_data.copy()
+            sanitized = self._sanitize_child_quest_data(quest_data)
 
-            quest_identifier = quest_payload.get("quest_id")
-            if quest_identifier is None:
-                quest_identifier = QuestId(_generate_positive_identifier())
-            elif not isinstance(quest_identifier, QuestId):
-                try:
-                    quest_identifier = QuestId(int(quest_identifier))
-                except (TypeError, ValueError) as err:
-                    raise ValueError(
-                        f"Invalid quest_id value in quest chain payload: {quest_identifier}"
-                    ) from err
+            raw_identifier = sanitized.pop("quest_id")
+            quest_identifier = (
+                raw_identifier
+                if isinstance(raw_identifier, QuestId)
+                else QuestId(raw_identifier)
+            )
 
-            quest_user_id = user_id if isinstance(user_id, UserId) else UserId(user_id)
-
-            title_value = quest_payload.get("title", "")
+            title_value = sanitized.pop("title")
             quest_title = (
                 title_value
                 if isinstance(title_value, QuestTitle)
                 else QuestTitle(title_value)
             )
 
-            description_value = quest_payload.get("description", "")
+            description_value = sanitized.pop("description")
             quest_description = (
                 description_value
                 if isinstance(description_value, QuestDescription)
                 else QuestDescription(description_value)
             )
 
-            difficulty_value = quest_payload.get("difficulty", QuestDifficulty.MEDIUM)
-            if isinstance(difficulty_value, str):
-                difficulty_key = difficulty_value.upper()
-                difficulty_value = (
-                    QuestDifficulty[difficulty_key]
-                    if difficulty_key in QuestDifficulty.__members__
-                    else QuestDifficulty.MEDIUM
-                )
-
-            quest_type_value = quest_payload.get("quest_type", QuestType.SIDE)
-            if isinstance(quest_type_value, str):
-                quest_type_key = quest_type_value.upper()
-                quest_type_value = (
-                    QuestType[quest_type_key]
-                    if quest_type_key in QuestType.__members__
-                    else QuestType.SIDE
-                )
-
-            status_value = quest_payload.get("status", QuestStatus.DRAFT)
-            if isinstance(status_value, str):
-                status_key = status_value.upper()
-                status_value = (
-                    QuestStatus[status_key]
-                    if status_key in QuestStatus.__members__
-                    else QuestStatus.DRAFT
-                )
-
-            experience_value = quest_payload.get("experience_reward", 0)
+            experience_value = sanitized.pop("experience_reward")
             quest_experience = (
                 experience_value
                 if isinstance(experience_value, ExperienceReward)
                 else ExperienceReward(experience_value)
             )
 
+            timestamp = datetime.utcnow()
+
             quest = Quest(
                 quest_id=quest_identifier,
                 user_id=quest_user_id,
                 title=quest_title,
                 description=quest_description,
-                quest_type=quest_type_value,
-                difficulty=difficulty_value,
-                status=status_value,
+                quest_type=sanitized.pop("quest_type"),
+                difficulty=sanitized.pop("difficulty"),
+                status=sanitized.pop("status"),
                 experience_reward=quest_experience,
-                start_date=quest_payload.get("start_date"),
-                due_date=quest_payload.get("due_date"),
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                progress=sanitized.pop("progress", 0.0),
+                start_date=sanitized.pop("start_date", None),
+                due_date=sanitized.pop("due_date", None),
+                completed_at=sanitized.pop("completed_at", None),
+                prerequisite_quest_ids=sanitized.pop("prerequisite_quest_ids", []),
+                parent_quest_id=parent_identifier,
+                created_at=timestamp,
+                updated_at=timestamp,
             )
 
-            if "progress" in quest_payload:
-                quest.progress = quest_payload["progress"]
-            if parent_quest_id is not None:
-                quest.parent_quest_id = parent_quest_id
-            if "prerequisite_quest_ids" in quest_payload:
-                quest.prerequisite_quest_ids = quest_payload["prerequisite_quest_ids"]
+            if sanitized:
+                # Defensive guard: _sanitize_child_quest_data should have consumed all keys.
+                unexpected_keys = ", ".join(sorted(sanitized.keys()))
+                raise ValueError(
+                    f"Unsupported quest fields provided after sanitization: {unexpected_keys}"
+                )
+
             created_quest = self.quest_repo.create(quest)
             created_quests.append(created_quest)
 

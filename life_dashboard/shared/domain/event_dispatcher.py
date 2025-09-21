@@ -156,15 +156,20 @@ class EventDispatcher:
         self, event_type: type[BaseEvent], handler_name: str
     ) -> bool:
         """Unregister a handler by name."""
-        handlers = self._handlers.get(event_type, [])
-        for i, handler in enumerate(handlers):
-            if handler.handler_name == handler_name:
-                del handlers[i]
-                logger.info(
-                    f"Unregistered handler {handler_name} for {event_type.__name__}"
-                )
-                return True
-        return False
+        if event_type not in self._handlers:
+            return False
+
+        handlers = self._handlers[event_type]
+        filtered_handlers = [
+            handler for handler in handlers if handler.handler_name != handler_name
+        ]
+
+        if len(filtered_handlers) == len(handlers):
+            return False
+
+        self._handlers[event_type] = filtered_handlers
+        logger.info(f"Unregistered handler {handler_name} for {event_type.__name__}")
+        return True
 
     def clear_handlers(self, event_type: type[BaseEvent] | None = None) -> None:
         """Clear all handlers for a specific event type or all handlers."""
@@ -273,7 +278,14 @@ class PrivacyAwareEventDispatcher(EventDispatcher):
         if is_consent_required(event):
             # Extract user_id from event (most events have this field)
             user_id = getattr(event, "user_id", None)
-            if user_id and not validate_privacy_consent(event, user_id):
+            if user_id is None:
+                logger.error(
+                    "Skipping %s processing - missing user_id for consent validation",
+                    type(event).__name__,
+                )
+                return
+
+            if not validate_privacy_consent(event, user_id):
                 logger.info(
                     f"Skipping {type(event).__name__} processing - "
                     f"user {user_id} has not consented"

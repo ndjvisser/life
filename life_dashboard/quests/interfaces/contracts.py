@@ -27,9 +27,7 @@ class QuestCreateRequest(BaseModel):
 
     @field_validator("due_date")
     @classmethod
-    def validate_due_date(
-        cls, v: date | None, info: ValidationInfo
-    ) -> date | None:
+    def validate_due_date(cls, v: date | None, info: ValidationInfo) -> date | None:
         """
         Validator to ensure a provided due date is not earlier than the start date.
 

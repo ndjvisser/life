@@ -13,6 +13,27 @@ class UserId:
         if self.value <= 0:
             raise ValueError("User ID must be positive")
 
+    def __eq__(self, other: object) -> bool:  # pragma: no cover - simple comparison
+        if isinstance(other, UserId):
+            return self.value == other.value
+        if isinstance(other, int):
+            return self.value == other
+        if isinstance(other, str):
+            try:
+                return self.value == int(other)
+            except ValueError:
+                return False
+        return False
+
+    def __hash__(self) -> int:  # pragma: no cover - delegation to underlying value
+        return hash(self.value)
+
+    def __int__(self) -> int:  # pragma: no cover - trivial conversion helper
+        return self.value
+
+    def __str__(self) -> str:  # pragma: no cover - trivial representation
+        return str(self.value)
+
 
 @dataclass(frozen=True)
 class ExperienceReward:
@@ -27,6 +48,25 @@ class ExperienceReward:
         if self.max_value <= 0:
             raise ValueError("Maximum experience reward must be positive")
         if self.value > self.max_value:
-            raise ValueError(
-                f"Experience reward cannot exceed {self.max_value}"
-            )
+            raise ValueError(f"Experience reward cannot exceed {self.max_value}")
+
+    def __eq__(self, other: object) -> bool:  # pragma: no cover - simple comparison
+        if isinstance(other, ExperienceReward):
+            return self.value == other.value
+        if isinstance(other, int):
+            return self.value == other
+        if isinstance(other, str):
+            try:
+                return self.value == int(other)
+            except ValueError:
+                return False
+        return False
+
+    def __hash__(self) -> int:  # pragma: no cover - delegation to underlying value
+        return hash(self.value)
+
+    def __int__(self) -> int:  # pragma: no cover - trivial conversion helper
+        return self.value
+
+    def __str__(self) -> str:  # pragma: no cover - trivial representation
+        return str(self.value)

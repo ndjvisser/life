@@ -148,11 +148,11 @@ class LifeStatValue:
         - Raises ValueError if `value` is not an int, float, or Decimal.
         - If `value` is an int or float, replaces it with an equivalent Decimal (constructed from str(value)) to preserve precision.
         """
-        if not isinstance(self.value, (int, float, Decimal)):
+        if not isinstance(self.value, int | float | Decimal):
             raise ValueError("Life stat value must be a number")
 
         # Convert to Decimal if needed
-        if isinstance(self.value, (int, float)):
+        if isinstance(self.value, int | float):
             object.__setattr__(self, "value", Decimal(str(self.value)))
 
     def add(self, amount: int | float | Decimal) -> "LifeStatValue":
@@ -161,7 +161,7 @@ class LifeStatValue:
 
         `amount` may be an int, float, or Decimal; ints/floats are converted to Decimal before addition. The method does not mutate the original instance and returns a new LifeStatValue.
         """
-        if isinstance(amount, (int, float)):
+        if isinstance(amount, int | float):
             amount = Decimal(str(amount))
         return LifeStatValue(self.value + amount)
 
@@ -174,7 +174,7 @@ class LifeStatValue:
         Returns:
             LifeStatValue: New instance with the result, clamped to a minimum of 0 (original is unchanged).
         """
-        if isinstance(amount, (int, float)):
+        if isinstance(amount, int | float):
             amount = Decimal(str(amount))
         return LifeStatValue(max(Decimal("0"), self.value - amount))
 
@@ -191,7 +191,7 @@ class LifeStatValue:
         Returns:
             LifeStatValue: New instance whose value equals self.value * factor.
         """
-        if isinstance(factor, (int, float)):
+        if isinstance(factor, int | float):
             factor = Decimal(str(factor))
         return LifeStatValue(self.value * factor)
 
@@ -220,10 +220,10 @@ class StatTarget:
 
         Ensures `value` is numeric (int, float, or Decimal). If `value` is an int or float it is converted to a Decimal (using `Decimal(str(value))`) and written back onto the frozen dataclass. Raises ValueError when `value` is not a number.
         """
-        if not isinstance(self.value, (int, float, Decimal)):
+        if not isinstance(self.value, int | float | Decimal):
             raise ValueError("Target value must be a number")
 
-        if isinstance(self.value, (int, float)):
+        if isinstance(self.value, int | float):
             object.__setattr__(self, "value", Decimal(str(self.value)))
 
     def is_achieved_by(self, current_value: int | float | Decimal) -> bool:
@@ -232,7 +232,7 @@ class StatTarget:
 
         Accepts int, float, or Decimal; numeric inputs are converted to Decimal for comparison.
         """
-        if isinstance(current_value, (int, float)):
+        if isinstance(current_value, int | float):
             current_value = Decimal(str(current_value))
         return current_value >= self.value
 
@@ -248,7 +248,7 @@ class StatTarget:
         Returns:
             float: Progress percentage in the range [0.0, 100.0], rounded to two decimals.
         """
-        if isinstance(current_value, (int, float)):
+        if isinstance(current_value, int | float):
             current_value = Decimal(str(current_value))
 
         if self.value == 0:
@@ -263,7 +263,7 @@ class StatTarget:
 
         Accepts an int, float, or Decimal for `current_value` (int/float are converted to Decimal). Returns target - current_value as a Decimal, floored at 0 when `current_value` is greater than or equal to the target.
         """
-        if isinstance(current_value, (int, float)):
+        if isinstance(current_value, int | float):
             current_value = Decimal(str(current_value))
 
         return max(Decimal("0"), self.value - current_value)
@@ -284,9 +284,9 @@ class StatChange:
 
         If either `old_value` or `new_value` was provided as an int or float, convert it to a Decimal (using Decimal(str(...))) and set the attribute on the frozen dataclass so both values are guaranteed to be Decimals thereafter.
         """
-        if isinstance(self.old_value, (int, float)):
+        if isinstance(self.old_value, int | float):
             object.__setattr__(self, "old_value", Decimal(str(self.old_value)))
-        if isinstance(self.new_value, (int, float)):
+        if isinstance(self.new_value, int | float):
             object.__setattr__(self, "new_value", Decimal(str(self.new_value)))
 
     @property

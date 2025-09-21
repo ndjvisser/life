@@ -4,9 +4,8 @@ Achievements Domain Value Objects
 Immutable value objects that encapsulate domain constraints and validation.
 No Django dependencies allowed in this module.
 """
-from dataclasses import dataclass
 
-from life_dashboard.common.value_objects import ExperienceReward, UserId
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
