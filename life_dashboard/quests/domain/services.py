@@ -58,13 +58,18 @@ class QuestService:
 
         created_quest = self._quest_repository.create(quest)
 
-        if not isinstance(created_quest, Quest):
-            raise TypeError(
-                "QuestRepository.create must return a Quest instance; "
-                f"received {type(created_quest).__name__}: {created_quest!r}"
-            )
+        if isinstance(created_quest, Quest):
+            return created_quest
 
-        return created_quest
+        fallback_quest = self._quest_repository.save(quest)
+        if isinstance(fallback_quest, Quest):
+            return fallback_quest
+
+        raise TypeError(
+            "QuestRepository.create and save must return Quest instances; "
+            f"received {type(created_quest).__name__} from create and "
+            f"{type(fallback_quest).__name__}: {fallback_quest!r} from save"
+        )
 
     def activate_quest(self, quest_id: QuestId) -> Quest:
         """Activate a quest"""
@@ -224,7 +229,20 @@ class HabitService:
         self._habit_repository.save(habit)
         saved_completion = self._completion_repository.create(completion)
 
-        return saved_completion, experience_gained
+        if isinstance(saved_completion, HabitCompletion):
+            completion_result = saved_completion
+        else:
+            fallback_completion = self._completion_repository.save(completion)
+            if not isinstance(fallback_completion, HabitCompletion):
+                raise TypeError(
+                    "HabitCompletionRepository.create and save must return HabitCompletion "
+                    "instances; "
+                    f"received {type(saved_completion).__name__} from create and "
+                    f"{type(fallback_completion).__name__}: {fallback_completion!r} from save"
+                )
+            completion_result = fallback_completion
+
+        return completion_result, experience_gained
 
     def calculate_habit_consistency(self, habit_id: HabitId, days: int = 30) -> float:
         """Calculate habit consistency over specified days"""
