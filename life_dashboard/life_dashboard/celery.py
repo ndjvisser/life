@@ -22,6 +22,7 @@ def _create_sync_decorator(
                     request = request
 
                     if with_retry:
+
                         def retry(
                             self,
                             exc: Exception | None = None,
@@ -38,10 +39,8 @@ def _create_sync_decorator(
             return func(*call_args, **kwargs)
 
         wrapped.delay = lambda *a, **k: wrapped(*a, **k)
-        wrapped.apply_async = (
-            lambda args=None, kwargs=None, **_opts: wrapped(
-                *(args or ()), **(kwargs or {})
-            )
+        wrapped.apply_async = lambda args=None, kwargs=None, **_opts: wrapped(
+            *(args or ()), **(kwargs or {})
         )
         return wrapped
 
@@ -51,6 +50,7 @@ def _create_sync_decorator(
 celery_spec = importlib.util.find_spec("celery")
 
 if celery_spec is None:
+
     class Celery:
         """Development fallback when Celery isn't installed."""
 
