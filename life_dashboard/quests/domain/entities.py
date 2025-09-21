@@ -348,6 +348,31 @@ class HabitCompletion:
     streak_at_completion: StreakCount | None = None
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
+    @classmethod
+    def create(
+        cls,
+        *,
+        habit_id: HabitId,
+        count: CompletionCount,
+        completion_date: date,
+        notes: str,
+        experience_gained: ExperienceReward,
+        user_id: UserId | None = None,
+        streak_at_completion: StreakCount | None = None,
+    ) -> "HabitCompletion":
+        """Factory method to build a completion with generated identifier."""
+
+        return cls(
+            completion_id="",
+            habit_id=habit_id,
+            count=count,
+            completion_date=completion_date,
+            notes=notes,
+            experience_gained=experience_gained,
+            user_id=user_id,
+            streak_at_completion=streak_at_completion,
+        )
+
     def __post_init__(self):
         """Generate completion ID if not provided"""
         if not self.completion_id:
