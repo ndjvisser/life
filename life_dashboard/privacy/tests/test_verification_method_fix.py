@@ -32,12 +32,13 @@ class TestVerificationMethodFix:
         mock_request = MagicMock(spec=DataSubjectRequest)
         mock_request.user_id = 123
         mock_request.data_categories = {DataCategory.BASIC_PROFILE}
-        mock_request.request_id = "req-1"
+        mock_request.request_id = "test_id"
         mock_request.status = "pending"
         mock_request.identity_verified = False  # Ensure identity needs verification
         mock_request.request_type = "export"
 
         self.request_repo.get_by_id.return_value = mock_request
+        self.request_repo.mark_processing_if_pending.return_value = mock_request
         self.service._collect_user_data = MagicMock(return_value={"test": "data"})
 
         # Act
@@ -47,7 +48,10 @@ class TestVerificationMethodFix:
 
         # Assert
         mock_request.verify_identity.assert_called_once_with("email")
-        mock_request.start_processing.assert_called_once_with(456)
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "test_id", 456
+        )
+        mock_request.start_processing.assert_not_called()
         assert result == {"test": "data"}
 
     def test_process_export_request_without_verification_method(self):
@@ -56,12 +60,13 @@ class TestVerificationMethodFix:
         mock_request = MagicMock(spec=DataSubjectRequest)
         mock_request.user_id = 123
         mock_request.data_categories = {DataCategory.BASIC_PROFILE}
-        mock_request.request_id = "req-2"
+        mock_request.request_id = "test_id"
         mock_request.status = "pending"
         mock_request.identity_verified = True
         mock_request.request_type = "export"
 
         self.request_repo.get_by_id.return_value = mock_request
+        self.request_repo.mark_processing_if_pending.return_value = mock_request
         self.service._collect_user_data = MagicMock(return_value={"test": "data"})
 
         # Act
@@ -69,7 +74,10 @@ class TestVerificationMethodFix:
 
         # Assert
         mock_request.verify_identity.assert_not_called()
-        mock_request.start_processing.assert_called_once_with(456)
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "test_id", 456
+        )
+        mock_request.start_processing.assert_not_called()
 
     def test_process_deletion_request_with_verification_method(self):
         """Test that process_deletion_request accepts and uses verification_method parameter."""
@@ -77,12 +85,13 @@ class TestVerificationMethodFix:
         mock_request = MagicMock(spec=DataSubjectRequest)
         mock_request.user_id = 123
         mock_request.data_categories = set(DataCategory)
-        mock_request.request_id = "req-3"
+        mock_request.request_id = "test_id"
         mock_request.status = "pending"
         mock_request.identity_verified = False  # Ensure identity needs verification
         mock_request.request_type = "delete"
 
         self.request_repo.get_by_id.return_value = mock_request
+        self.request_repo.mark_processing_if_pending.return_value = mock_request
         self.service._delete_user_data = MagicMock(return_value=42)
 
         # Act
@@ -92,7 +101,10 @@ class TestVerificationMethodFix:
 
         # Assert
         mock_request.verify_identity.assert_called_once_with("sms")
-        mock_request.start_processing.assert_called_once_with(789)
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "test_id", 789
+        )
+        mock_request.start_processing.assert_not_called()
         assert result is True
 
     def test_process_deletion_request_without_verification_method(self):
@@ -101,12 +113,13 @@ class TestVerificationMethodFix:
         mock_request = MagicMock(spec=DataSubjectRequest)
         mock_request.user_id = 123
         mock_request.data_categories = set(DataCategory)
-        mock_request.request_id = "req-4"
+        mock_request.request_id = "test_id"
         mock_request.status = "pending"
         mock_request.identity_verified = True
         mock_request.request_type = "delete"
 
         self.request_repo.get_by_id.return_value = mock_request
+        self.request_repo.mark_processing_if_pending.return_value = mock_request
         self.service._delete_user_data = MagicMock(return_value=42)
 
         # Act
@@ -114,7 +127,10 @@ class TestVerificationMethodFix:
 
         # Assert
         mock_request.verify_identity.assert_not_called()
-        mock_request.start_processing.assert_called_once_with(789)
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "test_id", 789
+        )
+        mock_request.start_processing.assert_not_called()
         self.service._delete_user_data.assert_called_once_with(
             123, delete_activities=False
         )
@@ -182,6 +198,7 @@ class TestVerificationMethodFix:
         mock_request.request_type = "export"
 
         self.request_repo.get_by_id.return_value = mock_request
+        self.request_repo.mark_processing_if_pending.return_value = mock_request
         self.service._collect_user_data = MagicMock(return_value={})
 
         self.service.process_export_request("export-1", 99)
@@ -189,6 +206,10 @@ class TestVerificationMethodFix:
         activities = [
             call.args[0] for call in self.activity_repo.log_activity.call_args_list
         ]
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "export-1", 99
+        )
+        mock_request.start_processing.assert_not_called()
         assert {activity.processing_type for activity in activities} == {
             "dsar_export_started",
             "dsar_export_completed",
@@ -210,6 +231,7 @@ class TestVerificationMethodFix:
         mock_request.request_type = "delete"
 
         self.request_repo.get_by_id.return_value = mock_request
+        self.request_repo.mark_processing_if_pending.return_value = mock_request
         self.service._delete_user_data = MagicMock(return_value=5)
 
         self.service.process_deletion_request("delete-1", 42)
@@ -217,6 +239,10 @@ class TestVerificationMethodFix:
         activities = [
             call.args[0] for call in self.activity_repo.log_activity.call_args_list
         ]
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "delete-1", 42
+        )
+        mock_request.start_processing.assert_not_called()
         assert {activity.processing_type for activity in activities} == {
             "dsar_deletion_started",
             "dsar_deletion_completed",
@@ -226,6 +252,120 @@ class TestVerificationMethodFix:
             assert activity.legal_basis == "legal_obligation"
             assert activity.purpose == DataProcessingPurpose.CORE_FUNCTIONALITY
             assert activity.request_id == "delete-1"
+
+    def test_process_export_request_handles_processing_failure(self):
+        """Export failures should reject the request and log a failure event."""
+        mock_request = MagicMock(spec=DataSubjectRequest)
+        mock_request.user_id = 15
+        mock_request.data_categories = {DataCategory.BASIC_PROFILE}
+        mock_request.request_id = "export-fail"
+        mock_request.status = "pending"
+        mock_request.identity_verified = True
+        mock_request.request_type = "export"
+
+        self.request_repo.get_by_id.return_value = mock_request
+        self.request_repo.mark_processing_if_pending.return_value = mock_request
+        self.service._collect_user_data = MagicMock(
+            side_effect=RuntimeError("boom")
+        )
+
+        with pytest.raises(RuntimeError, match="boom"):
+            self.service.process_export_request("export-fail", 21)
+
+        mock_request.reject_request.assert_called_once()
+        assert "boom" in mock_request.reject_request.call_args[0][0]
+        self.request_repo.save.assert_called_with(mock_request)
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "export-fail", 21
+        )
+        start_activity, failure_activity = [
+            call.args[0] for call in self.activity_repo.log_activity.call_args_list
+        ]
+        assert start_activity.processing_type == "dsar_export_started"
+        assert failure_activity.processing_type == "dsar_export_failed"
+        assert failure_activity.details == {"error": "boom"}
+        mock_request.complete_request.assert_not_called()
+
+    def test_process_deletion_request_handles_processing_failure(self):
+        """Deletion failures should reject the request and log a failure event."""
+        mock_request = MagicMock(spec=DataSubjectRequest)
+        mock_request.user_id = 20
+        mock_request.data_categories = set(DataCategory)
+        mock_request.request_id = "delete-fail"
+        mock_request.status = "pending"
+        mock_request.identity_verified = True
+        mock_request.request_type = "delete"
+
+        self.request_repo.get_by_id.return_value = mock_request
+        self.request_repo.mark_processing_if_pending.return_value = mock_request
+        self.service._delete_user_data = MagicMock(
+            side_effect=RuntimeError("kaboom")
+        )
+
+        with pytest.raises(RuntimeError, match="kaboom"):
+            self.service.process_deletion_request("delete-fail", 33)
+
+        mock_request.reject_request.assert_called_once()
+        assert "kaboom" in mock_request.reject_request.call_args[0][0]
+        self.request_repo.save.assert_called_with(mock_request)
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "delete-fail", 33
+        )
+        start_activity, failure_activity = [
+            call.args[0] for call in self.activity_repo.log_activity.call_args_list
+        ]
+        assert start_activity.processing_type == "dsar_deletion_started"
+        assert failure_activity.processing_type == "dsar_deletion_failed"
+        assert failure_activity.details == {"error": "kaboom"}
+        mock_request.complete_request.assert_not_called()
+
+    def test_process_export_request_respects_atomic_claim(self):
+        """A concurrent claim should surface as an already-claimed error."""
+        initial_request = MagicMock(spec=DataSubjectRequest)
+        initial_request.request_type = "export"
+        initial_request.status = "pending"
+        initial_request.identity_verified = True
+        initial_request.request_id = "export-atomic"
+        initial_request.user_id = 44
+        initial_request.data_categories = {DataCategory.BASIC_PROFILE}
+
+        claimed_request = MagicMock(spec=DataSubjectRequest)
+        claimed_request.status = "completed"
+        claimed_request.request_type = "export"
+
+        self.request_repo.get_by_id.side_effect = [initial_request, claimed_request]
+        self.request_repo.mark_processing_if_pending.return_value = None
+
+        with pytest.raises(ValueError, match="already been resolved"):
+            self.service.process_export_request("export-atomic", 77)
+
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "export-atomic", 77
+        )
+
+    def test_process_deletion_request_respects_atomic_claim(self):
+        """When another worker claims the request, processing aborts."""
+        initial_request = MagicMock(spec=DataSubjectRequest)
+        initial_request.request_type = "delete"
+        initial_request.status = "pending"
+        initial_request.identity_verified = True
+        initial_request.request_id = "delete-atomic"
+        initial_request.user_id = 55
+        initial_request.data_categories = set(DataCategory)
+
+        in_progress = MagicMock(spec=DataSubjectRequest)
+        in_progress.status = "processing"
+        in_progress.request_type = "delete"
+
+        self.request_repo.get_by_id.side_effect = [initial_request, in_progress]
+        self.request_repo.mark_processing_if_pending.return_value = None
+
+        with pytest.raises(ValueError, match="already being processed"):
+            self.service.process_deletion_request("delete-atomic", 88)
+
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "delete-atomic", 88
+        )
 
     def test_process_export_request_prevents_double_processing(self):
         """Requests that are already resolved should raise an error when reprocessed."""
@@ -238,6 +378,8 @@ class TestVerificationMethodFix:
         with pytest.raises(ValueError, match="already been resolved"):
             self.service.process_export_request("export-2", 1)
 
+        self.request_repo.mark_processing_if_pending.assert_not_called()
+
     def test_process_deletion_request_prevents_double_processing(self):
         """Requests already in processing should not be processed again."""
         mock_request = MagicMock(spec=DataSubjectRequest)
@@ -248,6 +390,8 @@ class TestVerificationMethodFix:
 
         with pytest.raises(ValueError, match="already being processed"):
             self.service.process_deletion_request("delete-2", 1)
+
+        self.request_repo.mark_processing_if_pending.assert_not_called()
 
     def test_process_deletion_respects_activity_policy_toggle(self):
         """Deletion should pass the configured activity deletion policy flag."""
@@ -268,8 +412,12 @@ class TestVerificationMethodFix:
         mock_request.request_type = "delete"
 
         self.request_repo.get_by_id.return_value = mock_request
+        self.request_repo.mark_processing_if_pending.return_value = mock_request
         service._delete_user_data = MagicMock(return_value=0)
 
         service.process_deletion_request("delete-flag", 5)
 
         service._delete_user_data.assert_called_once_with(321, delete_activities=True)
+        self.request_repo.mark_processing_if_pending.assert_called_once_with(
+            "delete-flag", 5
+        )
