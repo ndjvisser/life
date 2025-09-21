@@ -827,7 +827,7 @@ class QuestChainService:
                 quest_identifier = QuestId(_generate_positive_identifier())
             else:
                 try:
-                    quest_identifier = QuestId(int(raw_identifier))
+                    quest_identifier = QuestId(raw_identifier)
                 except (TypeError, ValueError) as err:
                     raise ValueError(
                         f"Invalid quest_id value in quest chain payload: {raw_identifier}"
