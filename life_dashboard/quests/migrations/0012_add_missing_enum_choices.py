@@ -3,12 +3,27 @@
 from django.db import migrations, models
 
 
+def update_quest_statuses(apps, schema_editor):
+    """Update existing quest statuses to match new choices."""
+    Quest = apps.get_model("quests", "Quest")
+
+    # Update any quests with old status values to the new ones
+    # This is a no-op if there are no old status values
+    Quest.objects.filter(status__isnull=True).update(status="draft")
+    Quest.objects.filter(status="").update(status="draft")
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("quests", "0011_alter_quest_status"),
     ]
 
     operations = [
+        migrations.RunPython(
+            update_quest_statuses,
+            # No reverse code needed as we're only setting default values
+            reverse_code=migrations.RunPython.noop,
+        ),
         migrations.AlterField(
             model_name="habit",
             name="frequency",
@@ -51,6 +66,21 @@ class Migration(migrations.Migration):
                 ],
                 default="main",
                 max_length=15,
+            ),
+        ),
+        migrations.AlterField(
+            model_name="quest",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("draft", "Draft"),
+                    ("active", "Active"),
+                    ("completed", "Completed"),
+                    ("failed", "Failed"),
+                    ("paused", "Paused"),
+                ],
+                default="draft",
+                max_length=10,
             ),
         ),
     ]
