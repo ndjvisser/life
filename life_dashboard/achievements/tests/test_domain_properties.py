@@ -126,8 +126,27 @@ class TestAchievementProperties:
         required_quest_completions,
     ):
         """Test that achievement creation always succeeds with valid inputs"""
-        # Ensure at least one meaningful requirement
-        assume(required_level.value > 1 or required_quest_completions.value > 0)
+        if (
+            required_level.value == 1
+            and required_quest_completions.value == 0
+        ):
+            with pytest.raises(
+                ValueError, match="Achievement must have at least one requirement"
+            ):
+                Achievement(
+                    achievement_id=achievement_id,
+                    name=name,
+                    description=description,
+                    tier=tier,
+                    category=category,
+                    icon=icon,
+                    experience_reward=experience_reward,
+                    required_level=required_level,
+                    required_quest_completions=required_quest_completions,
+                )
+            return
+
+        assert required_level.value > 1 or required_quest_completions.value > 0
 
         achievement = Achievement(
             achievement_id=achievement_id,
@@ -145,6 +164,24 @@ class TestAchievementProperties:
         assert achievement.name == name
         assert achievement.tier == tier
         assert achievement.category == category
+
+    def test_beginner_defaults_without_additional_requirements_raise_error(self):
+        """Ensure the beginner defaults trigger the validation guard."""
+
+        with pytest.raises(
+            ValueError, match="Achievement must have at least one requirement"
+        ):
+            Achievement(
+                achievement_id=AchievementId(1),
+                name=AchievementName("Beginner Friendly"),
+                description=AchievementDescription("Unlocked on signup"),
+                tier=AchievementTier.BRONZE,
+                category=AchievementCategory.PROGRESSION,
+                icon=AchievementIcon("welcome"),
+                experience_reward=ExperienceReward(50, max_value=50000),
+                required_level=RequiredLevel(1),
+                required_quest_completions=RequiredQuestCompletions(0),
+            )
 
     @given(
         achievement_id=achievement_ids(),
