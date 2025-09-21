@@ -6,6 +6,7 @@ Domain Events Catalog. All events follow the exact payload schemas and
 versioning requirements specified in the catalog.
 """
 
+import inspect
 import json
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -53,9 +54,32 @@ class BaseEvent:
     def from_dict(cls, data: dict[str, Any]) -> "BaseEvent":
         """Create event instance from dictionary."""
         # Convert ISO timestamp back to datetime
-        if "timestamp" in data and isinstance(data["timestamp"], str):
-            data["timestamp"] = datetime.fromisoformat(data["timestamp"])
-        return cls(**data)
+        event_data = dict(data)
+        if "timestamp" in event_data and isinstance(event_data["timestamp"], str):
+            event_data["timestamp"] = datetime.fromisoformat(event_data["timestamp"])
+
+        signature = inspect.signature(cls.__init__)
+        has_var_keyword = any(
+            parameter.kind == inspect.Parameter.VAR_KEYWORD
+            for parameter in signature.parameters.values()
+        )
+
+        if has_var_keyword:
+            filtered_data = event_data
+        else:
+            allowed_keys = {
+                name
+                for name, parameter in signature.parameters.items()
+                if name != "self"
+                and parameter.kind
+                in {
+                    inspect.Parameter.POSITIONAL_OR_KEYWORD,
+                    inspect.Parameter.KEYWORD_ONLY,
+                }
+            }
+            filtered_data = {key: event_data[key] for key in allowed_keys if key in event_data}
+
+        return cls(**filtered_data)
 
     @classmethod
     def from_json(cls, json_str: str) -> "BaseEvent":
