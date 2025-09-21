@@ -10,7 +10,31 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
+
+
+class LayerInfo(TypedDict):
+    """Summary information for a single architectural layer within a context."""
+
+    exists: bool
+    file_count: int
+    line_count: int
+
+
+class ContextInfo(TypedDict):
+    """High-level metadata describing a bounded context."""
+
+    exists: bool
+    layers: dict[str, LayerInfo]
+    files: dict[str, Any]
+
+
+class ArchitectureReport(TypedDict):
+    """Structure returned from :meth:`ArchitectureChecker.generate_report`."""
+
+    contexts: dict[str, ContextInfo]
+    violations: list[str]
+    recommendations: list[str]
 
 
 class ArchitectureChecker:
@@ -335,7 +359,7 @@ class ArchitectureChecker:
             print("⚠️  import-linter not found, skipping")
             return True
 
-    def generate_report(self) -> dict[str, Any]:
+    def generate_report(self) -> ArchitectureReport:
         """
         Generate a structured architecture report for all configured contexts.
 
@@ -355,7 +379,11 @@ class ArchitectureChecker:
         Only contexts whose directory exists under self.life_dashboard_path are included.
         When counting lines, files that raise OSError or UnicodeDecodeError are skipped.
         """
-        report = {"contexts": {}, "violations": [], "recommendations": []}
+        report: ArchitectureReport = {
+            "contexts": {},
+            "violations": [],
+            "recommendations": [],
+        }
 
         for context in self.contexts:
             context_path = self.life_dashboard_path / context
@@ -363,11 +391,17 @@ class ArchitectureChecker:
             if not context_path.exists():
                 continue
 
-            context_info = {"exists": True, "layers": {}, "files": {}}
+            context_layers: dict[str, LayerInfo] = {}
+            context_files: dict[str, Any] = {}
+            context_info: ContextInfo = {
+                "exists": True,
+                "layers": context_layers,
+                "files": context_files,
+            }
 
             for layer in self.layers:
                 layer_path = context_path / layer
-                layer_info = {
+                layer_info: LayerInfo = {
                     "exists": layer_path.exists(),
                     "file_count": 0,
                     "line_count": 0,

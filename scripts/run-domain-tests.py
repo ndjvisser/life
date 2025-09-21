@@ -34,6 +34,7 @@ import time
 import traceback
 import types
 from pathlib import Path
+from typing import cast
 
 
 def ensure_dependency(
@@ -134,7 +135,9 @@ def create_simple_pytest_module() -> types.ModuleType:
     class MarkDecorator:
         def __getattr__(self, name: str):
             def decorator(obj):
-                existing_marks = getattr(obj, "_simple_pytest_marks", set())
+                existing_marks = cast(
+                    set[str], getattr(obj, "_simple_pytest_marks", set[str]())
+                )
                 obj._simple_pytest_marks = existing_marks | {name}
                 return obj
 
@@ -253,7 +256,7 @@ def run_command(cmd, description, capture_output=False, cwd=None):
             )
             output = result.stdout
         else:
-            result = subprocess.run(cmd, check=True, cwd=cwd)
+            subprocess.run(cmd, check=True, cwd=cwd)
             output = None
 
         end_time = time.time()
