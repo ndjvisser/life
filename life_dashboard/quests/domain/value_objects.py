@@ -53,13 +53,14 @@ class QuestId:
             if not text_value:
                 raise ValueError("Quest ID cannot be empty")
 
-            if text_value.isdigit():
+            try:
                 numeric_value = int(text_value)
-                if numeric_value <= 0:
-                    raise ValueError("Quest ID must be positive")
-                return numeric_value
+            except ValueError:
+                return text_value
 
-            return text_value
+            if numeric_value <= 0:
+                raise ValueError("Quest ID must be positive")
+            return numeric_value
 
         raise TypeError(f"Unsupported Quest ID type: {type(value).__name__}")
 
