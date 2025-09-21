@@ -43,9 +43,7 @@ class SkillCategory:
     name: CategoryName
     description: str
     icon: str = ""
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __post_init__(self):
         """Validate category data after initialization"""
@@ -72,9 +70,7 @@ class Skill:
     level: SkillLevel
     experience_points: ExperiencePoints
     experience_to_next_level: ExperiencePoints
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     last_practiced: datetime | None = None
 
     def __post_init__(self):

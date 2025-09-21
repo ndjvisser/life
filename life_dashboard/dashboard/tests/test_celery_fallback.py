@@ -46,7 +46,7 @@ class TestCeleryFallback:
 
         # Should have retry method for bound tasks
         assert "def retry(" in content
-        assert "setattr(_TaskSelf, \"retry\", retry)" in content
+        assert 'setattr(_TaskSelf, "retry", retry)' in content
 
     def test_fallback_addresses_original_issues(self):
         """Test that the fallback addresses the original issues mentioned."""

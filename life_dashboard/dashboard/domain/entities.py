@@ -78,7 +78,9 @@ class UserProfile:
             field_list = ", ".join(invalid_fields)
             field_label = "Field" if len(invalid_fields) == 1 else "Fields"
             verb = "is" if len(invalid_fields) == 1 else "are"
-            raise ValueError(f"{field_label} '{field_list}' {verb} not allowed to be updated")
+            raise ValueError(
+                f"{field_label} '{field_list}' {verb} not allowed to be updated"
+            )
 
         for field, value in kwargs.items():
             if field in allowed_fields:

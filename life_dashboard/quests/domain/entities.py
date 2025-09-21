@@ -84,12 +84,8 @@ class Quest:
     start_date: date | None = None
     due_date: date | None = None
     completed_at: datetime | None = None
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
-    updated_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __post_init__(self):
         """Validate quest data after initialization"""
@@ -227,12 +223,8 @@ class Habit:
     longest_streak: StreakCount
     experience_reward: ExperienceReward
     habit_id: HabitId | None = None
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
-    updated_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __post_init__(self):
         """Validate habit data after initialization"""
@@ -354,9 +346,7 @@ class HabitCompletion:
     experience_gained: ExperienceReward
     user_id: UserId | None = None
     streak_at_completion: StreakCount | None = None
-    created_at: datetime = field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
     def __post_init__(self):
         """Generate completion ID if not provided"""

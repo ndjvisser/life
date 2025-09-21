@@ -736,9 +736,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
             completion_date=django_completion.date,
             count=CompletionCount(django_completion.count),
             notes=django_completion.notes,
-            experience_gained=ExperienceReward(
-                django_completion.experience_gained
-            ),
+            experience_gained=ExperienceReward(django_completion.experience_gained),
             streak_at_completion=StreakCount(current_streak or 0),
             created_at=created_at_value,
         )
@@ -848,9 +846,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
 
         return [self._to_domain(completion) for completion in queryset]
 
-    def get_completion_count(
-        self, habit_id: HabitId, target_date: date
-    ) -> int:
+    def get_completion_count(self, habit_id: HabitId, target_date: date) -> int:
         """Return the number of completions recorded for a habit on a specific date."""
 
         habit_identifier = _habit_id_as_int(habit_id)
@@ -861,9 +857,7 @@ class DjangoHabitCompletionRepository(HabitCompletionRepository):
             ).count()
         )
 
-    def get_latest_completion(
-        self, habit_id: HabitId
-    ) -> DomainHabitCompletion | None:
+    def get_latest_completion(self, habit_id: HabitId) -> DomainHabitCompletion | None:
         """Return the most recent completion for the given habit."""
 
         habit_identifier = _habit_id_as_int(habit_id)

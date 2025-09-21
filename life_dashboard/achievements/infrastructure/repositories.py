@@ -41,10 +41,9 @@ class DjangoUserAchievementRepository(UserAchievementRepository):
                         unlocked_at=user_achievement.unlocked_at,
                     )
             except IntegrityError:
-                existing = (
-                    DjangoUserAchievement.objects.select_related("achievement")
-                    .get(user_id=user_id, achievement_id=achievement_id)
-                )
+                existing = DjangoUserAchievement.objects.select_related(
+                    "achievement"
+                ).get(user_id=user_id, achievement_id=achievement_id)
                 return self._map_to_domain(
                     existing, unlock_context=user_achievement.unlock_context
                 )
