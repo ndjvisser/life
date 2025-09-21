@@ -42,11 +42,7 @@ class QuestService:
         quest_description = QuestDescription(description)
         exp_reward = ExperienceReward(experience_reward)
 
-        # Generate quest ID (in real implementation, this would come from repository)
-        quest_id = QuestId(1)  # Placeholder
-
         quest = Quest(
-            quest_id=quest_id,
             user_id=user_id,
             title=quest_title,
             description=quest_description,
@@ -58,7 +54,7 @@ class QuestService:
             due_date=due_date,
         )
 
-        return self._quest_repository.save(quest)
+        return self._quest_repository.create(quest)
 
     def activate_quest(self, quest_id: QuestId) -> Quest:
         """Activate a quest"""
@@ -92,8 +88,7 @@ class QuestService:
 
     def get_overdue_quests(self, user_id: UserId) -> list[Quest]:
         """Get all overdue quests for a user"""
-        active_quests = self._quest_repository.get_active_quests(user_id)
-        return [quest for quest in active_quests if quest.is_overdue()]
+        return self._quest_repository.get_overdue_quests(user_id)
 
     def calculate_quest_completion_rate(self, user_id: UserId, days: int = 30) -> float:
         """Calculate quest completion rate for a user over specified days"""
@@ -150,11 +145,7 @@ class HabitService:
         target = CompletionCount(target_count)
         exp_reward = ExperienceReward(experience_reward)
 
-        # Generate habit ID (in real implementation, this would come from repository)
-        habit_id = HabitId(1)  # Placeholder
-
         habit = Habit(
-            habit_id=habit_id,
             user_id=user_id,
             name=habit_name,
             description=description,
@@ -165,7 +156,7 @@ class HabitService:
             experience_reward=exp_reward,
         )
 
-        return self._habit_repository.save(habit)
+        return self._habit_repository.create(habit)
 
     def complete_habit(
         self,
