@@ -163,16 +163,14 @@ function findPosY(obj) {
             case "%Y":
                 year = date[i];
                 break;
-            case "%y":
-                // A %y value in the range of [00, 68] is in the current
-                // century, while [69, 99] is in the previous century,
-                // according to the Open Group Specification.
-                if (parseInt(date[i], 10) >= 69) {
-                    year = date[i];
-                } else {
-                    year = (new Date(Date.UTC(date[i], 0))).getUTCFullYear() + 100;
-                }
+            case "%y": {
+                // POSIX: 00–68 are in the current century, 69–99 in the previous century.
+                const yy = parseInt(date[i], 10);
+                const currentYear = new Date().getUTCFullYear();
+                const century = Math.floor(currentYear / 100);
+                year = ((yy >= 69 ? (century - 1) : century) * 100) + yy;
                 break;
+            }
             }
             ++i;
         }
