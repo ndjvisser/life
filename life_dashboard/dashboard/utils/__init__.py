@@ -19,7 +19,7 @@ def _sqlite_foreign_keys_disabled(connection):
         cursor.close()
 
 
-def reset_database(*, database: str = DEFAULT_DB_ALIAS) -> None:
+def reset_database(*, db_alias: str = DEFAULT_DB_ALIAS) -> None:
     """Safely reset the configured database.
 
     The reset operation is only permitted when DEBUG is enabled and the
@@ -36,8 +36,8 @@ def reset_database(*, database: str = DEFAULT_DB_ALIAS) -> None:
     if environment in {"production", "prod", "staging"}:
         raise RuntimeError("Database reset is blocked in production-like environments.")
 
-    connection = connections[database]
-    flush_kwargs = {"database": database, "interactive": False, "verbosity": 0}
+    connection = connections[db_alias]
+    flush_kwargs = {"database": db_alias, "interactive": False, "verbosity": 0}
 
     if connection.vendor == "sqlite":
         with _sqlite_foreign_keys_disabled(connection):
@@ -45,4 +45,4 @@ def reset_database(*, database: str = DEFAULT_DB_ALIAS) -> None:
     else:
         call_command("flush", **flush_kwargs)
 
-    call_command("migrate", database=database, interactive=False, verbosity=0)
+    call_command("migrate", database=db_alias, interactive=False, verbosity=0)

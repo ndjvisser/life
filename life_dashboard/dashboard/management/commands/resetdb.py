@@ -25,7 +25,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        database = options["database"]
+        db_alias = options["database"]
         noinput = options["noinput"]
         auto_confirm = (
             noinput
@@ -59,7 +59,7 @@ class Command(BaseCommand):
         self.stdout.write("Resetting the database...")
 
         try:
-            reset_database(database=database)
+            reset_database(db_alias=db_alias)
             self.stdout.write(self.style.SUCCESS("Database reset successfully!"))
         except RuntimeError as exc:
             message = str(exc)
