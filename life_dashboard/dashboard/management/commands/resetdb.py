@@ -10,7 +10,7 @@ from life_dashboard.dashboard.utils import reset_database
 
 
 class Command(BaseCommand):
-    help = "Resets the database by dropping all tables and recreating them"
+    help = "Resets the database by migrating to zero and reapplying migrations"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -59,7 +59,7 @@ class Command(BaseCommand):
         self.stdout.write("Resetting the database...")
 
         try:
-            reset_database(database=database)
+            reset_database(using=database)
             self.stdout.write(self.style.SUCCESS("Database reset successfully!"))
         except RuntimeError as exc:
             message = str(exc)
