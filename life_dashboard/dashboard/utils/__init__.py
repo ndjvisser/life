@@ -32,7 +32,13 @@ def reset_database(*, using: str = DEFAULT_DB_ALIAS) -> None:
     logger.info("Resetting database '%s' by migrating to zero.", using)
 
     executor = MigrationExecutor(connection)
-    executor.migrate(targets=[])
+    migrated_apps = sorted(executor.loader.migrated_apps)
+    zero_targets = [(app_label, None) for app_label in migrated_apps]
+
+    if zero_targets:
+        executor.migrate(zero_targets)
+    else:
+        logger.info("No migrated apps detected for database '%s'.", using)
 
     logger.info("Reapplying migrations for database '%s'.", using)
     call_command("migrate", database=using, interactive=False, verbosity=0)
