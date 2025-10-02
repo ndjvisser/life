@@ -20,6 +20,8 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--using",
+            "--database",
+            dest="using",
             default=DEFAULT_DB_ALIAS,
             help="Database alias to reset (default: default).",
         )

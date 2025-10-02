@@ -138,6 +138,7 @@ markers = [
     "contract: marks tests as contract/API tests with Pydantic validation",
     "property: marks property-based tests using Hypothesis",
     "snapshot: marks snapshot tests for API responses",
+    "django_db: marks tests that interact with the Django database",
 ]
 
 [tool.coverage.run]
