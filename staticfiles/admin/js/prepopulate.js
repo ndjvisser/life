@@ -31,7 +31,7 @@
             };
 
             prepopulatedField.data('_changed', false);
-            prepopulatedField.on('change', function() {
+            prepopulatedField.on('input keyup', function() {
                 prepopulatedField.data('_changed', true);
             });
 
