@@ -19,13 +19,13 @@ class Command(BaseCommand):
             help="Do not prompt for confirmation.",
         )
         parser.add_argument(
-            "--database",
+            "--using",
             default=DEFAULT_DB_ALIAS,
             help="Database alias to reset (default: default).",
         )
 
     def handle(self, *args, **options):
-        database = options["database"]
+        database = options["using"]
         noinput = options["noinput"]
         auto_confirm = (
             noinput
