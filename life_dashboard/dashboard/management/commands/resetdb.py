@@ -10,7 +10,7 @@ from life_dashboard.dashboard.utils import reset_database
 
 
 class Command(BaseCommand):
-    help = "Resets the database by dropping all tables and recreating them"
+    help = "Resets the database by migrating to zero and reapplying migrations"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -19,13 +19,15 @@ class Command(BaseCommand):
             help="Do not prompt for confirmation.",
         )
         parser.add_argument(
+            "--using",
             "--database",
+            dest="using",
             default=DEFAULT_DB_ALIAS,
             help="Database alias to reset (default: default).",
         )
 
     def handle(self, *args, **options):
-        db_alias = options["database"]
+        database = options["using"]
         noinput = options["noinput"]
         auto_confirm = (
             noinput
@@ -59,7 +61,7 @@ class Command(BaseCommand):
         self.stdout.write("Resetting the database...")
 
         try:
-            reset_database(db_alias=db_alias)
+            reset_database(using=database)
             self.stdout.write(self.style.SUCCESS("Database reset successfully!"))
         except RuntimeError as exc:
             message = str(exc)
